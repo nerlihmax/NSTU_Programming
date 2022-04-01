@@ -8,7 +8,7 @@ int main()
     clock_t firstTime, secondTime; // time before and after calculation
     det = 1;
 
-    for (int N = 100; N <= 5000; N += 100)
+    for (int N = 2880; N <= 5000; N += 5)
     {
         float **matrix = calloc(N, sizeof(float *));
         for (int i = 0; i < N; i++)
@@ -44,7 +44,7 @@ int main()
         // printf("Determinant: %14.3f", det);
         printf("%d ", N);
         printf("%f",
-               ((float)secondTime) / CLOCKS_PER_SEC);
+               ((float)secondTime) / CLOCKS_PER_SEC * 1000);
         printf("\n");
 
         for (int i = 0; i < N; i++)
