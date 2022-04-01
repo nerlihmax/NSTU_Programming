@@ -13,8 +13,6 @@
 
 int N = (maxSize - startSize) / step + 1; //quantity of elements
 
-using namespace std;
-
 __global__ void multiplyDetWithElement(long double* det, float* matrix, int curDiagonalElemIndex)
 {
     *det *= matrix[curDiagonalElemIndex];
@@ -114,6 +112,7 @@ long double gaussMethod(float* matrix, int size)
     return det;
 }
 
+
 float* generateMatrix(int size)
 {
     if (size <= 0)
@@ -135,6 +134,8 @@ float* generateMatrix(int size)
 
     return a;
 }
+
+using namespace std;
 
 int main()
 {
@@ -159,7 +160,6 @@ int main()
         
         float time = 0;
         cudaEventElapsedTime(&time, start, stop);
-        // time /= 1000; //getting time in seconds
 
         free(matrix);
         printf("%d ", size);
