@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <time.h>
 
-#define MAX_THREADS_PER_BLOCK 2048
+#define MAX_THREADS_PER_BLOCK 1024
 
 
 #define startSize 5
