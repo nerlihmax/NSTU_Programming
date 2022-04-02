@@ -13,28 +13,50 @@
 
 int N = (maxSize - startSize) / step + 1; //quantity of elements
 
-__global__ void multiplyDetWithElement(long double* det, float* matrix, int curDiagonalElemIndex)
+float* fillUpMatrix(int size) //Filling up matrix with elements in range [-10, 10]
 {
-    *det *= matrix[curDiagonalElemIndex];
+    if (size <= 0)
+        return nullptr;
+
+    float* matrix = (float*)malloc(size * size * sizeof(float));
+    int min = -10, max = 10;
+    srand(time(0));
+
+    for (int i = 0; i < size; ++i)
+    {
+        for (int j = 0; j < size; ++j)
+        {
+            matrix[i * size + j] = rand() % (max - min + 1) + min;
+            if (i == j && matrix[i * size + j] == 0)
+                matrix[i * size + j]++;
+        }
+    }
+
+    return matrix;
 }
 
-__global__ void fillCoefsArray(float* coefs, float* matrix, int size, int curDiagonalElemIndex, int startNumber = 0)
+__global__ void multiplyDetWithElement(long double* det, float* matrix, int currentDiagonalElemIndex)
+{
+    *det *= matrix[currentDiagonalElemIndex];
+}
+
+__global__ void fillCoefsArray(float* coefs, float* matrix, int size, int currentDiagonalElemIndex, int startNumber = 0)
 {
     int i = startNumber + blockDim.x * blockIdx.x + threadIdx.x;
-    int elemToZeroIndex = curDiagonalElemIndex + size * (i + 1);
+    int elemToZeroIndex = currentDiagonalElemIndex + size * (i + 1);
 
-    coefs[(elemToZeroIndex / size) - 1] = -matrix[elemToZeroIndex] / matrix[curDiagonalElemIndex];
+    coefs[(elemToZeroIndex / size) - 1] = -matrix[elemToZeroIndex] / matrix[currentDiagonalElemIndex];
 }
 
-__global__ void multiplyElemWithCoef(float* matrix, int size, int curDiagonalElemRow, float* coefs, int startNumber = 0)
+__global__ void multiplyElemWithCoef(float* matrix, int size, int currentDiagonalElemRow, float* coefs, int startNumber = 0)
 {
     int number = startNumber + blockDim.x * blockIdx.x + threadIdx.x;
-    int columnsCount = size - curDiagonalElemRow;
+    int columnsCount = size - currentDiagonalElemRow;
 
-    int row = curDiagonalElemRow + 1 + (number / columnsCount);
-    int column = curDiagonalElemRow + (number % columnsCount);
+    int row = currentDiagonalElemRow + 1 + (number / columnsCount);
+    int column = currentDiagonalElemRow + (number % columnsCount);
 
-    matrix[row * size + column] += coefs[row - 1] * matrix[curDiagonalElemRow * size + column];
+    matrix[row * size + column] += coefs[row - 1] * matrix[currentDiagonalElemRow * size + column];
 }
 
 void getNumberOfBlocksAndThreads(int elemsCount, int* blocks, int* threads, int* remains)
@@ -83,14 +105,14 @@ long double gaussMethod(float* matrix, int size)
     for (int i = 0; i < size; i++) {
 
         int curDiagonalElemIndex = i * size + i;
-        multiplyDetWithElement << <1, 1 >> > (_det, _matrix, curDiagonalElemIndex);
+        multiplyDetWithElement <<< 1, 1 >>> (_det, _matrix, curDiagonalElemIndex);
 
 
         int blocksCount, threadsCount, remains;
         getNumberOfBlocksAndThreads(size - i - 1, &blocksCount, &threadsCount, &remains);
 
         fillCoefsArray <<< blocksCount, threadsCount >>> (_coefs, _matrix, size, curDiagonalElemIndex);
-        fillCoefsArray << < 1, remains >> > (_coefs, _matrix, size, curDiagonalElemIndex, blocksCount * threadsCount);
+        fillCoefsArray <<< 1, remains >>> (_coefs, _matrix, size, curDiagonalElemIndex, blocksCount * threadsCount);
 
         int elemsCount = (size - 1 - i) * (size - i);
         getNumberOfBlocksAndThreads(elemsCount, &blocksCount, &threadsCount, &remains);
@@ -112,29 +134,6 @@ long double gaussMethod(float* matrix, int size)
     return det;
 }
 
-
-float* generateMatrix(int size)
-{
-    if (size <= 0)
-        return nullptr;
-
-    float* a = (float*)malloc(size * size * sizeof(float));
-    int min = -10, max = 10;
-    srand(time(0));
-
-    for (int i = 0; i < size; ++i)
-    {
-        for (int j = 0; j < size; ++j)
-        {
-            a[i * size + j] = rand() % (max - min + 1) + min;
-            if (i == j && a[i * size + j] == 0)
-                a[i * size + j]++;
-        }
-    }
-
-    return a;
-}
-
 using namespace std;
 
 int main()
@@ -142,7 +141,7 @@ int main()
     printf("Starting calculation...\n");
     for (int size = startSize, i = 0; size <= maxSize; size += step, i++)
     {
-        float* matrix = generateMatrix(size);
+        float* matrix = fillUpMatrix(size);
 
         cudaEvent_t start, stop;
 
