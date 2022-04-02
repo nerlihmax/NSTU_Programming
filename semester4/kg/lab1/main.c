@@ -7,8 +7,8 @@ int main()
     float det;                     // determinant
     clock_t firstTime, secondTime; // time before and after calculation
     det = 1;
-
-    for (int N = 2880; N <= 5000; N += 5)
+//4625-5000
+    for (int N = 5; N <= 5000; N += 5)
     {
         float **matrix = calloc(N, sizeof(float *));
         for (int i = 0; i < N; i++)
@@ -51,7 +51,5 @@ int main()
             free(matrix[i]);
         free(matrix);
     }
-
-    getchar();
     return 0;
 }
