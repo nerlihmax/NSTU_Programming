@@ -1,3 +1,4 @@
+//Libraries
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 #include <stdlib.h> 
@@ -6,7 +7,7 @@
 
 #define MAX_THREADS_PER_BLOCK 1024
 
-
+//Constants
 #define startSize 5
 #define maxSize  5000
 #define step 5
@@ -42,15 +43,15 @@ __global__ void multiplyDetWithElement(long double* det, float* matrix, int curr
 
 __global__ void fillCoefsArray(float* coefs, float* matrix, int size, int currentDiagonalElemIndex, int startNumber = 0)
 {
-    int i = startNumber + blockDim.x * blockIdx.x + threadIdx.x;
-    int elemToZeroIndex = currentDiagonalElemIndex + size * (i + 1);
+    int i = startNumber + blockDim.x * blockIdx.x + threadIdx.x; // unique index for each coefficient
+    int elemToZeroIndex = currentDiagonalElemIndex + size * (i + 1); // element that we want to cast to null
 
     coefs[(elemToZeroIndex / size) - 1] = -matrix[elemToZeroIndex] / matrix[currentDiagonalElemIndex];
 }
 
 __global__ void multiplyElemWithCoef(float* matrix, int size, int currentDiagonalElemRow, float* coefs, int startNumber = 0)
 {
-    int number = startNumber + blockDim.x * blockIdx.x + threadIdx.x;
+    int number = startNumber + blockDim.x * blockIdx.x + threadIdx.x; 
     int columnsCount = size - currentDiagonalElemRow;
 
     int row = currentDiagonalElemRow + 1 + (number / columnsCount);
@@ -104,9 +105,8 @@ long double gaussMethod(float* matrix, int size)
 
     for (int i = 0; i < size; i++) {
 
-        int curDiagonalElemIndex = i * size + i;
-        multiplyDetWithElement <<< 1, 1 >>> (_det, _matrix, curDiagonalElemIndex);
-
+        int curDiagonalElemIndex = i * size + i; // Index of current diagonal element
+        multiplyDetWithElement <<< 1, 1 >>> (_det, _matrix, curDiagonalElemIndex); // Multiplying determinant with diagonal element
 
         int blocksCount, threadsCount, remains;
         getNumberOfBlocksAndThreads(size - i - 1, &blocksCount, &threadsCount, &remains);
