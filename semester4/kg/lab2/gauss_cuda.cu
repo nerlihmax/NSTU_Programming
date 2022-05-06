@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <time.h>
 
-#define MAX_THREADS_PER_BLOCK 1024
+int MAX_THREADS_PER_BLOCK;
 
 //Constants
 #define startSize 5
@@ -138,6 +138,10 @@ using namespace std;
 
 int main()
 {
+    cudaDeviceProp deviceProp;
+    cudaGetDeviceProperties(&deviceProp, 0);
+    MAX_THREADS_PER_BLOCK = deviceProp.maxThreadsDim[0];
+    
     printf("Starting calculation...\n");
     for (int size = startSize, i = 0; size <= maxSize; size += step, i++)
     {
