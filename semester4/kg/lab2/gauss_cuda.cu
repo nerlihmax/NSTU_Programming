@@ -38,7 +38,7 @@ float* fillUpMatrix(int size) //Filling up matrix with elements in range [-10, 1
 
 __global__ void multiplyDetWithElement(long double* det, float* matrix, int currentDiagonalElemIndex)
 {
-    *det *= matrix[currentDiagonalElemIndex];
+    *det *= matrix[currentDiagonalElemIndex]; //multiplying determinant with diagonal element
 }
 
 __global__ void fillCoefsArray(float* coefs, float* matrix, int size, int currentDiagonalElemIndex, int startNumber = 0)
@@ -77,6 +77,7 @@ void getNumberOfBlocksAndThreads(int elemsCount, int* blocks, int* threads, int*
 
 cudaError_t allocateMemory(float* matrix, float** gpuMatrix, int size, float** gpuCoefs, long double** gpuDet)
 {
+    //Allocating memory on GPU for determinant, matrix(1-dimension), coefficients
     cudaError_t status = cudaMalloc(gpuMatrix, size * size * sizeof(float));
     status = cudaMemcpy(*gpuMatrix, matrix, size * size * sizeof(float), cudaMemcpyHostToDevice);
 
@@ -114,20 +115,21 @@ long double gaussMethod(float* matrix, int size)
         fillCoefsArray <<< blocksCount, threadsCount >>> (_coefs, _matrix, size, curDiagonalElemIndex);
         fillCoefsArray <<< 1, remains >>> (_coefs, _matrix, size, curDiagonalElemIndex, blocksCount * threadsCount);
 
-        int elemsCount = (size - 1 - i) * (size - i);
+        int elemsCount = (size - 1 - i) * (size - i); //Elems that will be affected by iteration
         getNumberOfBlocksAndThreads(elemsCount, &blocksCount, &threadsCount, &remains);
 
-        cudaDeviceSynchronize();
+        cudaDeviceSynchronize(); //waiting for GPU done calculations
 
         multiplyElemWithCoef <<<blocksCount, threadsCount >>> (_matrix, size, i, _coefs);
         multiplyElemWithCoef << <1, remains >> > (_matrix, size, i, _coefs, blocksCount * threadsCount);
 
-        cudaDeviceSynchronize();
+        cudaDeviceSynchronize();//waiting for GPU done calculations
     }
 
     cudaMemcpy(&det, &_det[0], sizeof(long double), cudaMemcpyDeviceToHost);
-
-    freeMemory:
+    // copying memory from GPU to host
+    
+    freeMemory: //freeing memory
     cudaFree(_matrix);
     cudaFree(_det);
     cudaFree(_coefs);
@@ -139,23 +141,22 @@ using namespace std;
 int main()
 {
     cudaDeviceProp deviceProp;
-    cudaGetDeviceProperties(&deviceProp, 0);
+    cudaGetDeviceProperties(&deviceProp, 0); //getting blocks size from GPU
     MAX_THREADS_PER_BLOCK = deviceProp.maxThreadsDim[0];
-    
+
     printf("Starting calculation...\n");
     for (int size = startSize, i = 0; size <= maxSize; size += step, i++)
     {
-        float* matrix = fillUpMatrix(size);
+        float* matrix = fillUpMatrix(size); //filling up the matrix
 
         cudaEvent_t start, stop;
 
         cudaEventCreate(&start);
-        cudaEventCreate(&stop);
-
+        cudaEventCreate(&stop); //CUDA timers for calculating time
 
         //------
         cudaEventRecord(start, 0);
-        gaussMethod(matrix, size);
+        gaussMethod(matrix, size); //processing Gauss-method
         cudaEventRecord(stop, 0);
         //------
 
@@ -165,8 +166,8 @@ int main()
         cudaEventElapsedTime(&time, start, stop);
 
         free(matrix);
-        printf("%d ", size);
-        printf("%f\n", time);
+        printf("%d ", size); //matrix size
+        printf("%f\n", time); //calculation time
     }
     return 0;
 }
