@@ -149,7 +149,7 @@ int MatrixMultiply(int argc, char **argv,
                    int block_size, const dim3 &dimsA,
                    const dim3 &dimsB) {
   
-  // Выделение памяти на ПК (не на GPU) для хранения матриц А и В
+  // Выделение памяти на ОЗУ (не видеопамять) для хранения матриц А и В
   unsigned int size_A = dimsA.x * dimsA.y; //Размер матрицы А
   unsigned int mem_size_A = sizeof(float) * size_A; //Размер выделяемой памяти
   float *h_A;
