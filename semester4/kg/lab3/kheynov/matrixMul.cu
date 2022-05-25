@@ -39,7 +39,7 @@
  * Piscataway, NJ: IEEE Press, 2008, pp. Art. 31:1-11.
  */
 
-// System includes
+// Подключение системных библиотек
 #include <stdio.h>
 #include <assert.h>
 
@@ -47,125 +47,134 @@
 #include <cuda_runtime.h>
 #include <cuda_profiler_api.h>
 
-// Helper functions and utilities to work with CUDA
+// Утилиты нужные для работы CUDA
 #include <helper_functions.h>
 #include <helper_cuda.h>
 
 /**
- * Matrix multiplication (CUDA Kernel) on the device: C = A * B
- * wA is A's width and wB is B's width
+ * Перемножение матриц на GPU (CUDA ядра): C = A * B
+ * wA это размерность матрицы A, а wB это размерность матрицы B
+ * C == результат перемножения
  */
 template <int BLOCK_SIZE> __global__ void MatrixMulCUDA(float *C, float *A,
     float *B, int wA,
     int wB) {
-  // Block index
+
+  // Индекс блока CUDA
   int bx = blockIdx.x;
   int by = blockIdx.y;
 
-  // Thread index
+  // Индекс Thread'a (да, я не люблю называть их "нитями")
   int tx = threadIdx.x;
   int ty = threadIdx.y;
 
-  // Index of the first sub-matrix of A processed by the block
+  // Индекс первой "подматрицы" матрицы А, которая будет обрабатываться блоком
   int aBegin = wA * BLOCK_SIZE * by;
 
-  // Index of the last sub-matrix of A processed by the block
+  // Индекс первой "подматрицы" матрицы А, которая будет обрабатываться блоком
   int aEnd   = aBegin + wA - 1;
 
-  // Step size used to iterate through the sub-matrices of A
+  // Размер шага, с которым мы будем итерироваться по подматрицам А
   int aStep  = BLOCK_SIZE;
 
-  // Index of the first sub-matrix of B processed by the block
+  // Индекс первой "подматрицы" матрицы B, которая будет обрабатываться блоком
   int bBegin = BLOCK_SIZE * bx;
 
-  // Step size used to iterate through the sub-matrices of B
+  // Размер шага, с которым мы будем итерироваться по подматрицам B
   int bStep  = BLOCK_SIZE * wB;
 
-  // Csub is used to store the element of the block sub-matrix
-  // that is computed by the thread
+  // Переменная Csub хранит элемент блока подматрицы, который был посчитан в thread'e
   float Csub = 0;
 
-  // Loop over all the sub-matrices of A and B
-  // required to compute the block sub-matrix
+  // Проходим в цикле по всем подматрицам A и B
   for (int a = aBegin, b = bBegin;
        a <= aEnd;
        a += aStep, b += bStep) {
-    // Declaration of the shared memory array As used to
-    // store the sub-matrix of A
+
+    // Выделяем массив As в общей памяти чтобы хранить подматрицу A
     __shared__ float As[BLOCK_SIZE][BLOCK_SIZE];
 
-    // Declaration of the shared memory array Bs used to
-    // store the sub-matrix of B
+    // Аналогично для подматрицы А
     __shared__ float Bs[BLOCK_SIZE][BLOCK_SIZE];
 
-    // Load the matrices from device memory
-    // to shared memory; each thread loads
-    // one element of each matrix
+    // Загружаем матрицы из видеопамяти в общую. Каждый поток загружает один элемент из каждой матрицы
     As[ty][tx] = A[a + wA * ty + tx];
     Bs[ty][tx] = B[b + wB * ty + tx];
 
-    // Synchronize to make sure the matrices are loaded
+    //Синхронизируемся чтобы убедиться что все матрицы загрузились
     __syncthreads();
 
-    // Multiply the two matrices together;
-    // each thread computes one element
-    // of the block sub-matrix
-#pragma unroll
+
+    // Перемножаем матрицы, каждый поток вычисляет один элемент из блока подматрицы
+
+#pragma unroll // Оптимизация компилятора, позволяет провернуть следующее:
+      /**
+        for ( int i = 0; i < 5; i++ )
+          b[i] = i;
+        
+        =============
+        
+        b[0] = 0;
+        b[1] = 1;
+        b[2] = 2;
+        b[3] = 3;
+        b[4] = 4; 
+       */
 
     for (int k = 0; k < BLOCK_SIZE; ++k) {
-      Csub += As[ty][k] * Bs[k][tx];
+      Csub += As[ty][k] * Bs[k][tx]; // Собственно перемножение подматриц
     }
 
-    // Synchronize to make sure that the preceding
-    // computation is done before loading two new
-    // sub-matrices of A and B in the next iteration
+    // Синхронизируемся чтобы убедиться что мы всё посчитали 
+    // прежде чем загружать следующие подматрицы
     __syncthreads();
   }
 
-  // Write the block sub-matrix to device memory;
-  // each thread writes one element
+  // Записываем блок подматрицы в видеопамять
+  // Каждый элемент отдельным thread'ом 
   int c = wB * BLOCK_SIZE * by + BLOCK_SIZE * bx;
   C[c + wB * ty + tx] = Csub;
 }
 
-void ConstantInit(float *data, int size, float val) {
+void ConstantInit(float *data, int size, float val) {  // метод для заполнения массива значениями
   for (int i = 0; i < size; ++i) {
     data[i] = val;
   }
 }
 
 /**
- * Run a simple test of matrix multiplication using CUDA
+ * Простенький тест перемножения матриц
  */
 int MatrixMultiply(int argc, char **argv,
                    int block_size, const dim3 &dimsA,
                    const dim3 &dimsB) {
-  // Allocate host memory for matrices A and B
-  unsigned int size_A = dimsA.x * dimsA.y;
-  unsigned int mem_size_A = sizeof(float) * size_A;
+  
+  // Выделение памяти на ПК (не на GPU) для хранения матриц А и В
+  unsigned int size_A = dimsA.x * dimsA.y; //Размер матрицы А
+  unsigned int mem_size_A = sizeof(float) * size_A; //Размер выделяемой памяти
   float *h_A;
   checkCudaErrors(cudaMallocHost(&h_A, mem_size_A));
-  unsigned int size_B = dimsB.x * dimsB.y;
+  unsigned int size_B = dimsB.x * dimsB.y; // Аналогично для матрицы В
   unsigned int mem_size_B = sizeof(float) * size_B;
   float *h_B;
   checkCudaErrors(cudaMallocHost(&h_B, mem_size_B));
   cudaStream_t stream;
 
-  // Initialize host memory
+  // Инициализируем память ОЗУ, заполняем матрицы
   const float valB = 0.01f;
   ConstantInit(h_A, size_A, 1.0f);
   ConstantInit(h_B, size_B, valB);
 
-  // Allocate device memory
+  // Выделяем память на GPU
   float *d_A, *d_B, *d_C;
 
-  // Allocate host matrix C
+  // Выделяем память в ОЗУ для результирующей матрицы С
   dim3 dimsC(dimsB.x, dimsA.y, 1);
   unsigned int mem_size_C = dimsC.x * dimsC.y * sizeof(float);
   float *h_C;
   checkCudaErrors(cudaMallocHost(&h_C, mem_size_C));
 
-  if (h_C == NULL) {
+  if (h_C == NULL) { // Выводим ошибку если не получилось выделить память
     fprintf(stderr, "Failed to allocate host matrix C!\n");
     exit(EXIT_FAILURE);
   }
@@ -173,27 +182,27 @@ int MatrixMultiply(int argc, char **argv,
   checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_A), mem_size_A));
   checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_B), mem_size_B));
   checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_C), mem_size_C));
-  // Allocate CUDA events that we'll use for timing
+
+  // Подключаем CUDA Event'ы для подсчета времени вычисления
   cudaEvent_t start, stop;
   checkCudaErrors(cudaEventCreate(&start));
   checkCudaErrors(cudaEventCreate(&stop));
 
   checkCudaErrors(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
 
-  // copy host memory to device
+  // Копируем память из ОЗУ на GPU (матрицы)
   checkCudaErrors(
       cudaMemcpyAsync(d_A, h_A, mem_size_A, cudaMemcpyHostToDevice, stream));
   checkCudaErrors(
       cudaMemcpyAsync(d_B, h_B, mem_size_B, cudaMemcpyHostToDevice, stream));
 
-  // Setup execution parameters
+  // Устанавливаем параметры запуска (блоки, сетка блоков)
   dim3 threads(block_size, block_size);
   dim3 grid(dimsB.x / threads.x, dimsA.y / threads.y);
 
-  // Create and start timer
   printf("Computing result using CUDA Kernel...\n");
 
-  // Performs warmup operation using matrixMul CUDA kernel
+  // Выполняем "разогревочные" прогоны перемножения
   if (block_size == 16) {
     MatrixMulCUDA<16>
         <<<grid, threads, 0, stream>>>(d_C, d_A, d_B, dimsA.x, dimsB.x);
@@ -205,13 +214,13 @@ int MatrixMultiply(int argc, char **argv,
   printf("done\n");
   checkCudaErrors(cudaStreamSynchronize(stream));
 
-  // Record the start event
+  // Запускаем таймер
   checkCudaErrors(cudaEventRecord(start, stream));
 
-  // Execute the kernel
+  // Количество итераций
   int nIter = 300;
 
-  for (int j = 0; j < nIter; j++) {
+  for (int j = 0; j < nIter; j++) { //Выполняем вычисления
     if (block_size == 16) {
       MatrixMulCUDA<16>
           <<<grid, threads, 0, stream>>>(d_C, d_A, d_B, dimsA.x, dimsB.x);
@@ -221,16 +230,16 @@ int MatrixMultiply(int argc, char **argv,
     }
   }
 
-  // Record the stop event
+  // Останавливаем таймер
   checkCudaErrors(cudaEventRecord(stop, stream));
 
-  // Wait for the stop event to complete
+  // Ждем пока таймер остановится
   checkCudaErrors(cudaEventSynchronize(stop));
 
   float msecTotal = 0.0f;
-  checkCudaErrors(cudaEventElapsedTime(&msecTotal, start, stop));
+  checkCudaErrors(cudaEventElapsedTime(&msecTotal, start, stop)); // Вычисляем затраченное время
 
-  // Compute and print the performance
+  // Вычисляем и выводим производительность
   float msecPerMatrixMul = msecTotal / nIter;
   double flopsPerMatrixMul = 2.0 * static_cast<double>(dimsA.x) *
                              static_cast<double>(dimsA.y) *
@@ -242,7 +251,7 @@ int MatrixMultiply(int argc, char **argv,
       " WorkgroupSize= %u threads/block\n",
       gigaFlops, msecPerMatrixMul, flopsPerMatrixMul, threads.x * threads.y);
 
-  // Copy result from device to host
+  // Копируем матрицу с результатом вычисления с GPU на ОЗУ
   checkCudaErrors(
       cudaMemcpyAsync(h_C, d_C, mem_size_C, cudaMemcpyDeviceToHost, stream));
   checkCudaErrors(cudaStreamSynchronize(stream));
@@ -250,9 +259,9 @@ int MatrixMultiply(int argc, char **argv,
   printf("Checking computed result for correctness: ");
   bool correct = true;
 
-  // test relative error by the formula
+  // Вычисляем ошибку по формуле
   //     |<x, y>_cpu - <x,y>_gpu|/<|x|, |y|>  < eps
-  double eps = 1.e-6;  // machine zero
+  double eps = 1.e-6;  // Машинный "ноль"
 
   for (int i = 0; i < static_cast<int>(dimsC.x * dimsC.y); i++) {
     double abs_err = fabs(h_C[i] - (dimsA.x * valB));
@@ -269,7 +278,7 @@ int MatrixMultiply(int argc, char **argv,
 
   printf("%s\n", correct ? "Result = PASS" : "Result = FAIL");
 
-  // Clean up memory
+  // Освобождаем память
   checkCudaErrors(cudaFreeHost(h_A));
   checkCudaErrors(cudaFreeHost(h_B));
   checkCudaErrors(cudaFreeHost(h_C));
@@ -291,7 +300,7 @@ int MatrixMultiply(int argc, char **argv,
 
 
 /**
- * Program main
+ * Программа main
  */
 int main(int argc, char **argv) {
   printf("[Matrix Multiply Using CUDA] - Starting...\n");
@@ -307,8 +316,7 @@ int main(int argc, char **argv) {
     exit(EXIT_SUCCESS);
   }
 
-  // This will pick the best possible CUDA capable device, otherwise
-  // override the device ID based on input provided at the command line
+  // Эта функция выберет лучший из доступных видеоадаптеров
   int dev = findCudaDevice(argc, (const char **)argv);
 
   int block_size = 32;
@@ -316,27 +324,28 @@ int main(int argc, char **argv) {
   dim3 dimsA(5 * 2 * block_size, 5 * 2 * block_size, 1);
   dim3 dimsB(5 * 4 * block_size, 5 * 2 * block_size, 1);
 
-  // width of Matrix A
+  // Ширина матрицы А
   if (checkCmdLineFlag(argc, (const char **)argv, "wA")) {
     dimsA.x = getCmdLineArgumentInt(argc, (const char **)argv, "wA");
   }
 
-  // height of Matrix A
+  // Высота матрицы А
   if (checkCmdLineFlag(argc, (const char **)argv, "hA")) {
     dimsA.y = getCmdLineArgumentInt(argc, (const char **)argv, "hA");
   }
 
-  // width of Matrix B
+  // Ширина матрицы В
   if (checkCmdLineFlag(argc, (const char **)argv, "wB")) {
     dimsB.x = getCmdLineArgumentInt(argc, (const char **)argv, "wB");
   }
 
-  // height of Matrix B
+  // Высота матрицы В
   if (checkCmdLineFlag(argc, (const char **)argv, "hB")) {
     dimsB.y = getCmdLineArgumentInt(argc, (const char **)argv, "hB");
   }
 
-  if (dimsA.x != dimsB.y) {
+  if (dimsA.x != dimsB.y) { //Если ширина матрицы А и высота матрицы В не совпадает, выдаем ошибку, мы не сможем 
+  // перемножить такие матрицы
     printf("Error: outer matrix dimensions must be equal. (%d != %d)\n",
            dimsA.x, dimsB.y);
     exit(EXIT_FAILURE);
@@ -345,9 +354,9 @@ int main(int argc, char **argv) {
   printf("MatrixA(%d,%d), MatrixB(%d,%d)\n", dimsA.x, dimsA.y,
          dimsB.x, dimsB.y);
 
-  checkCudaErrors(cudaProfilerStart());
-  int matrix_result = MatrixMultiply(argc, argv, block_size, dimsA, dimsB);
-  checkCudaErrors(cudaProfilerStop());
+  checkCudaErrors(cudaProfilerStart()); //запускаем измеритель производительности
+  int matrix_result = MatrixMultiply(argc, argv, block_size, dimsA, dimsB); //Выполняем вычисления
+  checkCudaErrors(cudaProfilerStop()); //Останавливаем измеритель производительности
 
   exit(matrix_result);
 }
