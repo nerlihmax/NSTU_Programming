@@ -46,23 +46,10 @@
 #include <string.h>
 #include <math.h>
 
-#ifdef _WIN32
-#  define WINDOWS_LEAN_AND_MEAN
-#  define NOMINMAX
-#  include <windows.h>
-#endif
-
 // OpenGL Graphics includes
 #include <helper_gl.h>
-#if defined (__APPLE__) || defined(MACOSX)
-  #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-  #include <GLUT/glut.h>
-  #ifndef glutCloseFunc
-  #define glutCloseFunc glutWMCloseFunc
-  #endif
-#else
+
 #include <GL/freeglut.h>
-#endif
 
 // includes, cuda
 #include <cuda_runtime.h>
@@ -138,14 +125,10 @@ void timerEvent(int value);
 // Cuda functionality
 void runCuda(struct cudaGraphicsResource **vbo_resource);
 void runAutoTest(int devID, char **argv, char *ref_file);
-void checkResultCuda(int argc, char **argv, const GLuint &vbo);
 
 const char *sSDKsample = "simpleGL (VBO)";
 
-///////////////////////////////////////////////////////////////////////////////
-//! Simple kernel to modify vertex positions in sine wave pattern
-//! @param data  data in global memory
-///////////////////////////////////////////////////////////////////////////////
+
 __global__ void simple_vbo_kernel(float4 *pos, unsigned int width, unsigned int height, float time)
 {
     unsigned int x = blockIdx.x*blockDim.x + threadIdx.x;
@@ -158,8 +141,9 @@ __global__ void simple_vbo_kernel(float4 *pos, unsigned int width, unsigned int 
     v = v*2.0f - 1.0f;
 
     // calculate simple sine wave pattern
-    float freq = 4.0f;
-    float w = sinf(u*freq + time) * cosf(v*freq + time) * 0.5f;
+    float freq = 2.0f;
+    float w = (u*u)/(freq) * sinf(time)*-1.0f + ((v*v)/(freq) * sinf(time));
+    // float w = sinf(u*freq + time) * cosf(v*freq + time) * 0.5f;
 
     // write output vertex
     pos[y*width+x] = make_float4(u, w, v, 1.0f);
@@ -288,9 +272,6 @@ bool runTest(int argc, char **argv, char *ref_file)
         // run the cuda part
         runAutoTest(devID, argv, ref_file);
 
-        // check result of Cuda step
-        checkResultCuda(argc, argv, vbo);
-
         cudaFree(d_vbo_buffer);
         d_vbo_buffer = NULL;
     }
@@ -308,11 +289,7 @@ bool runTest(int argc, char **argv, char *ref_file)
         glutKeyboardFunc(keyboard);
         glutMouseFunc(mouse);
         glutMotionFunc(motion);
-#if defined (__APPLE__) || defined(MACOSX)
-        atexit(cleanup);
-#else
         glutCloseFunc(cleanup);
-#endif
 
         // create VBO
         createVBO(&vbo, &cuda_vbo_resource, cudaGraphicsMapFlagsWriteDiscard);
@@ -338,13 +315,6 @@ void runCuda(struct cudaGraphicsResource **vbo_resource)
     size_t num_bytes;
     checkCudaErrors(cudaGraphicsResourceGetMappedPointer((void **)&dptr, &num_bytes,
                                                          *vbo_resource));
-    //printf("CUDA mapped VBO: May access %ld bytes\n", num_bytes);
-
-    // execute the kernel
-    //    dim3 block(8, 8, 1);
-    //    dim3 grid(mesh_width / block.x, mesh_height / block.y, 1);
-    //    kernel<<< grid, block>>>(dptr, mesh_width, mesh_height, g_fAnim);
-
     launch_kernel(dptr, mesh_width, mesh_height, g_fAnim);
 
     // unmap buffer object
@@ -371,9 +341,6 @@ void sdkDumpBin2(void *data, unsigned int bytes, const char *filename)
     fclose(fp);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//! Run the Cuda part of the computation
-////////////////////////////////////////////////////////////////////////////////
 void runAutoTest(int devID, char **argv, char *ref_file)
 {
     char *reference_file = NULL;
@@ -414,7 +381,8 @@ void createVBO(GLuint *vbo, struct cudaGraphicsResource **vbo_res,
     // initialize buffer object
     unsigned int size = mesh_width * mesh_height * 4 * sizeof(float);
     glBufferData(GL_ARRAY_BUFFER, size, 0, GL_DYNAMIC_DRAW);
-
+    
+    
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     // register this buffer object with CUDA
@@ -462,7 +430,8 @@ void display()
     glVertexPointer(4, GL_FLOAT, 0, 0);
 
     glEnableClientState(GL_VERTEX_ARRAY);
-    glColor3f(1.0, 0.0, 0.0);
+    
+    // glColor3f(1.0, 0.0, 0.0);
     glDrawArrays(GL_POINTS, 0, mesh_width * mesh_height);
     glDisableClientState(GL_VERTEX_ARRAY);
 
@@ -502,12 +471,8 @@ void keyboard(unsigned char key, int /*x*/, int /*y*/)
     switch (key)
     {
         case (27) :
-            #if defined(__APPLE__) || defined(MACOSX)
-                exit(EXIT_SUCCESS);
-            #else
                 glutDestroyWindow(glutGetWindow());
                 return;
-            #endif
     }
 }
 
@@ -547,40 +512,4 @@ void motion(int x, int y)
 
     mouse_old_x = x;
     mouse_old_y = y;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//! Check if the result is correct or write data to file for external
-//! regression testing
-////////////////////////////////////////////////////////////////////////////////
-void checkResultCuda(int argc, char **argv, const GLuint &vbo)
-{
-    if (!d_vbo_buffer)
-    {
-        checkCudaErrors(cudaGraphicsUnregisterResource(cuda_vbo_resource));
-
-        // map buffer object
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        float *data = (float *) glMapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY);
-
-        // check result
-        if (checkCmdLineFlag(argc, (const char **) argv, "regression"))
-        {
-            // write file for regression test
-            sdkWriteFile<float>("./data/regression.dat",
-                                data, mesh_width * mesh_height * 3, 0.0, false);
-        }
-
-        // unmap GL buffer object
-        if (!glUnmapBuffer(GL_ARRAY_BUFFER))
-        {
-            fprintf(stderr, "Unmap buffer failed.\n");
-            fflush(stderr);
-        }
-
-        checkCudaErrors(cudaGraphicsGLRegisterBuffer(&cuda_vbo_resource, vbo,
-                                                     cudaGraphicsMapFlagsWriteDiscard));
-
-        SDK_CHECK_ERROR_GL();
-    }
 }
