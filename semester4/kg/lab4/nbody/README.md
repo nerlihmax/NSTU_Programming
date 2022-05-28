@@ -1,12 +1,12 @@
-# simpleGL - Simple OpenGL
+# nbody - CUDA N-Body Simulation
 
 ## Description
 
-Simple program which demonstrates interoperability between CUDA and OpenGL. The program modifies vertex positions with CUDA and uses OpenGL to render the geometry.
+This sample demonstrates efficient all-pairs simulation of a gravitational n-body simulation in CUDA.  This sample accompanies the GPU Gems 3 chapter "Fast N-Body Simulation with CUDA".  With CUDA 5.5, performance on Tesla K20c has increased to over 1.8TFLOP/s single precision.  Double Performance has also improved on all Kepler and Fermi GPU architectures as well.  Starting in CUDA 4.0, the nBody sample has been updated to take advantage of new features to easily scale the n-body simulation across multiple GPUs in a single PC.  Adding "-numbodies=<bodies>" to the command line will allow users to set # of bodies for simulation.  Adding “-numdevices=<N>” to the command line option will cause the sample to use N devices (if available) for simulation.  In this mode, the position and velocity data for all bodies are read from system memory using “zero copy” rather than from device memory.  For a small number of devices (4 or fewer) and a large enough number of bodies, bandwidth is not a bottleneck so we can achieve strong scaling across these devices.
 
 ## Key Concepts
 
-Graphics Interop, Vertex Buffers, 3D Graphics
+Graphics Interop, Data Parallel Algorithms, Physically-Based Simulation
 
 ## Supported SM Architectures
 
@@ -23,7 +23,7 @@ x86_64, armv7l
 ## CUDA APIs involved
 
 ### [CUDA Runtime API](http://docs.nvidia.com/cuda/cuda-runtime-api/index.html)
-cudaFree, cudaGraphicsMapResources, cudaGraphicsGLRegisterBuffer, cudaGraphicsResourceGetMappedPointer, cudaDeviceSynchronize, cudaMalloc, cudaGraphicsUnregisterResource, cudaGraphicsUnmapResources, cudaMemcpy
+cudaMemcpyToSymbol, cudaGraphicsMapResources, cudaEventRecord, cudaStreamQuery, cudaEventCreate, cudaGraphicsResourceGetMappedPointer, cudaGetDeviceCount, cudaEventElapsedTime, cudaDeviceSynchronize, cudaEventSynchronize, cudaGraphicsResourceSetMapFlags, cudaSetDeviceFlags, cudaEventDestroy, cudaDeviceCanAccessPeer, cudaSetDevice, cudaGraphicsUnmapResources, cudaGetDeviceProperties, cudaGetDevice
 
 ## Dependencies needed to build/run
 [X11](../../../README.md#x11), [GL](../../../README.md#gl)
@@ -72,3 +72,4 @@ The samples makefiles can take advantage of certain options:
 
 ## References (for more details)
 
+[whitepaper](./doc/nbody_gems3_ch31.pdf)

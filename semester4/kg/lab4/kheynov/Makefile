@@ -268,7 +268,7 @@ SAMPLE_ENABLED := 1
 
 # This sample is not supported on QNX
 ifeq ($(TARGET_OS),qnx)
-  $(info >>> WARNING - nbody is not supported on QNX - waiving sample <<<)
+  $(info >>> WARNING - l4 is not supported on QNX - waiving sample <<<)
   SAMPLE_ENABLED := 0
 endif
 
@@ -320,7 +320,7 @@ GENCODE_FLAGS += -gencode arch=compute_$(HIGHEST_SM),code=compute_$(HIGHEST_SM)
 endif
 endif
 
-ALL_CCFLAGS += -ftz=true --threads 0 --std=c++11
+ALL_CCFLAGS += --threads 0 --std=c++11
 
 ifeq ($(SAMPLE_ENABLED),0)
 EXEC ?= @echo "[@]"
@@ -331,7 +331,7 @@ endif
 # Target rules
 all: build
 
-build: nbody
+build: l4
 
 check.deps:
 ifeq ($(SAMPLE_ENABLED),0)
@@ -340,28 +340,22 @@ else
 	@echo "Sample is ready - all dependencies have been met"
 endif
 
-bodysystemcuda.o:bodysystemcuda.cu
+l4.o:l4.cu
 	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
 
-nbody.o:nbody.cpp
-	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-render_particles.o:render_particles.cpp
-	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-nbody: bodysystemcuda.o nbody.o render_particles.o
+l4: l4.o
 	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 	$(EXEC) mkdir -p bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
 	$(EXEC) cp $@ bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
 
 run: build
-	$(EXEC) ./nbody
+	$(EXEC) ./l4
 
 testrun: build
-	$(EXEC) ./nbody -benchmark -compare -cpu
+	$(EXEC) ./l4 -file=ref_l4.bin
 
 clean:
-	rm -f nbody bodysystemcuda.o nbody.o render_particles.o
-	rm -rf bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/nbody
+	rm -f l4 l4.o
+	rm -rf bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/l4
 
 clobber: clean

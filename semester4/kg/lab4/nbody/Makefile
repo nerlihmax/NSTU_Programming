@@ -268,7 +268,7 @@ SAMPLE_ENABLED := 1
 
 # This sample is not supported on QNX
 ifeq ($(TARGET_OS),qnx)
-  $(info >>> WARNING - simpleGL is not supported on QNX - waiving sample <<<)
+  $(info >>> WARNING - nbody is not supported on QNX - waiving sample <<<)
   SAMPLE_ENABLED := 0
 endif
 
@@ -320,7 +320,7 @@ GENCODE_FLAGS += -gencode arch=compute_$(HIGHEST_SM),code=compute_$(HIGHEST_SM)
 endif
 endif
 
-ALL_CCFLAGS += --threads 0 --std=c++11
+ALL_CCFLAGS += -ftz=true --threads 0 --std=c++11
 
 ifeq ($(SAMPLE_ENABLED),0)
 EXEC ?= @echo "[@]"
@@ -331,7 +331,7 @@ endif
 # Target rules
 all: build
 
-build: simpleGL
+build: nbody
 
 check.deps:
 ifeq ($(SAMPLE_ENABLED),0)
@@ -340,22 +340,28 @@ else
 	@echo "Sample is ready - all dependencies have been met"
 endif
 
-simpleGL.o:simpleGL.cu
+bodysystemcuda.o:bodysystemcuda.cu
 	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
 
-simpleGL: simpleGL.o
+nbody.o:nbody.cpp
+	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
+
+render_particles.o:render_particles.cpp
+	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
+
+nbody: bodysystemcuda.o nbody.o render_particles.o
 	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 	$(EXEC) mkdir -p bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
 	$(EXEC) cp $@ bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
 
 run: build
-	$(EXEC) ./simpleGL
+	$(EXEC) ./nbody
 
 testrun: build
-	$(EXEC) ./simpleGL -file=ref_simpleGL.bin
+	$(EXEC) ./nbody -benchmark -compare -cpu
 
 clean:
-	rm -f simpleGL simpleGL.o
-	rm -rf bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/simpleGL
+	rm -f nbody bodysystemcuda.o nbody.o render_particles.o
+	rm -rf bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/nbody
 
 clobber: clean

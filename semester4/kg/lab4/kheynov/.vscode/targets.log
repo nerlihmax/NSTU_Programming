@@ -1,0 +1,468 @@
+make all --print-data-base --no-builtin-variables --no-builtin-rules --question
+# GNU Make 4.3
+# Built for x86_64-pc-linux-gnu
+# Copyright (C) 1988-2020 Free Software Foundation, Inc.
+# License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+# This is free software: you are free to change and redistribute it.
+# There is NO WARRANTY, to the extent permitted by law.
+ 
+
+# Make data base, printed on Sat May 28 13:52:17 2022
+
+# Variables
+
+# environment
+GDK_BACKEND = x11
+# environment
+LC_ALL = C
+# environment
+GNOME_SHELL_SESSION_MODE = ubuntu
+# environment
+SSH_AGENT_LAUNCHER = gnome-keyring
+# makefile (from 'Makefile', line 163)
+NVCCFLAGS := -m64
+# makefile (from 'Makefile', line 323)
+ALL_CCFLAGS := -m64 --threads 0 --std=c++11
+# makefile (from 'findgllib.mk', line 87)
+DFLT_PATH = /usr/lib
+# environment
+GJS_DEBUG_OUTPUT = stderr
+# environment
+VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-33df365a-8437-4ba4-8f67-0f6607fdfb52.sock
+# environment
+LC_NAME = ru_RU.UTF-8
+# makefile (from 'findgllib.mk', line 84)
+GLLINK = -L/usr/lib/$(UBUNTU_PKG_NAME)
+# environment
+LC_NUMERIC = ru_RU.UTF-8
+# environment
+VSCODE_CWD = /home/kheynov
+# makefile (from 'findgllib.mk', line 60)
+SUSE = $(shell echo $(DISTRO) | grep -i 'suse\|sles' >/dev/null 2>&1; echo $$?)
+# environment
+WINDOWPATH = 2
+# environment
+LC_ADDRESS = ru_RU.UTF-8
+# default
+MAKE_COMMAND := make
+# environment
+QT_ACCESSIBILITY = 1
+# automatic
+@D = $(patsubst %/,%,$(dir $@))
+# environment
+VSCODE_HANDLES_UNCAUGHT_ERRORS = true
+# default
+.VARIABLES := 
+# environment
+PWD = /home/kheynov/code/NSTU_Programming/semester4/kg/lab4/kheynov
+# automatic
+%D = $(patsubst %/,%,$(dir $%))
+# environment
+LSCOLORS = Gxfxcxdxbxegedabagacad
+# environment
+XDG_DATA_DIRS = /usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop
+# makefile (from 'findgllib.mk', line 38)
+DISTRO := ubuntu
+# environment
+OLDPWD = /home/kheynov
+# automatic
+^D = $(patsubst %/,%,$(dir $^))
+# environment
+VSCODE_LOG_STACK = false
+# automatic
+%F = $(notdir $%)
+# environment
+VSCODE_CODE_CACHE_PATH = /home/kheynov/.config/Code/CachedData/c3511e6c69bb39013c4a4b7b9566ec1ca73fc4d5
+# environment
+LANG = C
+# environment
+XAUTHORITY = /run/user/1000/gdm/Xauthority
+# makefile (from 'findgllib.mk', line 81)
+UBUNTU_PKG_NAME = $(shell which dpkg >/dev/null 2>&1 && dpkg -l 'nvidia-*' | grep '^ii' | awk '{print $$2}' | head -1)
+# default
+.LOADED := 
+# default
+.INCLUDE_DIRS = /usr/local/include /usr/include /usr/include
+# makefile
+MAKEFLAGS = pqrR
+# makefile
+CURDIR := /home/kheynov/code/NSTU_Programming/semester4/kg/lab4/kheynov
+# environment
+VSCODE_PIPE_LOGGING = true
+# environment
+APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
+# automatic
+*D = $(patsubst %/,%,$(dir $*))
+# makefile (from 'Makefile', line 110)
+TARGET_OS = $(HOST_OS)
+# environment
+MFLAGS = -pqrR
+# environment
+SSH_AUTH_SOCK = /run/user/1000/keyring/ssh
+# default
+.SHELLFLAGS := -c
+# environment
+XDG_CONFIG_DIRS = /etc/xdg/xdg-ubuntu:/etc/xdg
+# automatic
++D = $(patsubst %/,%,$(dir $+))
+# environment
+P9K_SSH = 0
+# environment
+XDG_SESSION_DESKTOP = ubuntu
+# makefile (from 'findgllib.mk', line 1)
+MAKEFILE_LIST := Makefile findgllib.mk
+# automatic
+@F = $(notdir $@)
+# makefile (from 'Makefile', line 74)
+TARGET_ARCH = $(HOST_ARCH)
+# environment
+ZSH = /home/kheynov/.oh-my-zsh
+# environment
+VSCODE_VERBOSE_LOGGING = true
+# environment
+VSCODE_PID = 151564
+# environment
+XDG_SESSION_TYPE = x11
+# makefile (from 'findgllib.mk', line 124)
+HEADER_SEARCH_PATH = $(TARGET_FS)/usr/include
+# automatic
+?D = $(patsubst %/,%,$(dir $?))
+# makefile (from 'Makefile', line 35)
+CUDA_PATH = /usr/local/cuda
+# makefile (from 'Makefile', line 159)
+HOST_COMPILER = g++
+# makefile (from 'Makefile', line 164)
+CCFLAGS := 
+# makefile (from 'Makefile', line 281)
+INCLUDES := -I../../Common
+# environment
+SESSION_MANAGER = local/ubuntu-kheynov:@/tmp/.ICE-unix/10798,unix/ubuntu-kheynov:/tmp/.ICE-unix/10798
+# automatic
+*F = $(notdir $*)
+# makefile (from 'findgllib.mk', line 58)
+RHEL = $(shell echo $(DISTRO) | grep -i 'red\|rhel' >/dev/null 2>&1; echo $$?)
+# makefile (from 'findgllib.mk', line 112)
+GLLIB := /usr/lib/x86_64-linux-gnu/libGL.so
+# environment
+CHROME_DESKTOP = code-url-handler.desktop
+# makefile (from 'findgllib.mk', line 113)
+GLULIB := /usr/lib/x86_64-linux-gnu/libGLU.so
+# environment
+DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus
+# automatic
+<D = $(patsubst %/,%,$(dir $<))
+# makefile (from 'Makefile', line 160)
+NVCC := /usr/local/cuda/bin/nvcc -ccbin g++
+# environment
+VSCODE_NLS_CONFIG = {"locale":"en-us","availableLanguages":{},"_languagePackSupport":true}
+# default
+MAKE_HOST := x86_64-pc-linux-gnu
+# environment
+GNOME_DESKTOP_SESSION_ID = this-is-deprecated
+# makefile
+SHELL = /bin/sh
+# makefile (from 'Makefile', line 234)
+CUDA_INSTALL_TARGET_DIR := 
+# default
+MAKECMDGOALS := all
+# environment
+XMODIFIERS = @im=ibus
+# environment
+GJS_DEBUG_TOPICS = JS ERROR;JS LOG
+# environment
+SHLVL = 0
+# environment
+MAKELEVEL := 0
+# makefile (from 'findgllib.mk', line 56)
+UBUNTU = $(shell echo $(DISTRO) | grep -i ubuntu      >/dev/null 2>&1; echo $$?)
+# default
+MAKE = $(MAKE_COMMAND)
+# environment
+PATH = /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin
+# default
+MAKEFILES := 
+# environment
+LC_MONETARY = ru_RU.UTF-8
+# automatic
+^F = $(notdir $^)
+# makefile (from 'findgllib.mk', line 57)
+FEDORA = $(shell echo $(DISTRO) | grep -i fedora      >/dev/null 2>&1; echo $$?)
+# environment
+LC_TIME = ru_RU.UTF-8
+# makefile (from 'Makefile', line 73)
+HOST_ARCH := x86_64
+# environment
+INVOCATION_ID = 9a7c8789916d44c0b7dc63fba0382540
+# makefile (from 'Makefile', line 276)
+ALL_LDFLAGS := -m64
+# environment
+VSCODE_LOG_NATIVE = false
+# environment
+USERNAME = kheynov
+# environment
+LC_TELEPHONE = ru_RU.UTF-8
+# automatic
+?F = $(notdir $?)
+# environment
+XDG_CURRENT_DESKTOP = Unity
+# environment
+LS_COLORS = 
+# automatic
++F = $(notdir $+)
+# environment
+LESS = -R
+# environment
+DESKTOP_SESSION = ubuntu
+# environment
+ORIGINAL_XDG_CURRENT_DESKTOP = ubuntu:GNOME
+# 'override' directive
+GNUMAKEFLAGS := 
+# environment
+LOGNAME = kheynov
+# environment
+GIO_LAUNCHED_DESKTOP_FILE = /usr/share/applications/code.desktop
+# makefile (from 'findgllib.mk', line 83)
+GLPATH = /usr/lib/$(UBUNTU_PKG_NAME)
+# makefile
+.DEFAULT_GOAL := all
+# makefile (from 'findgllib.mk', line 132)
+GLUHEADER := /usr/include/GL/glu.h
+# environment
+SYSTEMD_EXEC_PID = 10833
+# environment
+DISPLAY = :1
+# environment
+USER = kheynov
+# environment
+GTK_MODULES = gail:atk-bridge
+# makefile (from 'Makefile', line 83)
+TARGET_SIZE := 64
+# default
+MAKE_VERSION := 4.3
+# makefile (from 'Makefile', line 317)
+HIGHEST_SM := 86
+# 'override' directive
+.SHELLSTATUS := 0
+# makefile (from 'Makefile', line 165)
+LDFLAGS := 
+# environment
+MANAGERPID = 10195
+# environment
+LC_MEASUREMENT = ru_RU.UTF-8
+# makefile (from 'Makefile', line 267)
+SAMPLE_ENABLED := 1
+# environment
+GIO_LAUNCHED_DESKTOP_FILE_PID = 151564
+# environment
+PAGER = less
+# environment
+_ = /usr/share/code/code
+# environment
+LC_PAPER = ru_RU.UTF-8
+# environment
+XDG_RUNTIME_DIR = /run/user/1000
+# environment
+GPG_AGENT_INFO = /run/user/1000/gnupg/S.gpg-agent:0:1
+# makefile (from 'Makefile', line 304)
+SMS = 35 37 50 52 60 61 70 75 80 86
+# makefile (from 'Makefile', line 109)
+HOST_OS := linux
+# makefile (from 'findgllib.mk', line 59)
+CENTOS = $(shell echo $(DISTRO) | grep -i centos      >/dev/null 2>&1; echo $$?)
+# environment
+JOURNAL_STREAM = 8:88952
+# environment
+XDG_SESSION_CLASS = user
+# makefile (from 'Makefile', line 297)
+LIBRARIES := -L/usr/lib/nvidia-compute-utils-515 -lGL -lGLU -lglut
+# environment
+VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
+# environment
+HOME = /home/kheynov
+# environment
+QT_IM_MODULE = ibus
+# environment
+ELECTRON_RUN_AS_NODE = 1
+# environment
+VSCODE_IPC_HOOK = /run/user/1000/vscode-4380539b-1.67.2-main.sock
+# makefile (from 'Makefile', line 258)
+BUILD_TYPE := release
+# default
+.RECIPEPREFIX := 
+# automatic
+<F = $(notdir $<)
+# default
+SUFFIXES := 
+# makefile (from 'Makefile', line 319)
+GENCODE_FLAGS = -gencode arch=compute_35,code=sm_35 -gencode arch=compute_37,code=sm_37 -gencode arch=compute_50,code=sm_50 -gencode arch=compute_52,code=sm_52 -gencode arch=compute_60,code=sm_60 -gencode arch=compute_61,code=sm_61 -gencode arch=compute_70,code=sm_70 -gencode arch=compute_75,code=sm_75 -gencode arch=compute_80,code=sm_80 -gencode arch=compute_86,code=sm_86 -gencode arch=compute_$(HIGHEST_SM),code=compute_$(HIGHEST_SM)
+# default
+.FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell nocomment grouped-target extra-prereqs archives jobserver output-sync check-symlink load
+# makefile (from 'findgllib.mk', line 131)
+ 
+GLHEADER := /usr/include/GL/gl.h /usr/include/GLES/gl.h
+# environment
+XDG_MENU_PREFIX = gnome-
+# environment
+GDMSESSION = ubuntu
+# environment
+LC_IDENTIFICATION = ru_RU.UTF-8
+# variable set hash-table stats:
+# Load=147/1024=14%, Rehash=0, Collisions=28/447=6%
+
+# Pattern-specific Variable Values
+
+# No pattern-specific variable values.
+
+# Directories
+
+# . (device 66306, inode 1704363): 11 files, no impossibilities.
+
+# 11 files, no impossibilities in 1 directories.
+
+# Implicit Rules
+
+# No implicit rules.
+
+# Files
+
+# Not a target:
+findgllib.mk:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-24 21:30:05.183978
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+Makefile:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-25 14:41:37.386714738
+#  File has been updated.
+#  Successfully updated.
+
+check.deps:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 340):
+	@echo "Sample is ready - all dependencies have been met"
+
+simpleGL.o: simpleGL.cu
+#  Implicit rule search has not been done.
+#  Implicit/static pattern stem: ''
+#  Last modified 2022-05-28 13:48:50.542333808
+#  File has been updated.
+#  Needs to be updated (-q is set).
+# automatic
+# @ := simpleGL.o
+# automatic
+# * := 
+# automatic
+# < := simpleGL.cu
+# automatic
+# + := simpleGL.cu
+# automatic
+# % := 
+# automatic
+# ^ := simpleGL.cu
+# automatic
+# ? := simpleGL.cu
+# automatic
+# | := 
+# variable set hash-table stats:
+# Load=8/32=25%, Rehash=0, Collisions=6/20=30%
+#  recipe to execute (from 'Makefile', line 344):
+	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
+
+simpleGL: simpleGL.o
+#  Implicit rule search has not been done.
+#  Last modified 2022-05-28 13:48:50.710335254
+#  File has been updated.
+#  Needs to be updated (-q is set).
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/10=0%
+#  recipe to execute (from 'Makefile', line 347):
+	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
+	$(EXEC) mkdir -p bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
+	$(EXEC) cp $@ bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
+
+clean:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 358):
+	rm -f simpleGL simpleGL.o
+	rm -rf bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/simpleGL
+
+# Not a target:
+simpleGL.cu:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-28 13:49:30.862681117
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.DEFAULT:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+all: build
+#  Command line target.
+#  Implicit rule search has been done.
+#  File does not exist.
+#  File has been updated.
+#  Needs to be updated (-q is set).
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/10=0%
+
+run: build
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 352):
+	$(EXEC) ./simpleGL
+
+build: simpleGL
+#  Implicit rule search has been done.
+#  File does not exist.
+#  File has been updated.
+#  Needs to be updated (-q is set).
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/10=0%
+
+testrun: build
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 355):
+	$(EXEC) ./simpleGL -file=ref_simpleGL.bin
+
+clobber: clean
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+.SUFFIXES:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# files hash-table stats:
+# Load=14/1024=1%, Rehash=0, Collisions=0/36=0%
+# VPATH Search Paths
+
+# No 'vpath' search paths.
+
+# No general ('VPATH' variable) search path.
+
+# strcache buffers: 1 (0) / strings = 22 / storage = 184 B / avg = 8 B
+# current buf: size = 8162 B / used = 184 B / count = 22 / avg = 8 B
+
+# strcache performance: lookups = 48 / hit rate = 54%
+# hash-table stats:
+ 
+# Load=22/8192=0%, Rehash=0, Collisions=0/48=0%
+# Finished Make data base on Sat May 28 13:52:17 2022
+
+ 

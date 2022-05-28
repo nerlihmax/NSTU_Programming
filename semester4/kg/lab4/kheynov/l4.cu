@@ -40,49 +40,44 @@
     Host code
 */
 
-// includes, system
+// подключение библиотек
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
 
-// OpenGL Graphics includes
+// OpenGL
 #include <helper_gl.h>
 
 #include <GL/freeglut.h>
 
-// includes, cuda
+// CUDA
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
-
-// Utilities and timing functions
-#include <helper_functions.h>    // includes cuda.h and cuda_runtime_api.h
-
-// CUDA helper functions
-#include <helper_cuda.h>         // helper functions for CUDA error check
+#include <helper_functions.h>    //  cuda.h, cuda_runtime_api.h
+#include <helper_cuda.h>        
 
 #include <vector_types.h>
 
 #define MAX_EPSILON_ERROR 10.0f
 #define THRESHOLD          0.30f
-#define REFRESH_DELAY     10 //ms
+#define REFRESH_DELAY     5 //ms
 
-////////////////////////////////////////////////////////////////////////////////
-// constants
-const unsigned int window_width  = 512;
-const unsigned int window_height = 512;
+// константы
+const unsigned int window_width  = 800;
+const unsigned int window_height = 600;
 
 const unsigned int mesh_width    = 256;
 const unsigned int mesh_height   = 256;
 
-// vbo variables
+// Типы данных для буффера точек
 GLuint vbo;
 struct cudaGraphicsResource *cuda_vbo_resource;
 void *d_vbo_buffer = NULL;
 
 float g_fAnim = 0.0;
 
-// mouse controls
+// для вращения камеры мышью
 int mouse_old_x, mouse_old_y;
 int mouse_buttons = 0;
 float rotate_x = 0.0, rotate_y = 0.0;
@@ -90,9 +85,9 @@ float translate_z = -3.0;
 
 StopWatchInterface *timer = NULL;
 
-// Auto-Verification Code
-int fpsCount = 0;        // FPS count for averaging
-int fpsLimit = 1;        // FPS limit for sampling
+
+int fpsCount = 0;   
+int fpsLimit = 1;        
 int g_Index = 0;
 float avgFPS = 0.0f;
 unsigned int frameCount = 0;
@@ -104,48 +99,44 @@ char **pArgv = NULL;
 
 #define MAX(a,b) ((a > b) ? a : b)
 
-////////////////////////////////////////////////////////////////////////////////
-// declaration, forward
 bool runTest(int argc, char **argv, char *ref_file);
 void cleanup();
 
-// GL functionality
+// GL функции
 bool initGL(int *argc, char **argv);
 void createVBO(GLuint *vbo, struct cudaGraphicsResource **vbo_res,
                unsigned int vbo_res_flags);
 void deleteVBO(GLuint *vbo, struct cudaGraphicsResource *vbo_res);
 
-// rendering callbacks
+// callbacks
 void display();
 void keyboard(unsigned char key, int x, int y);
 void mouse(int button, int state, int x, int y);
 void motion(int x, int y);
 void timerEvent(int value);
 
-// Cuda functionality
+// Cuda функции
 void runCuda(struct cudaGraphicsResource **vbo_resource);
 void runAutoTest(int devID, char **argv, char *ref_file);
 
-const char *sSDKsample = "simpleGL (VBO)";
-
+const char *sSDKsample = "RGZ (Paraboloid translation)";
 
 __global__ void simple_vbo_kernel(float4 *pos, unsigned int width, unsigned int height, float time)
 {
     unsigned int x = blockIdx.x*blockDim.x + threadIdx.x;
     unsigned int y = blockIdx.y*blockDim.y + threadIdx.y;
 
-    // calculate uv coordinates
+    // вычисление координат
     float u = x / (float) width;
     float v = y / (float) height;
     u = u*2.0f - 1.0f;
     v = v*2.0f - 1.0f;
 
-    // calculate simple sine wave pattern
-    float freq = 2.0f;
-    float w = (u*u)/(freq) * sinf(time)*-1.0f + ((v*v)/(freq) * sinf(time));
-    // float w = sinf(u*freq + time) * cosf(v*freq + time) * 0.5f;
-
-    // write output vertex
+    // вычисление z-координаты в точке
+    float coef = 2.0f;
+    float w = (u*u)/(coef) * sinf(time)*-1.0f + ((v*v)/(coef) * sinf(time));
+    
+    //итоговая вершина
     pos[y*width+x] = make_float4(u, w, v, 1.0f);
 }
 
@@ -153,16 +144,14 @@ __global__ void simple_vbo_kernel(float4 *pos, unsigned int width, unsigned int 
 void launch_kernel(float4 *pos, unsigned int mesh_width,
                    unsigned int mesh_height, float time)
 {
-    // execute the kernel
+    //запуск вычисления
     dim3 block(8, 8, 1);
     dim3 grid(mesh_width / block.x, mesh_height / block.y, 1);
     simple_vbo_kernel<<< grid, block>>>(pos, mesh_width, mesh_height, time);
 }
 
 
-////////////////////////////////////////////////////////////////////////////////
-// Program main
-////////////////////////////////////////////////////////////////////////////////
+//точка входа в программу
 int main(int argc, char **argv)
 {
     char *ref_file = NULL;
@@ -170,9 +159,7 @@ int main(int argc, char **argv)
     pArgc = &argc;
     pArgv = argv;
 
-#if defined(__linux__)
     setenv ("DISPLAY", ":0", 0);
-#endif
 
     printf("%s starting...\n", sSDKsample);
 
@@ -180,7 +167,6 @@ int main(int argc, char **argv)
     {
         if (checkCmdLineFlag(argc, (const char **)argv, "file"))
         {
-            // In this mode, we are running non-OpenGL and doing a compare of the VBO was generated correctly
             getCmdLineArgumentString(argc, (const char **)argv, "file", (char **)&ref_file);
         }
     }
@@ -212,9 +198,7 @@ void computeFPS()
     glutSetWindowTitle(fps);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//! Initialize GL
-////////////////////////////////////////////////////////////////////////////////
+// инициализация openGL
 bool initGL(int *argc, char **argv)
 {
     glutInit(argc, argv);
@@ -226,7 +210,7 @@ bool initGL(int *argc, char **argv)
     glutMotionFunc(motion);
     glutTimerFunc(REFRESH_DELAY, timerEvent,0);
 
-    // initialize necessary OpenGL extensions
+    // инициализируем необходимые GL библиотеки
     if (! isGLVersionSupported(2,0))
     {
         fprintf(stderr, "ERROR: Support for necessary OpenGL extensions missing.");
@@ -234,14 +218,13 @@ bool initGL(int *argc, char **argv)
         return false;
     }
 
-    // default initialization
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glDisable(GL_DEPTH_TEST);
 
-    // viewport
+    // размер окна
     glViewport(0, 0, window_width, window_height);
 
-    // projection
+    // проекция(камера)
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(60.0, (GLfloat)window_width / (GLfloat) window_height, 0.1, 10.0);
@@ -252,64 +235,58 @@ bool initGL(int *argc, char **argv)
 }
 
 
-////////////////////////////////////////////////////////////////////////////////
-//! Run a simple test for CUDA
-////////////////////////////////////////////////////////////////////////////////
 bool runTest(int argc, char **argv, char *ref_file)
 {
-    // Create the CUTIL timer
+    //  Создаём таймер
     sdkCreateTimer(&timer);
 
-    // use command-line specified CUDA device, otherwise use device with highest Gflops/s
+    // выбираем предпочтительный видеоадаптер
     int devID = findCudaDevice(argc, (const char **)argv);
 
-    // command line mode only
     if (ref_file != NULL)
     {
-        // create VBO
+        // регистрируем в видеопамяти буффер для хранения вершин
         checkCudaErrors(cudaMalloc((void **)&d_vbo_buffer, mesh_width*mesh_height*4*sizeof(float)));
 
-        // run the cuda part
+        // запускаем вычисление на GPU
         runAutoTest(devID, argv, ref_file);
 
-        cudaFree(d_vbo_buffer);
+        cudaFree(d_vbo_buffer); //освобождаем память
         d_vbo_buffer = NULL;
     }
     else
     {
-        // First initialize OpenGL context, so we can properly set the GL for CUDA.
-        // This is necessary in order to achieve optimal performance with OpenGL/CUDA interop.
+        // Проверяем правильно ли инициализировалась GL
         if (false == initGL(&argc, argv))
         {
             return false;
         }
 
-        // register callbacks
+        // регистрируем колбеки
         glutDisplayFunc(display);
         glutKeyboardFunc(keyboard);
         glutMouseFunc(mouse);
         glutMotionFunc(motion);
         glutCloseFunc(cleanup);
 
-        // create VBO
+        // создаем буффер вершин
         createVBO(&vbo, &cuda_vbo_resource, cudaGraphicsMapFlagsWriteDiscard);
 
-        // run the cuda part
+        // запускаем часть вычислений на CUDA
         runCuda(&cuda_vbo_resource);
 
-        // start rendering mainloop
+        // запускаем главный цикл рендера
         glutMainLoop();
     }
 
     return true;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//! Run the Cuda part of the computation
-////////////////////////////////////////////////////////////////////////////////
+
 void runCuda(struct cudaGraphicsResource **vbo_resource)
 {
     // map OpenGL buffer object for writing from CUDA
+    // привязываем объекты OpenGL буффера для того чтобы CUDA могла записывать в них информацию
     float4 *dptr;
     checkCudaErrors(cudaGraphicsMapResources(1, vbo_resource, 0));
     size_t num_bytes;
@@ -317,19 +294,15 @@ void runCuda(struct cudaGraphicsResource **vbo_resource)
                                                          *vbo_resource));
     launch_kernel(dptr, mesh_width, mesh_height, g_fAnim);
 
-    // unmap buffer object
+    // отвязываем буффер от CUDA
     checkCudaErrors(cudaGraphicsUnmapResources(1, vbo_resource, 0));
 }
 
-#ifdef _WIN32
-#ifndef FOPEN
-#define FOPEN(fHandle,filename,mode) fopen_s(&fHandle, filename, mode)
-#endif
-#else
+
 #ifndef FOPEN
 #define FOPEN(fHandle,filename,mode) (fHandle = fopen(filename, mode))
 #endif
-#endif
+
 
 void sdkDumpBin2(void *data, unsigned int bytes, const char *filename)
 {
@@ -346,7 +319,7 @@ void runAutoTest(int devID, char **argv, char *ref_file)
     char *reference_file = NULL;
     void *imageData = malloc(mesh_width*mesh_height*sizeof(float));
 
-    // execute the kernel
+    // запуск вычислений
     launch_kernel((float4 *)d_vbo_buffer, mesh_width, mesh_height, g_fAnim);
 
     cudaDeviceSynchronize();
@@ -366,34 +339,28 @@ void runAutoTest(int devID, char **argv, char *ref_file)
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//! Create VBO
-////////////////////////////////////////////////////////////////////////////////
+// функция создающая буффер точек
 void createVBO(GLuint *vbo, struct cudaGraphicsResource **vbo_res,
                unsigned int vbo_res_flags)
 {
     assert(vbo);
 
-    // create buffer object
+    // создание объекта буффера
     glGenBuffers(1, vbo);
     glBindBuffer(GL_ARRAY_BUFFER, *vbo);
 
-    // initialize buffer object
     unsigned int size = mesh_width * mesh_height * 4 * sizeof(float);
     glBufferData(GL_ARRAY_BUFFER, size, 0, GL_DYNAMIC_DRAW);
     
-    
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    // register this buffer object with CUDA
+    // Регистрируем буффер в CUDA
     checkCudaErrors(cudaGraphicsGLRegisterBuffer(vbo_res, *vbo, vbo_res_flags));
 
     SDK_CHECK_ERROR_GL();
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//! Delete VBO
-////////////////////////////////////////////////////////////////////////////////
+//удаляем буффер
 void deleteVBO(GLuint *vbo, struct cudaGraphicsResource *vbo_res)
 {
 
@@ -406,32 +373,31 @@ void deleteVBO(GLuint *vbo, struct cudaGraphicsResource *vbo_res)
     *vbo = 0;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//! Display callback
-////////////////////////////////////////////////////////////////////////////////
+//Колбек вызывающийся при обновлении экрана
 void display()
 {
     sdkStartTimer(&timer);
 
     // run CUDA kernel to generate vertex positions
+    // запускаем CUDA ядра чтобы сгенерировать позиции вершин
     runCuda(&cuda_vbo_resource);
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //очищаем дисплей
 
-    // set view matrix
+    // отображаем окно просмотра (камеру)
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glTranslatef(0.0, 0.0, translate_z);
     glRotatef(rotate_x, 1.0, 0.0, 0.0);
     glRotatef(rotate_y, 0.0, 1.0, 0.0);
 
-    // render from the vbo
+    // рендерим буффер
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glVertexPointer(4, GL_FLOAT, 0, 0);
 
     glEnableClientState(GL_VERTEX_ARRAY);
     
-    // glColor3f(1.0, 0.0, 0.0);
+    glColor3f(1.0, 1.0, 0.0); // делаем поверхность жёлтой
     glDrawArrays(GL_POINTS, 0, mesh_width * mesh_height);
     glDisableClientState(GL_VERTEX_ARRAY);
 
@@ -463,9 +429,7 @@ void cleanup()
 }
 
 
-////////////////////////////////////////////////////////////////////////////////
-//! Keyboard events handler
-////////////////////////////////////////////////////////////////////////////////
+//обработчик нажатий на клавиатуру (клавиша ESC)
 void keyboard(unsigned char key, int /*x*/, int /*y*/)
 {
     switch (key)
@@ -476,9 +440,7 @@ void keyboard(unsigned char key, int /*x*/, int /*y*/)
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//! Mouse event handlers
-////////////////////////////////////////////////////////////////////////////////
+// обработчик событий мыши
 void mouse(int button, int state, int x, int y)
 {
     if (state == GLUT_DOWN)
