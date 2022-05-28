@@ -6,7 +6,7 @@ unsigned char * imageData;//Данные рисунка
 int dataSize;//Кол-во данных
 int imageWidth, imageHeight;//Размеры рисунка
 int lensX, lensY, radius = 150;//Параметры линзы
-float koeff = -0.08;
+float koeff = -4.0f;
 
 unsigned char *gpuOrig, *gpuTemp;
 
