@@ -1,10 +1,5 @@
-drop type if exists v5.steering_side cascade;
-drop table if exists v5.car;
-drop table if exists v5.characteristics;
-drop table if exists v5.brand;
-drop table if exists v5.countries;
-drop table if exists v5.manufacturer;
-drop view if exists v5.car_info;
+drop schema if exists v5 cascade;
+create schema if not exists v5;
 
 create type v5.steering_side as enum ('LEFT', 'RIGHT');
 
