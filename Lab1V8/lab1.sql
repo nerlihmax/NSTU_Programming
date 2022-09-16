@@ -1,5 +1,5 @@
 drop schema if exists v8 cascade;
-create schema v8;
+create schema if not exists v8;
 
 create type v8.payment_state as ENUM ('PAID', 'PARTIALLY PAID', 'UNPAID');
 
@@ -100,27 +100,27 @@ on conflict do nothing;
 insert into v8.repair_facilities (lodger_id, repairment_date, price, payment_state, repairment_id)
 values (1, '2020-01-22', 5000, 'PAID', 1),
        (2, '2021-02-23', 6000, 'PAID', 2),
-       (4, '2017-03-12', 10000, 'PAID', 3),
+       (4, '2017-03-12', 10000, 'PARTIALLY PAID', 3),
        (5, '2018-04-01', 2000, 'PAID', 4),
-       (6, '2022-05-12', 2000, 'PAID', 5),
+       (6, '2022-05-12', 2000, 'UNPAID', 5),
        (9, '2016-06-28', 3000, 'PAID', 6),
-       (8, '2014-07-04', 5000, 'PAID', 7),
+       (8, '2014-07-04', 5000, 'UNPAID', 7),
        (7, '2022-03-06', 15000, 'PAID', 8),
-       (10, '2020-09-08', 1500, 'PAID', 9),
+       (10, '2020-09-08', 1500, 'PARTIALLY PAID', 9),
        (2, '2012-11-22', 5000, 'PAID', 10)
 on conflict do nothing;
 
 
 create or replace view v8.repairment_info as
-select l.second_name         as lodger_surname,
-       r.type                as repairment_type,
-       rr.second_name        as repairer_surname,
-       city.name             as city,
-       r.repairment_duration as repairment_duration,
-       rf.repairment_date    as repairment_date,
-       rf.price              as price
-from v8.repair_facilities as rf
-         inner join v8.lodgers l on l.id = rf.lodger_id
-         inner join v8.repairments r on r.id = rf.repairment_id
-         inner join v8.repairers rr on rr.id = r.repairer_id
-         inner join v8.cities city on city.id = rr.city_id;
+select lodger.second_name             as lodger_surname,
+       repairment.type                as repairment_type,
+       repairer.second_name           as repairer_surname,
+       city.name                      as city,
+       repairment.repairment_duration as repairment_duration,
+       facility.repairment_date       as repairment_date,
+       facility.price                 as price
+from v8.repair_facilities as facility
+         inner join v8.lodgers as lodger on lodger.id = facility.lodger_id
+         inner join v8.repairments as repairment on repairment.id = facility.repairment_id
+         inner join v8.repairers as repairer on repairer.id = repairment.repairer_id
+         inner join v8.cities as city on city.id = repairer.city_id;
