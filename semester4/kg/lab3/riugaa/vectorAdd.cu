@@ -1,435 +1,256 @@
-// подключение библиотек
+/* Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *  * Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *  * Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *  * Neither the name of NVIDIA CORPORATION nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ``AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
+* This sample demonstrates how to use texture fetches from layered 2D textures
+* in CUDA C
+*
+* This sample first generates a 3D input data array for the layered texture
+* and the expected output. Then it starts CUDA C kernels, one for each layer,
+* which fetch their layer's texture data (using normalized texture coordinates)
+* transform it to the expected output, and write it to a 3D output data array.
+*/
+
+// Подключение системных библиотек
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
 
-// OpenGL
-#include <helper_gl.h>
-
-#include <GL/freeglut.h>
-
-// CUDA
+// подключение CUDA библиотеки
 #include <cuda_runtime.h>
-#include <cuda_gl_interop.h>
-#include <helper_functions.h>    //  cuda.h, cuda_runtime_api.h
+
+// утилиты для работы с CUDA из папки Common
+#include <helper_functions.h>
 #include <helper_cuda.h>
 
-#include <vector_types.h>
+static const char *sSDKname = "simpleCubemapTexture";
 
-#define MAX_EPSILON_ERROR 10.0f
-#define THRESHOLD          0.30f
-#define REFRESH_DELAY     5 //ms
+// Преобразование поверхности кубической текстуры (CubeMap) 
+__global__ void transformKernel(float *g_odata, int width,
+                                cudaTextureObject_t tex) {
+    // Вычисление координат в сетке нитей CUDA
+    unsigned int x = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned int y = blockIdx.y * blockDim.y + threadIdx.y;
 
-// константы
-const unsigned int window_width  = 800;
-const unsigned int window_height = 600;
+    //ищем истинные координаты текстуры на основе координат CUDA
+    float u = ((x + 0.5f) / (float)width) * 2.f - 1.f;
+    float v = ((y + 0.5f) / (float)width) * 2.f - 1.f;
 
-const unsigned int mesh_width    = 256;
-const unsigned int mesh_height   = 256;
+    float cx, cy, cz;
 
-// Типы данных для буффера точек
-GLuint vbo;
-struct cudaGraphicsResource *cuda_vbo_resource;
-void *d_vbo_buffer = NULL;
-
-float g_fAnim = 0.0;
-
-// для вращения камеры мышью
-int mouse_old_x, mouse_old_y;
-int mouse_buttons = 0;
-float rotate_x = 0.0, rotate_y = 0.0;
-float translate_z = -3.0;
-
-StopWatchInterface *timer = NULL;
-
-
-int fpsCount = 0;
-int fpsLimit = 1;
-int g_Index = 0;
-float avgFPS = 0.0f;
-unsigned int frameCount = 0;
-unsigned int g_TotalErrors = 0;
-bool g_bQAReadback = false;
-
-int *pArgc = NULL;
-char **pArgv = NULL;
-
-#define MAX(a,b) ((a > b) ? a : b)
-
-bool runTest(int argc, char **argv, char *ref_file);
-void cleanup();
-
-// GL функции
-bool initGL(int *argc, char **argv);
-void createVBO(GLuint *vbo, struct cudaGraphicsResource **vbo_res,
-               unsigned int vbo_res_flags);
-void deleteVBO(GLuint *vbo, struct cudaGraphicsResource *vbo_res);
-
-// callbacks
-void display();
-void keyboard(unsigned char key, int x, int y);
-void mouse(int button, int state, int x, int y);
-void motion(int x, int y);
-void timerEvent(int value);
-
-// Cuda функции
-void runCuda(struct cudaGraphicsResource **vbo_resource);
-void runAutoTest(int devID, char **argv, char *ref_file);
-
-const char *sSDKsample = "RGZ (Paraboloid translation)";
-
-__global__ void simple_vbo_kernel(float4 *pos, unsigned int width, unsigned int height, float time)
-{
-    unsigned int x = blockIdx.x*blockDim.x + threadIdx.x;
-    unsigned int y = blockIdx.y*blockDim.y + threadIdx.y;
-
-    // вычисление координат
-    float u = x / (float) width;
-    float v = y / (float) height;
-    u = u*2.0f - 1.0f;
-    v = v*2.0f - 1.0f;
-
-    // вычисление z-координаты в точке
-    float coef = 2.0f;
-    float w = (u*u)/(coef) * sinf(time)*-1.0f + ((v*v)/(coef) * sinf(time));
-
-    //итоговая вершина
-    pos[y*width+x] = make_float4(u, w, v, 1.0f);
-}
-
-
-void launch_kernel(float4 *pos, unsigned int mesh_width,
-                   unsigned int mesh_height, float time)
-{
-    //запуск вычисления
-    dim3 block(8, 8, 1);
-    dim3 grid(mesh_width / block.x, mesh_height / block.y, 1);
-    simple_vbo_kernel<<< grid, block>>>(pos, mesh_width, mesh_height, time);
-}
-
-
-//точка входа в программу
-int main(int argc, char **argv)
-{
-    char *ref_file = NULL;
-
-    pArgc = &argc;
-    pArgv = argv;
-
-    setenv ("DISPLAY", ":0", 0);
-
-    printf("%s starting...\n", sSDKsample);
-
-    if (argc > 1)
-    {
-        if (checkCmdLineFlag(argc, (const char **)argv, "file"))
-        {
-            getCmdLineArgumentString(argc, (const char **)argv, "file", (char **)&ref_file);
+    for (unsigned int face = 0; face < 6; face++) {
+        // Слой 0 -- положительная поверхность X
+        if (face == 0) {
+            cx = 1;
+            cy = -v;
+            cz = -u;
         }
+            // Слой 1 -- отрицательная поверхность X
+        else if (face == 1) {
+            cx = -1;
+            cy = -v;
+            cz = u;
+        }
+            // Слой 2 -- положительная поверхность Y
+        else if (face == 2) {
+            cx = u;
+            cy = 1;
+            cz = v;
+        }
+            // Слой 3 -- отрицательная поверхность Y
+        else if (face == 3) {
+            cx = u;
+            cy = -1;
+            cz = -v;
+        }
+            // Слой 4 -- положительная поверхность Z
+        else if (face == 4) {
+            cx = u;
+            cy = -v;
+            cz = 1;
+        }
+            // Слой 4 -- отрицательная поверхность Z
+        else if (face == 5) {
+            cx = -u;
+            cy = -v;
+            cz = -1;
+        }
+
+        // Чтение данных из исходной текстуры, преобразование и запись в глобальную память
+        g_odata[face * width * width + y * width + x] =
+                -texCubemap<float>(tex, cx, cy, cz);
     }
-
-    printf("\n");
-
-    runTest(argc, argv, ref_file);
-
-    printf("%s completed, returned %s\n", sSDKsample, (g_TotalErrors == 0) ? "OK" : "ERROR!");
-    exit(g_TotalErrors == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
 }
 
-void computeFPS()
-{
-    frameCount++;
-    fpsCount++;
-
-    if (fpsCount == fpsLimit)
-    {
-        avgFPS = 1.f / (sdkGetAverageTimerValue(&timer) / 1000.f);
-        fpsCount = 0;
-        fpsLimit = (int)MAX(avgFPS, 1.f);
-
-        sdkResetTimer(&timer);
-    }
-
-    char fps[256];
-    sprintf(fps, "Cuda GL Interop (VBO): %3.1f fps (Max 100Hz)", avgFPS);
-    glutSetWindowTitle(fps);
-}
-
-// инициализация openGL
-bool initGL(int *argc, char **argv)
-{
-    glutInit(argc, argv);
-    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
-    glutInitWindowSize(window_width, window_height);
-    glutCreateWindow("Cuda GL Interop (VBO)");
-    glutDisplayFunc(display);
-    glutKeyboardFunc(keyboard);
-    glutMotionFunc(motion);
-    glutTimerFunc(REFRESH_DELAY, timerEvent,0);
-
-    // инициализируем необходимые GL библиотеки
-    if (! isGLVersionSupported(2,0))
-    {
-        fprintf(stderr, "ERROR: Support for necessary OpenGL extensions missing.");
-        fflush(stderr);
-        return false;
-    }
-
-    glClearColor(0.0, 0.0, 0.0, 1.0);
-    glDisable(GL_DEPTH_TEST);
-
-    // размер окна
-    glViewport(0, 0, window_width, window_height);
-
-    // проекция(камера)
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(60.0, (GLfloat)window_width / (GLfloat) window_height, 0.1, 10.0);
-
-    SDK_CHECK_ERROR_GL();
-
-    return true;
-}
-
-
-bool runTest(int argc, char **argv, char *ref_file)
-{
-    //  Создаём таймер
-    sdkCreateTimer(&timer);
-
-    // выбираем предпочтительный видеоадаптер
+// Главная программа
+int main(int argc, char **argv) {
+    // Используем видеоадаптер переданный в аргументах, иначе выбираем видеоадаптер с максимальной производительностью
     int devID = findCudaDevice(argc, (const char **)argv);
 
-    if (ref_file != NULL)
-    {
-        // регистрируем в видеопамяти буффер для хранения вершин
-        checkCudaErrors(cudaMalloc((void **)&d_vbo_buffer, mesh_width*mesh_height*4*sizeof(float)));
+    bool bResult = true; // флаг для результата проверки
 
-        // запускаем вычисление на GPU
-        runAutoTest(devID, argv, ref_file);
+    // получаем информацию о видеокарте
+    cudaDeviceProp deviceProps;
 
-        cudaFree(d_vbo_buffer); //освобождаем память
-        d_vbo_buffer = NULL;
+    checkCudaErrors(cudaGetDeviceProperties(&deviceProps, devID));
+    printf("CUDA device [%s] has %d Multi-Processors ", deviceProps.name,
+           deviceProps.multiProcessorCount);
+    printf("SM %d.%d\n", deviceProps.major, deviceProps.minor);
+
+    if (deviceProps.major < 2) {
+        printf(
+                "%s requires SM 2.0 or higher for support of Texture Arrays.  Test "
+                "will exit... \n",
+                sSDKname);
+
+        exit(EXIT_WAIVED);
     }
-    else
-    {
-        // Проверяем правильно ли инициализировалась GL
-        if (false == initGL(&argc, argv))
-        {
-            return false;
+
+    // генерируем входные данны для текстуры
+    unsigned int width = 64, num_faces = 6, num_layers = 1;
+    unsigned int cubemap_size = width * width * num_faces;
+    unsigned int size = cubemap_size * num_layers * sizeof(float);
+    float *h_data = (float *)malloc(size);
+
+    for (int i = 0; i < (int)(cubemap_size * num_layers); i++) {
+        h_data[i] = (float)i;
+    }
+
+    // Эталонное выходное значение для проверки правильности вычисления
+    float *h_data_ref = (float *)malloc(size);
+
+    for (unsigned int layer = 0; layer < num_layers; layer++) {
+        for (int i = 0; i < (int)(cubemap_size); i++) {
+            h_data_ref[layer * cubemap_size + i] =
+                    -h_data[layer * cubemap_size + i] + layer;
         }
-
-        // регистрируем колбеки
-        glutDisplayFunc(display);
-        glutKeyboardFunc(keyboard);
-        glutMouseFunc(mouse);
-        glutMotionFunc(motion);
-        glutCloseFunc(cleanup);
-
-        // создаем буффер вершин
-        createVBO(&vbo, &cuda_vbo_resource, cudaGraphicsMapFlagsWriteDiscard);
-
-        // запускаем часть вычислений на CUDA
-        runCuda(&cuda_vbo_resource);
-
-        // запускаем главный цикл рендера
-        glutMainLoop();
     }
 
-    return true;
-}
+    // выделяем видеопамять для хранения результата
+    float *d_data = NULL;
+    checkCudaErrors(cudaMalloc((void **)&d_data, size));
+
+    // Выделяем масив и копируем туда данные из изображения
+    cudaChannelFormatDesc channelDesc =
+            cudaCreateChannelDesc(32, 0, 0, 0, cudaChannelFormatKindFloat);
+    cudaArray *cu_3darray;
+
+    // Выделяем видеопамять для 3D текстуры
+    checkCudaErrors(cudaMalloc3DArray(&cu_3darray, &channelDesc,
+                                      make_cudaExtent(width, width, num_faces),
+                                      cudaArrayCubemap));
+
+    // Параметры текстуры
+    cudaMemcpy3DParms myparms = {0};
+    myparms.srcPos = make_cudaPos(0, 0, 0);
+    myparms.dstPos = make_cudaPos(0, 0, 0);
+    myparms.srcPtr =
+            make_cudaPitchedPtr(h_data, width * sizeof(float), width, width);
+    myparms.dstArray = cu_3darray;
+    myparms.extent = make_cudaExtent(width, width, num_faces);
+    myparms.kind = cudaMemcpyHostToDevice;
+    checkCudaErrors(cudaMemcpy3D(&myparms));
+
+    cudaTextureObject_t tex; // входная текстура
+    cudaResourceDesc texRes; // выходная
+    memset(&texRes, 0, sizeof(cudaResourceDesc));
+
+    texRes.resType = cudaResourceTypeArray;
+    texRes.res.array.array = cu_3darray;
+
+    cudaTextureDesc texDescr;
+    memset(&texDescr, 0, sizeof(cudaTextureDesc));
+
+    texDescr.normalizedCoords = true;
+    texDescr.filterMode = cudaFilterModeLinear;
+    texDescr.addressMode[0] = cudaAddressModeWrap;
+    texDescr.addressMode[1] = cudaAddressModeWrap;
+    texDescr.addressMode[2] = cudaAddressModeWrap;
+    texDescr.readMode = cudaReadModeElementType;
+
+    checkCudaErrors(cudaCreateTextureObject(&tex, &texRes, &texDescr, NULL));
+
+    dim3 dimBlock(8, 8, 1); // сетка CUDA блоков
+    dim3 dimGrid(width / dimBlock.x, width / dimBlock.y, 1);
+
+    printf(
+            "Covering Cubemap data array of %d~3 x %d: Grid size is %d x %d, each "
+            "block has 8 x 8 threads\n",
+            width, num_layers, dimGrid.x, dimGrid.y);
+
+    transformKernel<<<dimGrid, dimBlock>>>(d_data, width,
+                                           tex);  // прогревочный запуск (для лучшего замера результата)
+
+    // Проверяем не выдало ли ошибку
+    getLastCudaError("warmup Kernel execution failed");
+
+    checkCudaErrors(cudaDeviceSynchronize()); // ждём окончания завершения вычислений
+
+    StopWatchInterface *timer = NULL;
+    sdkCreateTimer(&timer);
+    sdkStartTimer(&timer); //Запускаем таймер
+
+    // Запускаем основной блок вычислений
+    transformKernel<<<dimGrid, dimBlock, 0>>>(d_data, width, tex);
+
+    // Проверяем не выдало ли ошибку
+    getLastCudaError("Kernel execution failed");
+
+    checkCudaErrors(cudaDeviceSynchronize()); // ожидаем завершения работы
+
+    sdkStopTimer(&timer); // останавливаем таймер
+
+    printf("Processing time: %.3f msec\n", sdkGetTimerValue(&timer));
+    printf("%.2f Mtexlookups/sec\n",
+           (cubemap_size / (sdkGetTimerValue(&timer) / 1000.0f) / 1e6));
+
+    sdkDeleteTimer(&timer); // удаляем таймер
+
+    // Выделяем память в ОЗУ хоста для хранения результата
+    float *h_odata = (float *)malloc(size);
+
+    // Копируем данные с GPU на хост
+    checkCudaErrors(cudaMemcpy(h_odata, d_data, size, cudaMemcpyDeviceToHost));
+
+#define MIN_EPSILON_ERROR 5e-3f
+// сравниваем результаты с эталонными
+    bResult =
+            compareData(h_odata, h_data_ref, cubemap_size, MIN_EPSILON_ERROR, 0.0f);
 
 
-void runCuda(struct cudaGraphicsResource **vbo_resource)
-{
-    // map OpenGL buffer object for writing from CUDA
-    // привязываем объекты OpenGL буффера для того чтобы CUDA могла записывать в них информацию
-    float4 *dptr;
-    checkCudaErrors(cudaGraphicsMapResources(1, vbo_resource, 0));
-    size_t num_bytes;
-    checkCudaErrors(cudaGraphicsResourceGetMappedPointer((void **)&dptr, &num_bytes,
-                                                         *vbo_resource));
-    launch_kernel(dptr, mesh_width, mesh_height, g_fAnim);
+    // освобождаем память
+    free(h_data);
+    free(h_data_ref);
+    free(h_odata);
 
-    // отвязываем буффер от CUDA
-    checkCudaErrors(cudaGraphicsUnmapResources(1, vbo_resource, 0));
-}
+    checkCudaErrors(cudaDestroyTextureObject(tex)); //освобождаем видеопамять от объектов
+    checkCudaErrors(cudaFree(d_data));
+    checkCudaErrors(cudaFreeArray(cu_3darray));
 
-
-#ifndef FOPEN
-#define FOPEN(fHandle,filename,mode) (fHandle = fopen(filename, mode))
-#endif
-
-
-void sdkDumpBin2(void *data, unsigned int bytes, const char *filename)
-{
-    printf("sdkDumpBin: <%s>\n", filename);
-    FILE *fp;
-    FOPEN(fp, filename, "wb");
-    fwrite(data, bytes, 1, fp);
-    fflush(fp);
-    fclose(fp);
-}
-
-void runAutoTest(int devID, char **argv, char *ref_file)
-{
-    char *reference_file = NULL;
-    void *imageData = malloc(mesh_width*mesh_height*sizeof(float));
-
-    // запуск вычислений
-    launch_kernel((float4 *)d_vbo_buffer, mesh_width, mesh_height, g_fAnim);
-
-    cudaDeviceSynchronize();
-    getLastCudaError("launch_kernel failed");
-
-    checkCudaErrors(cudaMemcpy(imageData, d_vbo_buffer, mesh_width*mesh_height*sizeof(float), cudaMemcpyDeviceToHost));
-
-    sdkDumpBin2(imageData, mesh_width*mesh_height*sizeof(float), "simpleGL.bin");
-    reference_file = sdkFindFilePath(ref_file, argv[0]);
-
-    if (reference_file &&
-        !sdkCompareBin2BinFloat("simpleGL.bin", reference_file,
-                                mesh_width*mesh_height*sizeof(float),
-                                MAX_EPSILON_ERROR, THRESHOLD, pArgv[0]))
-    {
-        g_TotalErrors++;
-    }
-}
-
-// функция создающая буффер точек
-void createVBO(GLuint *vbo, struct cudaGraphicsResource **vbo_res,
-               unsigned int vbo_res_flags)
-{
-    assert(vbo);
-
-    // создание объекта буффера
-    glGenBuffers(1, vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, *vbo);
-
-    unsigned int size = mesh_width * mesh_height * 4 * sizeof(float);
-    glBufferData(GL_ARRAY_BUFFER, size, 0, GL_DYNAMIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    // Регистрируем буффер в CUDA
-    checkCudaErrors(cudaGraphicsGLRegisterBuffer(vbo_res, *vbo, vbo_res_flags));
-
-    SDK_CHECK_ERROR_GL();
-}
-
-//удаляем буффер
-void deleteVBO(GLuint *vbo, struct cudaGraphicsResource *vbo_res)
-{
-
-    // unregister this buffer object with CUDA
-    checkCudaErrors(cudaGraphicsUnregisterResource(vbo_res));
-
-    glBindBuffer(1, *vbo);
-    glDeleteBuffers(1, vbo);
-
-    *vbo = 0;
-}
-
-//Колбек вызывающийся при обновлении экрана
-void display()
-{
-    sdkStartTimer(&timer);
-
-    // run CUDA kernel to generate vertex positions
-    // запускаем CUDA ядра чтобы сгенерировать позиции вершин
-    runCuda(&cuda_vbo_resource);
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //очищаем дисплей
-
-    // отображаем окно просмотра (камеру)
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    glTranslatef(0.0, 0.0, translate_z);
-    glRotatef(rotate_x, 1.0, 0.0, 0.0);
-    glRotatef(rotate_y, 0.0, 1.0, 0.0);
-
-    // рендерим буффер
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glVertexPointer(4, GL_FLOAT, 0, 0);
-
-    glEnableClientState(GL_VERTEX_ARRAY);
-
-    glColor3f(1.0, 1.0, 0.0); // делаем поверхность жёлтой
-    glDrawArrays(GL_POINTS, 0, mesh_width * mesh_height);
-    glDisableClientState(GL_VERTEX_ARRAY);
-
-    glutSwapBuffers();
-
-    g_fAnim += 0.01f;
-
-    sdkStopTimer(&timer);
-    computeFPS();
-}
-
-void timerEvent(int value)
-{
-    if (glutGetWindow())
-    {
-        glutPostRedisplay();
-        glutTimerFunc(REFRESH_DELAY, timerEvent,0);
-    }
-}
-
-void cleanup()
-{
-    sdkDeleteTimer(&timer);
-
-    if (vbo)
-    {
-        deleteVBO(&vbo, cuda_vbo_resource);
-    }
-}
-
-
-//обработчик нажатий на клавиатуру (клавиша ESC)
-void keyboard(unsigned char key, int /*x*/, int /*y*/)
-{
-    switch (key)
-    {
-        case (27) :
-            glutDestroyWindow(glutGetWindow());
-            return;
-    }
-}
-
-// обработчик событий мыши
-void mouse(int button, int state, int x, int y)
-{
-    if (state == GLUT_DOWN)
-    {
-        mouse_buttons |= 1<<button;
-    }
-    else if (state == GLUT_UP)
-    {
-        mouse_buttons = 0;
-    }
-
-    mouse_old_x = x;
-    mouse_old_y = y;
-}
-
-void motion(int x, int y)
-{
-    float dx, dy;
-    dx = (float)(x - mouse_old_x);
-    dy = (float)(y - mouse_old_y);
-
-    if (mouse_buttons & 1)
-    {
-        rotate_x += dy * 0.2f;
-        rotate_y += dx * 0.2f;
-    }
-    else if (mouse_buttons & 4)
-    {
-        translate_z += dy * 0.01f;
-    }
-
-    mouse_old_x = x;
-    mouse_old_y = y;
+    exit(bResult ? EXIT_SUCCESS : EXIT_FAILURE); // в зависимости от результата выполнения выходим с кодом ошибки или без
 }

@@ -7,3 +7,5 @@
 /semester4/kg/lab3/riugaa/vectorAdd
 /semester4/kg/lab3/riugaa/vectorAdd.o
 *.out
+/db/.idea
+/db/.DS_Store
