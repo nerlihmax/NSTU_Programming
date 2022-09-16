@@ -152,6 +152,7 @@ select v5.car.name                      as car_name,
        v5.characteristics.type_of_drive as type_of_drive,
        v5.characteristics.fuel_type     as fuel_type,
        v5.car.price                     as price
+
 from v5.car
          inner join v5.brand on v5.brand.id = v5.car.car_brand_id
          inner join v5.manufacturer on v5.manufacturer.id = v5.car.manufacturer_id
