@@ -69,3 +69,37 @@ values ('Vista', '10-12-2020', 4000, 1, 1);
 -- Incorrect
 insert into car (name, date_of_issue, price, car_brand_id, characteristics_id)
 values ('Hilux', '22-12-2023', 400000, 1, 2);
+
+
+begin;
+alter table characteristics add column power integer;
+
+savepoint alter_table;
+
+create or replace view car_info as
+select car.name                      as car_name,
+       brand.body_type               as body_type,
+       characteristics.steering_side as steering_side,
+       characteristics.type_of_drive as type_of_drive,
+       characteristics.fuel_type     as fuel_type,
+       car.price                     as price
+
+from car
+         inner join brand on brand.id = car.car_brand_id
+         inner join characteristics on car.characteristics_id = characteristics.id;
+
+rollback to alter_table;
+
+create or replace view car_info as
+select car.name                      as car_name,
+       brand.body_type               as body_type,
+       characteristics.steering_side as steering_side,
+       characteristics.type_of_drive as type_of_drive,
+       characteristics.fuel_type     as fuel_type,
+       car.price                     as price
+
+from car
+         inner join brand on brand.id = car.car_brand_id
+         inner join characteristics on car.characteristics_id = characteristics.id;
+
+commit;
