@@ -13,6 +13,9 @@ create table if not exists v5.characteristics
     type_of_drive       text             not null
 );
 
+alter table v5.characteristics
+    add column power int;
+
 create table if not exists v5.manufacturer
 (
     id   serial primary key not null,
