@@ -152,10 +152,10 @@ select v5.car.name                      as car_name,
        v5.car.price                     as price
 
 from v5.car
-         inner join v5.brand on v5.brand.id = v5.car.car_brand_id
-         inner join v5.manufacturer on v5.manufacturer.id = v5.car.manufacturer_id
-         inner join v5.characteristics on v5.car.characteristics_id = characteristics.id
-         inner join v5.countries on v5.brand.country_code = v5.countries.country_code;
+         join v5.brand on v5.brand.id = v5.car.car_brand_id
+         join v5.manufacturer on v5.manufacturer.id = v5.car.manufacturer_id
+         join v5.characteristics on v5.car.characteristics_id = characteristics.id
+         join v5.countries on v5.brand.country_code = v5.countries.country_code;
 
 select *
 from v5.car_info;

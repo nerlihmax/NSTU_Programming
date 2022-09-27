@@ -72,7 +72,8 @@ values ('Hilux', '22-12-2023', 400000, 1, 2);
 
 
 begin;
-alter table characteristics add column power integer;
+alter table characteristics
+    add column power integer;
 
 savepoint alter_table;
 
@@ -85,8 +86,8 @@ select car.name                      as car_name,
        car.price                     as price
 
 from car
-         inner join brand on brand.id = car.car_brand_id
-         inner join characteristics on car.characteristics_id = characteristics.id;
+         join brand on brand.id = car.car_brand_id
+         join characteristics on car.characteristics_id = characteristics.id;
 
 rollback to alter_table;
 
@@ -99,7 +100,7 @@ select car.name                      as car_name,
        car.price                     as price
 
 from car
-         inner join brand on brand.id = car.car_brand_id
-         inner join characteristics on car.characteristics_id = characteristics.id;
+         join brand on brand.id = car.car_brand_id
+         join characteristics on car.characteristics_id = characteristics.id;
 
 commit;
