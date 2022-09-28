@@ -71,6 +71,11 @@ insert into car (name, date_of_issue, price, car_brand_id, characteristics_id)
 values ('Hilux', '22-12-2023', 400000, 1, 2);
 
 
+alter table car alter column price set default 10;
+
+
+
+
 begin;
 alter table characteristics
     add column power integer;

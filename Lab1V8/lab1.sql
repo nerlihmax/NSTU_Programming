@@ -43,6 +43,7 @@ create table if not exists v8.repair_facilities
     repairment_id   integer references v8.repairments (id)
 );
 
+alter table v8.repair_facilities add column repairment_title text;
 
 insert into v8.lodgers (first_name, second_name)
 values ('Василий', 'Абобович'),
