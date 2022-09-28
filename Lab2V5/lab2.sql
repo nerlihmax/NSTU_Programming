@@ -4,7 +4,7 @@ create database lab2;
 
 drop role if exists lab2_user;
 create role lab2_user with login password '7P2bv6QIKEc';
-alter database lab2 owner to lab2_user;
+alter database lab2 owner to postgres;
 
 create type steering_side as enum ('LEFT', 'RIGHT');
 
@@ -24,9 +24,10 @@ create table if not exists characteristics
 
 create table if not exists brand
 (
-    id        serial primary key,
-    name      text      not null,
-    body_type body_type not null
+    id           serial primary key,
+    name         text      not null,
+    body_type    body_type not null,
+    country_code char(2) references countries (country_code)
 );
 
 create table if not exists car
@@ -35,9 +36,63 @@ create table if not exists car
     name               text                                        not null,
     date_of_issue      date check ( date_of_issue < current_date ) not null,
     price              integer                                     not null,
-    car_brand_id       integer references brand (id)               not null,
+    car_brand_id       integer references brand (id),
+    manufacturer_id    integer references manufacturer (id),
     characteristics_id integer references characteristics (id)     not null
 );
+
+create table if not exists manufacturer
+(
+    id   serial primary key not null,
+    name text               not null
+);
+
+create table if not exists countries
+(
+    country_code char(2) primary key unique,
+    name         text not null
+);
+
+insert into countries
+values ('RU', 'Russia'),
+       ('JP', 'Japan'),
+       ('GB', 'United Kingdom'),
+       ('CN', 'China'),
+       ('US', 'United States'),
+       ('GE', 'Germany'),
+       ('KR', 'South Korea'),
+       ('UZ', 'Uzbekistan'),
+       ('FR', 'France'),
+       ('IT', 'Italy'),
+       ('BZ', 'Brazil')
+on conflict do nothing;
+
+
+insert into manufacturer(name)
+values ('Toyota In Some Japanese city idk im not japanese'),
+       ('BMW, Kaliningrad, Russia'),
+       ('Honda, Tokyo'),
+       ('Land Rover, India'),
+       ('Land Rover, UK'),
+       ('Jaguar, UK'),
+       ('Mercedes-Benz, Novgorod'),
+       ('Lada, Tolyatti'),
+       ('Lamborghini, Italy'),
+       ('Hyundai, Russia'),
+       ('Hyundai, Korea'),
+       ('Hyundai, US'),
+       ('Kia, US'),
+       ('Kia, Korea'),
+       ('Citroen, France'),
+       ('Daewoo, Uzbekistan'),
+       ('Volkswagen, Brazil'),
+       ('Volkswagen, Germany'),
+       ('Volkswagen, Russia'),
+       ('Ford, US'),
+       ('Ford, India'),
+       ('Haval, China'),
+       ('Haval, Russia')
+on conflict do nothing;
 
 -- Incorrect
 insert into characteristics(steering_side, transmission, fuel_injection_type, fuel_type, type_of_drive)
@@ -64,17 +119,14 @@ values ('Toyota', 'Sedan');
 
 -- Correct
 insert into car (name, date_of_issue, price, car_brand_id, characteristics_id)
-values ('Vista', '10-12-2020', 4000, 1, 1);
+values ('Vista', '10-12-2020', 4000, 1, 1),
+       ('Runx', '10-12-2020', 4000, 1, 1),
+       ('Corolla', '10-12-2020', 4000, 1, 1),
+       ('Camry', '10-12-2020', 4000, 1, 1);
 
 -- Incorrect
 insert into car (name, date_of_issue, price, car_brand_id, characteristics_id)
 values ('Hilux', '22-12-2023', 400000, 1, 2);
-
-
-alter table car alter column price set default 10;
-
-
-
 
 begin;
 alter table characteristics
