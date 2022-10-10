@@ -189,8 +189,77 @@ from l3.car
 where b.body_type = 'Sedan';
 
 -- Select total lada price
-select
-       sum(car.price) as total_lada_price
+select sum(car.price) as total_lada_price
 from l3.car as car
          join l3.brand as brand on brand.id = car.car_brand_id
 where brand.name = 'Lada';
+
+
+-- Common part
+
+drop table if exists cars;
+create table cars
+(
+    id    serial primary key,
+    wheel text[] not null
+);
+
+insert into cars(wheel)
+values ('{"wheel1", "wheel2", "wheel3", "wheel4", "steering wheel", "spare wheel"}'),
+       ('{"wheel12", "wheel22", "wheel32", "wheel42", "steering wheel2", "spare wheel2"}'),
+       ('{"wheel13", "wheel23", "wheel33", "wheel43", "steering wheel3", "spare wheel3"}'),
+       ('{"wheel14", "wheel24", "wheel34", "wheel44", "steering wheel4", "spare wheel4"}'),
+       ('{"wheel15", "wheel25", "wheel35", "wheel45", "steering wheel5", "spare wheel5"}')
+on conflict do nothing;
+
+select wheel[6]
+from cars
+where wheel[6] is not null;
+
+select wheel[7]
+from cars
+where wheel[7] is not null;
+
+select wheel[2:4]
+from cars
+where wheel[2:4] is not null;
+
+
+drop table if exists matrices;
+
+create table matrices
+(
+    id     serial primary key,
+    matrix integer[][]
+);
+
+insert into matrices(matrix)
+values ('{{1, 1}, {1, 2}, {1, 3}, {1, 4}, {1, 5}, {1, 6}}'),
+       ('{{2, 1}, {2, 2}, {2, 3}, {2, 4}, {2, 5}, {2, 6}}'),
+       ('{{3, 1}, {3, 2}, {3, 3}, {3, 4}, {3, 5}, {3, 6}}'),
+       ('{{4, 1}, {4, 2}, {4, 3}, {4, 4}, {4, 5}, {4, 6}}'),
+       ('{{5, 1}, {5, 2}, {5, 3}, {5, 4}, {5, 5}, {5, 6}}'),
+       ('{{6, 1}, {6, 2}, {6, 3}, {6, 4}, {6, 5}, {6, 6}}')
+on conflict do nothing;
+
+select matrix[2][1]
+from matrices
+where matrix[2][1] is not null;
+
+select matrix[2:4][2:3]
+from matrices;
+
+
+select array_dims(wheel)
+from cars;
+
+select array_dims(matrix)
+from matrices;
+
+update cars
+set wheel[2]='{"wheel_updated"}'
+where id = 1;
+
+update matrices
+set matrix[1:4]= '{{9, 9}, {9, 9}, {9, 9}, {9,9}}'
+where id = 1
