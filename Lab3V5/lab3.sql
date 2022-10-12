@@ -158,8 +158,10 @@ from l3.car
          join l3.characteristics on l3.car.characteristics_id = l3.characteristics.id
          join l3.brand on l3.car.car_brand_id = l3.brand.id
 where l3.characteristics.steering_side = 'RIGHT'
-order by price
-limit 1;
+  and price = (select min(price)
+               from l3.car
+                        inner join l3.characteristics ch on ch.id = car.characteristics_id
+               where ch.steering_side = 'RIGHT');
 
 -- Select the most expensive automatic car
 select l3.brand.name,
@@ -173,8 +175,10 @@ from l3.car
          join l3.characteristics on l3.car.characteristics_id = l3.characteristics.id
          join l3.brand on l3.car.car_brand_id = l3.brand.id
 where l3.characteristics.transmission = 'Automatic'
-order by price desc
-limit 1;
+  and price = (select max(price)
+               from l3.car
+                        inner join l3.characteristics ch on ch.id = car.characteristics_id
+               where ch.transmission = 'Automatic');
 
 -- Select average FWD cars price
 select avg(l3.car.price) as average_price
