@@ -129,6 +129,6 @@ int main(int argc, char **argv) {
   printf("\nParallel:\n");
   Result res2 = factorizeWithBenchmark(number, true);
 
-  cout << "\nResults are " << (res1 == res2 ? GREEN : RED) << (res1 == res2 ? "equal" : "different") << endl;
+  cout << "\nResults are " << (res1 == res2 ? GREEN : RED) << (res1 == res2 ? "equal" : "different") << "\e[0m" << endl;
   return 0;
 }
