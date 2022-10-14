@@ -11,7 +11,7 @@ using namespace std;
 #define GREEN "\e[32m"
 #define NANOSEC_TO_SEC 1000000000.0
 
-vector<int> getPrimeNumbers(long maxNumber) {
+vector<int> eratosthenesSieve(long maxNumber) {
   if (maxNumber < 2)
     return vector<int>{};
 
@@ -48,7 +48,7 @@ struct Result {
 };
 
 Result factorize(long number, bool isParallel) {
-  vector<int> primes = getPrimeNumbers(number < 287 ? 8 : sqrt(number));
+  vector<int> primes = eratosthenesSieve(number < 287 ? 8 : sqrt(number));
   int primesCount = primes.size();
 
   Result result = {INT_MAX, {-1, -1, -1, -1}};
