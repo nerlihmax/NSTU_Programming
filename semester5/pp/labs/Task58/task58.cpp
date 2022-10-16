@@ -28,6 +28,7 @@ vector<int> eratosthenesSieve(long maxNumber) {
         break;
       }
       if (pow(primeNumbers[i], 2) > n)
+      isPrime = false;
         break;
     }
 
@@ -53,9 +54,9 @@ Result factorize(long number, bool isParallel) {
 
   Result result = {INT_MAX, {-1, -1, -1, -1}};
 
-  auto getSum = [&primes](int i, int j, int k = -1, int s = -1) {
-    return pow(primes[i], 2) + pow(primes[j], 3) +
-           (k < 0 ? 0 : pow(primes[k], 4)) + (s < 0 ? 0 : pow(primes[s], 5));
+  auto getSum = [&primes](int p1, int p2, int p3 = -1, int p4 = -1) {
+    return pow(primes[p1], 2) + pow(primes[p2], 3) +
+           (p3 < 0 ? 0 : pow(primes[p3], 4)) + (p4 < 0 ? 0 : pow(primes[p4], 5));
   };
 
 #pragma omp parallel for if (isParallel) shared(number, primesCount, primes)
