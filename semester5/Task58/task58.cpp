@@ -12,8 +12,9 @@ using namespace std;
 #define NANOSEC_TO_SEC 1000000000.0
 
 vector<int> eratosthenesSieve(long maxNumber) {
-  if (maxNumber < 2)
+  if (maxNumber < 2){
     return vector<int>{};
+  }
 
   vector<int> primeNumbers{};
 
