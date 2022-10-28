@@ -189,7 +189,7 @@ LIBRARIES :=
 SAMPLE_ENABLED := 1
 
 # Gencode arguments
-SMS ?=  52
+SMS ?= 20 30 35 37 50 52
 
 ifeq ($(SMS),)
 $(info >>> WARNING - no SM architectures have been specified - waiving sample <<<)
@@ -216,7 +216,7 @@ endif
 # Target rules
 all: build
 
-build: lab1
+build: task53
 
 check.deps:
 ifeq ($(SAMPLE_ENABLED),0)
@@ -228,14 +228,13 @@ endif
 main.o: main.cu
 	$(EXEC) $(NVCC) -std=c++11 $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
 
-lab1: main.o
+task53: main.o
 	$(EXEC) $(NVCC) -std=c++11 $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 
 run: build
-	$(EXEC) ./lab1
+	$(EXEC) ./task53
 
 clean:
 	rm -f *.o 
 
 clobber: clean
-
