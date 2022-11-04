@@ -59,7 +59,7 @@ where country_code = 'GE';
 
 drop index if exists brand_country_code_idx;
 
-create index brand_country_code_idx on l5.brand using hash (country_code);
+create index if not exists brand_country_code_idx on l5.brand using hash (country_code);
 
 -- analyse1_hash
 explain analyse

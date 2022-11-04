@@ -1,11 +1,18 @@
 drop schema if exists l67 cascade;
 create schema if not exists l67;
+drop role if exists operator;
+drop role if exists db_user;
+drop role if exists analyst;
+
+-- set enable_seqscan = off;
 
 create type l67.steering_side as enum ('LEFT', 'RIGHT');
 
 create type l67.type_of_drive as enum ('AWD', 'FWD', 'RWD');
 
 create type l67.body_type as enum ('Sedan', 'Wagon', 'Minibus', 'Hatchback');
+
+create type l67.operation_type as enum ('Update', 'Insert', 'Delete');
 
 create table if not exists l67.characteristics
 (
@@ -20,6 +27,7 @@ create table if not exists l67.characteristics
 
 create table if not exists l67.countries
 (
+    id           serial,
     country_code char(2) primary key unique,
     name         text not null
 );
@@ -80,7 +88,95 @@ create table if not exists l67.available_cars
     showroom_id integer references l67.showroom (id) not null
 );
 
-insert into l67.countries
+-- TRIGGERS
+create table l67.journal
+(
+    operation  l67.operation_type not null,
+    stamp      timestamp          not null,
+    userid     text               not null,
+    table_name text               not null,
+    row_id     integer            not null
+);
+
+
+
+create or replace function log() returns TRIGGER as
+$emp_audit$
+begin
+
+    if (tg_op = 'DELETE') then
+        insert into l67.journal select 'Delete', now(), user, tg_table_name, OLD.id - 1;
+        return OLD;
+    elsif (tg_op = 'UPDATE') then
+        insert into l67.journal select 'Update', now(), user, tg_table_name, NEW.id;
+        return NEW;
+    elsif (tg_op = 'INSERT') then
+        insert into l67.journal select 'Insert', now(), user, tg_table_name, NEW.id;
+        return NEW;
+    end if;
+    return null; -- result is ignored since this is an AFTER trigger
+end;
+$emp_audit$ language 'plpgsql';
+
+create trigger log_characteristics
+    after insert or update or delete
+    on l67.characteristics
+    for each row
+execute procedure log();
+
+create trigger log_countries
+    after insert or update or delete
+    on l67.countries
+    for each row
+execute procedure log();
+
+create trigger log_brand
+    after insert or update or delete
+    on l67.brand
+    for each row
+execute procedure log();
+
+create trigger log_showroom
+    after insert or update or delete
+    on l67.showroom
+    for each row
+execute procedure log();
+
+create trigger log_manufacturer
+    after insert or update or delete
+    on l67.manufacturer
+    for each row
+execute procedure log();
+
+create trigger log_seller
+    after insert or update or delete
+    on l67.seller
+    for each row
+execute procedure log();
+
+create trigger log_selling
+    after insert or update or delete
+    on l67.selling
+    for each row
+execute procedure log();
+
+create trigger log_car
+    after insert or update or delete
+    on l67.car
+    for each row
+execute procedure log();
+
+create trigger log_available_cars
+    after insert or update or delete
+    on l67.available_cars
+    for each row
+execute procedure log();
+
+--=================
+
+-- INSERTING VALUES
+
+insert into l67.countries(country_code, name)
 values ('RU', 'Russia'),
        ('JP', 'Japan'),
        ('GB', 'United Kingdom'),
@@ -94,7 +190,6 @@ values ('RU', 'Russia'),
        ('BZ', 'Brazil'),
        ('CA', 'Canada')
 on conflict do nothing;
-
 
 insert into l67.manufacturer(name)
 values ('Toyota In Some Japanese city idk im not japanese'),
@@ -166,42 +261,42 @@ values ('RIGHT', 'Automatic', 'TSI', 'Gasoline', 'FWD', 2200),
 on conflict do nothing;
 
 insert into l67.car(name, manufacturer_id, date_of_issue, price, car_brand_id, characteristics_id)
-values ('Vitz', 1, '11-12-2002', 400000, 1, 1),
-       ('520D', 2, '19-11-2021', 4000000, 2, 4),
-       ('Accord', 3, '01-10-2008', 800000, 3, 3),
-       ('Discovery 3', 4, '05-06-2005', 1000000, 4, 4),
-       ('Discovery 3', 5, '13-09-2006', 1100000, 4, 4),
-       ('XF', 6, '16-05-2011', 800000, 5, 1),
-       ('Vista', 1, '11-06-1994', 215000, 1, 1),
-       ('Corolla', 1, '11-06-1994', 480000, 18, 1),
-       ('Corolla', 1, '11-06-1994', 480000, 1, 11),
-       ('Corolla', 1, '11-06-1994', 480000, 1, 1),
-       ('Sprinter', 1, '11-06-1994', 140000, 18, 11),
-       ('S500', 7, '13-09-2010', 2000000, 6, 2),
-       ('Vesta', 8, '06-11-2018', 1300000, 7, 6),
-       ('Urus', 9, '17-02-2022', 40000000, 8, 10),
-       ('Solaris', 10, '11-04-2022', 1600000, 9, 6),
-       ('Creta', 11, '24-02-2022', 2100000, 9, 6),
-       ('Rio', 12, '03-03-2021', 1600000, 10, 6),
-       ('Mohave', 13, '06-01-2022', 4000000, 10, 8),
-       ('C4', 15, '11-09-2013', 800000, 11, 2),
-       ('C4', 15, '11-09-2013', 800000, 11, 2),
-       ('Nexia', 16, '05-01-2011', 200000, 12, 6),
-       ('Polo', 18, '16-04-2022', 1400000, 13, 6),
-       ('Mondeo', 20, '24-01-2010', 400000, 14, 6),
-       ('F7', 22, '07-01-2022', 2100000, 15, 8),
-       ('Granta', 8, '10-01-2019', 800000, 7, 6),
-       ('Camaro', 24, '12-10-2021', 2500000, 17, 2),
-       ('Corolla', 1, '11-06-2020', 500000, 1, 11),
-       ('Camry', 1, '11-06-2022', 1600000, 1, 6),
-       ('Land Cruiser', 1, '11-06-2020', 4800000, 1, 4),
-       ('C4', 15, '11-09-2022', 4000000, 11, 2),
-       ('Odyssey', 3, '01-01-2018', 950000, 3, 3),
-       ('Accord', 3, '01-01-2018', 950000, 3, 3),
-       ('Stream', 3, '01-01-2018', 950000, 3, 3),
-       ('Wizard', 25, '11-06-2022', 1600000, 20, 6),
-       ('Fleet', 26, '11-06-2022', 1600000, 19, 6),
-       ('Screamer', 27, '11-06-2020', 1800000, 21, 6)
+values ('Vitz', 1, '2002-12-11', 400000, 1, 1),
+       ('520D', 2, '2021-11-19', 4000000, 2, 4),
+       ('Accord', 3, '2008-10-01', 800000, 3, 3),
+       ('Discovery 3', 4, '2005-06-05', 1000000, 4, 4),
+       ('Discovery 3', 5, '2006-09-13', 1100000, 4, 4),
+       ('XF', 6, '2011-05-16', 800000, 5, 1),
+       ('Vista', 1, '1994-06-11', 215000, 1, 1),
+       ('Corolla', 1, '1994-06-11', 480000, 18, 1),
+       ('Corolla', 1, '1994-06-11', 480000, 1, 11),
+       ('Corolla', 1, '1994-06-11', 480000, 1, 1),
+       ('Sprinter', 1, '1994-06-11', 140000, 18, 11),
+       ('S500', 7, '2010-09-13', 2000000, 6, 2),
+       ('Vesta', 8, '2018-11-06', 1300000, 7, 6),
+       ('Urus', 9, '2022-02-17', 40000000, 8, 10),
+       ('Solaris', 10, '2022-04-11', 1600000, 9, 6),
+       ('Creta', 11, '2022-02-24', 2100000, 9, 6),
+       ('Rio', 12, '2021-03-03', 1600000, 10, 6),
+       ('Mohave', 13, '2022-01-06', 4000000, 10, 8),
+       ('C4', 15, '2013-09-11', 800000, 11, 2),
+       ('C4', 15, '2013-09-11', 800000, 11, 2),
+       ('Nexia', 16, '2011-01-05', 200000, 12, 6),
+       ('Polo', 18, '2022-04-16', 1400000, 13, 6),
+       ('Mondeo', 20, '2010-01-24', 400000, 14, 6),
+       ('F7', 22, '2022-01-07', 2100000, 15, 8),
+       ('Granta', 8, '2019-01-10', 800000, 7, 6),
+       ('Camaro', 24, '2021-10-12', 2500000, 17, 2),
+       ('Corolla', 1, '2020-06-11', 500000, 1, 11),
+       ('Camry', 1, '2022-06-11', 1600000, 1, 6),
+       ('Land Cruiser', 1, '2020-06-11', 4800000, 1, 4),
+       ('C4', 15, '2022-09-11', 4000000, 11, 2),
+       ('Odyssey', 3, '2018-01-01', 950000, 3, 3),
+       ('Accord', 3, '2018-01-01', 950000, 3, 3),
+       ('Stream', 3, '2018-01-01', 950000, 3, 3),
+       ('Wizard', 25, '2022-06-11', 1600000, 20, 6),
+       ('Fleet', 26, '2022-06-11', 1600000, 19, 6),
+       ('Screamer', 27, '2020-06-11', 1800000, 21, 6)
 on conflict do nothing;
 
 insert into l67.showroom(name, address)
@@ -260,13 +355,20 @@ values (13, 1, 1, '2020-10-11'),
        (27, 4, 3, '2022-01-19')
 on conflict do nothing;
 
-create or replace function add_auto(model_id int, market_id int, num int) returns char(30)
-as
-$$
-declare
-    count integer;
-begin
+-- Changing roles
 
-end;
-$$
-    language 'plpgsql';
+create role operator with login password 'qwerty';
+create role db_user with login password 'qwerty';
+create role analyst with login;
+
+revoke all privileges on all tables in schema l67 from operator;
+revoke all privileges on all tables in schema l67 from db_user;
+revoke all privileges on all tables in schema l67 from analyst;
+
+grant insert, select, update, delete on l67.manufacturer, l67.countries, l67.showroom, l67.brand, l67.characteristics to operator;
+
+grant insert, select, update, delete on l67.car, l67.characteristics, l67.seller, l67.selling, l67.available_cars to db_user;
+
+grant select on all tables in schema l67 to analyst;
+
+-- TODO: Create indices, analytics functions

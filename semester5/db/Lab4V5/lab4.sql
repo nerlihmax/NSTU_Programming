@@ -196,6 +196,7 @@ where (brand.country_code = 'GE' or brand.country_code = 'US')
 
 
 -- Select left-handed japanese and french cars more expensive than average manual russian cars
+explain analyse
 select brand.name         as brand,
        brand.country_code as country,
        car.name           as model,
