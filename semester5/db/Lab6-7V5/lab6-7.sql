@@ -4,8 +4,6 @@ drop role if exists operator;
 drop role if exists db_user;
 drop role if exists analyst;
 
--- set enable_seqscan = off;
-
 create type l67.steering_side as enum ('LEFT', 'RIGHT');
 
 create type l67.type_of_drive as enum ('AWD', 'FWD', 'RWD');
@@ -85,7 +83,8 @@ create table if not exists l67.available_cars
 (
     id          serial primary key,
     car_id      integer references l67.car (id)      not null,
-    showroom_id integer references l67.showroom (id) not null
+    showroom_id integer references l67.showroom (id) not null,
+    quantity    integer
 );
 
 -- TRIGGERS
@@ -313,28 +312,28 @@ values ('Viktor', 'Vatov', 1),
        ('Ivan', 'Kalita', 4)
 on conflict do nothing;
 
-insert into l67.available_cars(car_id, showroom_id)
-values (1, 1),
-       (2, 1),
-       (3, 1),
-       (4, 2),
-       (5, 2),
-       (6, 2),
-       (7, 3),
-       (8, 3),
-       (9, 3),
-       (10, 4),
-       (11, 4),
-       (12, 4),
-       (28, 2),
-       (29, 2),
-       (30, 3),
-       (31, 2),
-       (32, 2),
-       (33, 2),
-       (34, 1),
-       (35, 4),
-       (36, 1)
+insert into l67.available_cars(car_id, showroom_id, quantity)
+values (1, 1, 1),
+       (2, 1, 1),
+       (3, 1, 1),
+       (4, 2, 1),
+       (5, 2, 1),
+       (6, 2, 1),
+       (7, 3, 1),
+       (8, 3, 1),
+       (9, 3, 1),
+       (10, 4, 1),
+       (11, 4, 1),
+       (12, 4, 1),
+       (28, 2, 1),
+       (29, 2, 1),
+       (30, 3, 1),
+       (31, 2, 1),
+       (32, 2, 1),
+       (33, 2, 1),
+       (34, 1, 1),
+       (35, 4, 1),
+       (36, 1, 1)
 on conflict do nothing;
 
 insert into l67.selling(car_id, seller_id, showroom_id, date)
@@ -355,6 +354,9 @@ values (13, 1, 1, '2020-10-11'),
        (27, 4, 3, '2022-01-19')
 on conflict do nothing;
 
+create index countries_idx on l67.countries using hash (name);
+create index available_cars_idx on l67.car using hash (name);
+
 -- Changing roles
 
 create role operator with login password 'qwerty';
@@ -370,5 +372,242 @@ grant insert, select, update, delete on l67.manufacturer, l67.countries, l67.sho
 grant insert, select, update, delete on l67.car, l67.characteristics, l67.seller, l67.selling, l67.available_cars to db_user;
 
 grant select on all tables in schema l67 to analyst;
+revoke all privileges on l67.journal from analyst;
 
--- TODO: Create indices, analytics functions
+-- FUNCTIONS
+
+create or replace function l67.add_auto(_car_id int, _showroom_id int, _count integer) returns char(30)
+as
+$$
+declare
+    count int;
+begin
+    if (select count(id)
+        from l67.car
+        where id = _car_id)
+        = 0 then
+        return 'Car not found';
+    end if;
+
+    if (select count(id) from l67.showroom where id = _showroom_id)
+        = 0 then
+        return 'Showroom not found';
+    end if;
+
+    select count(l67.available_cars.car_id)
+    into count
+    from l67.available_cars as cars
+    where _showroom_id = l67.available_cars.showroom_id;
+
+    if count = 0 then
+        insert into l67.available_cars (car_id, showroom_id)
+        values (_car_id, _showroom_id);
+    else
+        update
+            l67.available_cars
+        set quantity = available_cars.quantity + _count
+        where l67.available_cars.car_id = _car_id
+          and l67.available_cars.showroom_id = _showroom_id;
+    end if;
+
+    return 'OK';
+end;
+$$
+    language 'plpgsql';
+
+--============
+
+create or replace function l67.sell_auto(_car_id int, _seller_id int) returns char(30)
+as
+$$
+declare
+    _showroom_id  int;
+    declare count int;
+begin
+    if (select count(id)
+        from l67.car
+        where id = _car_id)
+        = 0 then
+        return 'Car model not found';
+    end if;
+
+    if (select count(id)
+        from l67.seller
+        where id = _seller_id)
+        = 0 then
+        return 'Seller not found';
+    end if;
+
+    select showroom_id
+    into _showroom_id
+    from l67.seller
+    where id = _seller_id;
+
+    select count(car_id)
+    into count
+    from l67.available_cars as cars
+    where cars.showroom_id = _showroom_id
+      and cars.car_id = _car_id;
+
+    if count = 0 then
+        return 'There is no cars that model available';
+    else
+        if (select quantity
+            from l67.available_cars as cars
+            where cars.car_id = _car_id
+              and cars.showroom_id = _showroom_id) = 1
+        then
+            delete
+            from l67.available_cars as cars
+            where cars.car_id = _car_id
+              and cars.showroom_id = _showroom_id;
+        else
+            update l67.available_cars as cars
+            set quantity = cars.quantity - 1
+            where cars.car_id = _car_id
+              and cars.showroom_id = _showroom_id;
+        end if;
+        insert into l67.selling(car_id, seller_id, showroom_id, date)
+        values (_car_id, _seller_id, now());
+    end if;
+    return 'OK';
+end;
+$$
+    language 'plpgsql';
+
+--============
+
+create or replace function l67.hire_seller(_first_name text, _second_name text, _showroom_id int) returns char(20) as
+$$
+begin
+    if (select count(id) from l67.showroom where id = _showroom_id) = 0 then
+        return 'Showroom not found';
+    end if;
+    insert into l67.seller(first_name, second_name, showroom_id) values (_first_name, _second_name, _showroom_id);
+    return 'OK';
+end;
+$$
+    language 'plpgsql';
+
+--============
+
+create or replace function l67.fire_seller(seller_id int)
+    returns char(20) as
+$$
+begin
+    if (select count(id) from l67.seller where id = seller_id) = 0 then
+        return 'Seller not found';
+    end if;
+    delete from l67.seller where id = seller_id;
+    return 'OK';
+end;
+$$
+    language 'plpgsql';
+
+--============
+
+create or replace function l67.get_showroom_rating(_showroom_id int)
+    returns table
+            (
+                name   text,
+                Rating integer
+            )
+as
+$$
+begin
+    if (select count(id) from l67.showroom where id = _showroom_id)
+        = 0
+    then
+        return;
+    end if;
+    return query select l67.car.name::text,
+                        rating.Rating::integer as rating
+                 from (select l67.selling.car_id,
+                              count(l67.selling.car_id) as Rating
+                       from l67.selling
+                       where showroom_id = _showroom_id
+                       group by l67.selling.car_id) as rating
+                          inner join
+                      l67.car on rating.car_id = car.id
+                 order by rating desc;
+end;
+$$
+    language 'plpgsql';
+
+--============
+
+create or replace function l67.get_seller_rating(_seller_id integer)
+    returns table
+            (
+                car_model text,
+                rating    integer
+            )
+as
+$$
+begin
+    return query select l67.car.name::text,
+                        rating.Rating::integer as rating
+                 from (select l67.selling.car_id,
+                              count(l67.selling.car_id) as Rating
+                       from l67.selling
+                       where seller_id = _seller_id
+                       group by l67.selling.car_id) as rating
+                          inner join
+                      l67.car on rating.car_id = car.id
+                 order by rating desc;
+end;
+$$
+    language 'plpgsql';
+
+create or replace function l67.get_country_sales_volume(_country_code text)
+    returns table
+            (
+                car_brand    text,
+                sales_volume integer
+            )
+as
+$$
+begin
+    return query select sales.name::text,
+                        sales.volume::integer as sales_volume
+                 from (select brand.name                as name,
+                              count(l67.selling.car_id) as volume
+                       from l67.selling
+                                inner join l67.car as car on selling.car_id = car.id
+                                inner join l67.brand as brand on car.car_brand_id = brand.id
+                       where brand.country_code = _country_code
+                       group by brand.name) as sales
+
+                 order by sales_volume desc;
+end;
+$$
+    language 'plpgsql';
+
+create or replace function l67.get_prices_for_country(_country_code text)
+    returns table
+            (
+                min_price integer,
+                avg_price integer,
+                max_price integer
+            )
+as
+$$
+begin
+    return query select sales.min_price::integer as min_price,
+                        sales.avg_price::integer as avg_price,
+                        sales.max_price::integer as max_price
+                 from (select min(car.price) as min_price,
+                              avg(car.price) as avg_price,
+                              max(car.price) as max_price
+                       from l67.available_cars
+                                inner join l67.car as car on available_cars.car_id = car.id
+                                inner join l67.brand as brand on car.car_brand_id = brand.id
+                       where brand.country_code = _country_code) as sales
+                 order by max_price desc;
+end;
+$$
+    language 'plpgsql';
+
+create index if not exists available_idx on l67.available_cars (showroom_id, car_id);
+create index if not exists available_idx on l67.selling (showroom_id, car_id, seller_id);
+create index if not exists available_idx on l67.brand (country_code);
