@@ -609,5 +609,5 @@ $$
     language 'plpgsql';
 
 create index if not exists available_idx on l67.available_cars (showroom_id, car_id);
-create index if not exists available_idx on l67.selling (showroom_id, car_id, seller_id);
-create index if not exists available_idx on l67.brand (country_code);
+create index if not exists selling_idx on l67.selling (showroom_id, car_id, seller_id);
+create index if not exists brand_idx on l67.brand (country_code);
