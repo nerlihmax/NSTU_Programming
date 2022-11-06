@@ -29,7 +29,7 @@ create table if not exists l8.countries
 create table if not exists l8.brand
 (
     id            serial primary key,
-    name          text         not null,
+    name          text,
     city          text,
     body_type     l8.body_type not null,
     engine_volume integer,
@@ -90,14 +90,16 @@ create table if not exists l8.available_cars
 create or replace function l8.delete_brand() returns TRIGGER as
 $$
 begin
-    delete from l8.brand where id = old.id;
+    delete
+    from l8.available_cars
+    where car_id in (select id from l8.car where car_brand_id = old.id);
     delete from l8.car where car_brand_id = old.id;
     return old;
 end;
 $$ language 'plpgsql';
 
 create trigger delete_brand_cascade
-    after delete
+    before delete
     on l8.brand
     for each row
 execute procedure l8.delete_brand();
@@ -106,7 +108,7 @@ create or replace function l8.add_brand() returns trigger as
 $$
 begin
     if new.name is null then
-        new.name = 'Manufacturer|' + round(random() * 100000 + 1)::text;
+        new.name = 'Manufacturer|' || round(random() * 100000 + 1)::text;
     end if;
 
     if new.city is null then
@@ -185,7 +187,7 @@ values ('Toyota', 'JP', 'Sedan', null, null),
        ('Land Rover', 'GB', 'Minibus', null, null),
        ('Jaguar', 'GB', 'Sedan', null, null),
        ('Mercedes-Benz', 'GE', 'Sedan', null, null),
-       ('Lada', 'RU', 'Sedan', null, null),
+       ('Lada', 'RU', 'Sedan', 2000, null),
        ('Lamborghini', 'IT', 'Minibus', null, null),
        ('Hyundai', 'KR', 'Minibus', null, 'Seoul'),
        ('Kia', 'KR', 'Sedan', null, null),
@@ -199,7 +201,7 @@ values ('Toyota', 'JP', 'Sedan', null, null),
        ('Toyota', 'JP', 'Wagon', null, null),
        ('CAR', 'CA', 'Wagon', null, null),
        ('AVTO', 'CN', 'Wagon', null, null),
-       ('AVTO', 'CA', 'Minibus', null, null)
+       (null, 'CA', 'Minibus', null, null)
 on conflict do nothing;
 
 insert into l8.characteristics(steering_side, transmission, fuel_injection_type, fuel_type, type_of_drive)
