@@ -97,10 +97,8 @@ create table l67.journal
     row_id     integer            not null
 );
 
-
-
 create or replace function log() returns TRIGGER as
-$emp_audit$
+$$
 begin
 
     if (tg_op = 'DELETE') then
@@ -115,7 +113,7 @@ begin
     end if;
     return null; -- result is ignored since this is an AFTER trigger
 end;
-$emp_audit$ language 'plpgsql';
+$$ language 'plpgsql';
 
 create trigger log_characteristics
     after insert or update or delete
@@ -394,20 +392,20 @@ begin
         return 'Showroom not found';
     end if;
 
-    select count(l67.available_cars.car_id)
+    select count(cars.car_id)
     into count
     from l67.available_cars as cars
-    where _showroom_id = l67.available_cars.showroom_id;
+    where _showroom_id = cars.showroom_id;
 
     if count = 0 then
         insert into l67.available_cars (car_id, showroom_id)
         values (_car_id, _showroom_id);
     else
         update
-            l67.available_cars
-        set quantity = available_cars.quantity + _count
-        where l67.available_cars.car_id = _car_id
-          and l67.available_cars.showroom_id = _showroom_id;
+            l67.available_cars as cars
+        set quantity = cars.quantity + _count
+        where cars.car_id = _car_id
+          and cars.showroom_id = _showroom_id;
     end if;
 
     return 'OK';
@@ -468,7 +466,7 @@ begin
               and cars.showroom_id = _showroom_id;
         end if;
         insert into l67.selling(car_id, seller_id, showroom_id, date)
-        values (_car_id, _seller_id, now());
+        values (_car_id, _seller_id, _showroom_id, now());
     end if;
     return 'OK';
 end;
@@ -586,16 +584,16 @@ $$
 create or replace function l67.get_prices_for_country(_country_code text)
     returns table
             (
-                min_price integer,
-                avg_price integer,
-                max_price integer
+                min_price text,
+                avg_price text,
+                max_price text
             )
 as
 $$
 begin
-    return query select sales.min_price::integer as min_price,
-                        sales.avg_price::integer as avg_price,
-                        sales.max_price::integer as max_price
+    return query select (sales.min_price::integer || ' RUB') as min_price,
+                        (sales.avg_price::integer || ' RUB') as avg_price,
+                        (sales.max_price::integer || ' RUB') as max_price
                  from (select min(car.price) as min_price,
                               avg(car.price) as avg_price,
                               max(car.price) as max_price
@@ -611,3 +609,5 @@ $$
 create index if not exists available_idx on l67.available_cars (showroom_id, car_id);
 create index if not exists selling_idx on l67.selling (showroom_id, car_id, seller_id);
 create index if not exists brand_idx on l67.brand (country_code);
+select * from l67.get_prices_for_country('JP');
+select * from l67.get_prices_for_country('GE');
