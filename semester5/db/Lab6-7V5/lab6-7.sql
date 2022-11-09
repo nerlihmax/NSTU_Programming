@@ -647,4 +647,4 @@ begin
 end;
 $$ language 'plpgsql';
 
-select get_brand_percent(10)||'%';
+select get_brand_percent(10) || '%';
