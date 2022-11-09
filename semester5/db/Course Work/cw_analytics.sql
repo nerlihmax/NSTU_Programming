@@ -53,3 +53,15 @@ from products_by_provider_more_expensive_than_avg(1, 1);
 --Percentage of cheap goods received from a given supplier
 select products_cheaper_than_specified(10000, 4) || '%' as percentage;
 
+--Average cost of goods sold over a period of time
+select round(avg(price)) || ' RUB' as avg_price
+from products_with_date_interval('[2021-01-01, 2021-12-31]'::daterange);
+
+--Goods whose price is higher than the average cost of a given producer
+select * from products_with_price_higher_than_given_providers_avg(1);
+
+-- The ratio of regular deliveries of a given product
+-- select
+
+--Products that sell best with given parameters: cost, supplier, country
+--select

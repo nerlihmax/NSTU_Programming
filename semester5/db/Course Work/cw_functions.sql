@@ -120,12 +120,14 @@ declare
 begin
     select count(name)
     into all_products
-    from product_info;
+    from product_info
+    where date_of_sale is null;
 
     select count(name)
     into cheapest
     from product_info
-    where product_info.price < _price;
+    where product_info.price < _price
+      and date_of_sale is null;
 
     return round((cheapest::double precision / all_products::double precision) * 100);
 end;
