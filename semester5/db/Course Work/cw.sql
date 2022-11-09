@@ -93,58 +93,7 @@ values ('ООО «Рыбные Приколы»', 1),
        ('ООО «Сибирский медведь»', 9),
        ('ООО «Сибпромодежда»', 8);
 
-create or replace function add_n_products(n integer) returns char
-as
-$$
-declare
-    t int;
-begin
-    select max(id) into t from products;
-    if t is null then
-        select 0 into t;
-    end if;
-    for _ in (t + 1)..(n + t + 1)
-        loop
-            insert into products (name, date_of_issue, country_id, date_of_supply, is_defect, provider_id,
-                                  price)
-            values ((select (array ['Балда', 'Вентерь','Удочка', 'Гарпун', 'Грузило', 'Катушка', 'Леска', 'Крючок', 'Спиннинг', 'Закидушка', 'Поплавок'])[floor(random() * 11 + 1)]),
-                    (select timestamp '2010-01-10 20:00:00' +
-                            random() * (timestamp '2019-01-20 20:00:00' -
-                                        timestamp '2010-01-10 20:00:00')),
-                    (select floor(random() * 12 + 1)),
-                    (select timestamp '2020-01-10 20:00:00' +
-                            random() * (timestamp '2022-08-20 20:00:00' -
-                                        timestamp '2020-01-10 20:00:00')),
-                    (select random() > 0.97),
-                    (select floor(random() * 20 + 1)),
-                    (select floor(random() * 100000 + 200)));
-        end loop;
-    return 'Inserted ' || n || ' elements';
-end;
-$$ language 'plpgsql';
 
-create or replace function add_n_sales(n integer) returns char
-as
-$$
-declare
-    t int;
-begin
-    select max(id) into t from sales;
-    if t is null then
-        select 0 into t;
-    end if;
-    for _ in (t + 1)..(n + t + 1)
-        loop
-            insert into sales (product_id, quantity, date_of_sale)
-            values ((select id from products where id > floor(random() * 10000 + 1) and is_defect = false limit 1),
-                    (select floor(random() * 10 + 1)),
-                    (select timestamp '2020-01-10 20:00:00' +
-                            random() * (timestamp '2022-08-20 20:00:00' -
-                                        timestamp '2020-01-10 20:00:00')));
-        end loop;
-    return 'Inserted ' || n || ' elements';
-end;
-$$ language 'plpgsql';
 
 select add_n_products(10000);
 select add_n_sales(200);

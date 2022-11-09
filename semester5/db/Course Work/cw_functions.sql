@@ -1,3 +1,56 @@
+create or replace function add_n_products(n integer) returns char
+as
+$$
+declare
+    t int;
+begin
+    select max(id) into t from products;
+    if t is null then
+        select 0 into t;
+    end if;
+    for _ in (t + 1)..(n + t + 1)
+        loop
+            insert into products (name, date_of_issue, country_id, date_of_supply, is_defect, provider_id,
+                                  price)
+            values ((select (array ['Балда', 'Вентерь','Удочка', 'Гарпун', 'Грузило', 'Катушка', 'Леска', 'Крючок', 'Спиннинг', 'Закидушка', 'Поплавок'])[floor(random() * 11 + 1)]),
+                    (select timestamp '2010-01-10 20:00:00' +
+                            random() * (timestamp '2019-01-20 20:00:00' -
+                                        timestamp '2010-01-10 20:00:00')),
+                    (select floor(random() * 12 + 1)),
+                    (select timestamp '2020-01-10 20:00:00' +
+                            random() * (timestamp '2022-08-20 20:00:00' -
+                                        timestamp '2020-01-10 20:00:00')),
+                    (select random() > 0.97),
+                    (select floor(random() * 20 + 1)),
+                    (select floor(random() * 100000 + 200)));
+        end loop;
+    return 'Inserted ' || n || ' elements';
+end;
+$$ language 'plpgsql';
+
+create or replace function add_n_sales(n integer) returns char
+as
+$$
+declare
+    t int;
+begin
+    select max(id) into t from sales;
+    if t is null then
+        select 0 into t;
+    end if;
+    for _ in (t + 1)..(n + t + 1)
+        loop
+            insert into sales (product_id, quantity, date_of_sale)
+            values ((select id from products where id > floor(random() * 10000 + 1) and is_defect = false limit 1),
+                    (select floor(random() * 10 + 1)),
+                    (select timestamp '2020-01-10 20:00:00' +
+                            random() * (timestamp '2022-08-20 20:00:00' -
+                                        timestamp '2020-01-10 20:00:00')));
+        end loop;
+    return 'Inserted ' || n || ' elements';
+end;
+$$ language 'plpgsql';
+
 create or replace view product_info as
 select products.name::text     as name,
        date_of_issue::date     as date_of_issue,
@@ -30,13 +83,7 @@ declare
 begin
     select a into _a;
     select b into _b;
-    return query select product_info.name,
-                        product_info.date_of_issue,
-                        product_info.provider,
-                        product_info.price,
-                        product_info.country,
-                        product_info.date_of_sale,
-                        product_info.is_defect
+    return query select product_info.*
                  from product_info
                  where product_info.price between a and b;
 end;
@@ -56,13 +103,7 @@ create or replace function products_specific_provider(provider_id integer)
 as
 $$
 begin
-    return query select product_info.name,
-                        product_info.date_of_issue,
-                        product_info.provider,
-                        product_info.price,
-                        product_info.country,
-                        product_info.date_of_sale,
-                        product_info.is_defect
+    return query select product_info.*
                  from product_info
                           inner join providers p on product_info.provider = p.name
                  where p.id = provider_id;
@@ -104,13 +145,7 @@ create or replace function products_with_specific_date(_date date)
 as
 $$
 begin
-    return query select product_info.name,
-                        product_info.date_of_issue,
-                        product_info.provider,
-                        product_info.price,
-                        product_info.country,
-                        product_info.date_of_sale,
-                        product_info.is_defect
+    return query select product_info.*
                  from product_info
                  where product_info.date_of_issue = _date;
 end;
@@ -130,13 +165,7 @@ create or replace function products_with_date_interval(_date daterange)
 as
 $$
 begin
-    return query select product_info.name,
-                        product_info.date_of_issue,
-                        product_info.provider,
-                        product_info.price,
-                        product_info.country,
-                        product_info.date_of_sale,
-                        product_info.is_defect
+    return query select product_info.*
                  from product_info
                  where _date @> product_info.date_of_sale;
 end;
@@ -264,5 +293,29 @@ begin
       and date_of_sale is null
       and p.id = _provider_id;
     return round((cheapest::double precision / all_products::double precision) * 100);
+end;
+$$ language plpgsql;
+
+create or replace function products_with_price_higher_than_given_providers_avg(_provider_id integer)
+    returns table
+            (
+                name          text,
+                date_of_issue date,
+                provider      text,
+                price         integer,
+                country       text,
+                date_of_sale  date,
+                is_defect     boolean
+            )
+as
+$$
+begin
+    return query select product_info.*
+                 from product_info
+                          inner join providers provider on product_info.provider = provider.name
+                 where product_info.price > (select avg(product_info.price)
+                                             from product_info
+                                                      inner join providers p on product_info.provider = p.name
+                                             where p.id = _provider_id);
 end;
 $$ language plpgsql;
