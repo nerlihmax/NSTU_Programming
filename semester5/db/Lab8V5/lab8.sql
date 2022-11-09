@@ -133,6 +133,28 @@ create trigger add_brand_tg
     for each row
 execute procedure l8.add_brand();
 
+
+--Защита
+create or replace function l8.change_name_event() returns trigger
+as
+$$
+begin
+    if new.name != old.name then
+        update l8.car
+        set name = name || ' ' || new.name
+        where l8.car.car_brand_id = old.id;
+    end if;
+    return new;
+end;
+$$ language 'plpgsql';
+
+create or replace trigger brand_name_changed
+    after update
+    on l8.brand
+    for each row
+execute procedure l8.change_name_event();
+-- =====
+
 -- INSERTING VALUES
 
 insert into l8.countries(country_code, name)
@@ -148,7 +170,8 @@ values ('RU', 'Russia'),
        ('IT', 'Italy'),
        ('BZ', 'Brazil'),
        ('CA', 'Canada')
-on conflict do nothing;
+on conflict
+    do nothing;
 
 insert into l8.manufacturer(name)
 values ('Toyota In Some Japanese city idk im not japanese'),
