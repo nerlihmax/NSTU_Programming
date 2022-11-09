@@ -5,7 +5,7 @@ select products.name::text     as name,
        price::integer          as price,
        country.name::text      as country,
        sale.date_of_sale::date as date_of_sale,
-       is_defect::boolean
+       is_defect::boolean      as is_defect
 from products
          inner join providers provider on products.provider_id = provider.id
          inner join countries country on products.country_id = country.id
