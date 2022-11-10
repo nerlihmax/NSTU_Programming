@@ -338,8 +338,6 @@ begin
     into all_products
     from product_info
     where product_info.name = product_name;
-    raise notice 'target: %', target;
-    raise notice 'all: %', all_products;
     return round((target / all_products) * 100::double precision);
 end;
 $$
@@ -372,6 +370,6 @@ begin
                           product_info.price,
                           product_info.country
                  order by cnt desc
-                 limit 1;
+                 limit 4;
 end;
 $$ language plpgsql;

@@ -12,6 +12,16 @@ select *
 from product_info
 order by provider;
 
+--Product info ordered by price
+select *
+from product_info
+order by price;
+
+--Product info ordered by date of sale
+select *
+from product_info
+order by date_of_sale;
+
 --The most expensive product, the cheapest, the average cost
 select min(price) || ' RUB'        as min_price,
        round(avg(price)) || ' RUB' as avg_price,
@@ -46,7 +56,7 @@ select products_sold_during_period('[2021-01-01, 2021-12-31]'::daterange, 1) || 
 --The amount of defective goods received from a given country for a given supplier
 select defected_products_from_country_and_provider(10, 1);
 
---Find all products from a given supplier whose value is greater than the average cost of goods from a given country
+--Find all products from a given supplier whose price is greater than the average cost of goods from a given country
 select *
 from products_by_provider_more_expensive_than_avg(1, 1);
 

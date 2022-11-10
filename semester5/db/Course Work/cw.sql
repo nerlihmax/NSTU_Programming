@@ -57,6 +57,7 @@ grant insert, select, update, delete on countries, providers to operator;
 grant insert, select, update, delete on products, sales to db_user;
 grant all privileges on all tables in schema public to admin;
 
+
 insert into countries (country_code, name)
 values ('RU', 'Russia'),
        ('JP', 'Japan'),
