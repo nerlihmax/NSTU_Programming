@@ -321,3 +321,57 @@ begin
                                              where p.id = _provider_id);
 end;
 $$ language plpgsql;
+
+create or replace function ratio_of_regular_supplies(product_name text, _month integer) returns double precision
+as
+$$
+declare
+    target       double precision;
+    all_products double precision;
+begin
+    select count(products.id)::double precision
+    into target
+    from products
+    where products.name = product_name
+      and extract(month from (products.date_of_supply)::timestamp) = _month;
+    select count(product_info.name)
+    into all_products
+    from product_info
+    where product_info.name = product_name;
+    raise notice 'target: %', target;
+    raise notice 'all: %', all_products;
+    return round((target / all_products) * 100::double precision);
+end;
+$$
+    language plpgsql;
+
+create or replace function most_popular_products()
+    returns table
+            (
+                name          text,
+                date_of_issue date,
+                provider      text,
+                price         integer,
+                country       text,
+                quantity      integer
+            )
+as
+$$
+begin
+    return query select product_info.name,
+                        product_info.date_of_issue,
+                        product_info.provider,
+                        product_info.price,
+                        product_info.country,
+                        count(product_info.name)::integer as cnt
+                 from product_info
+                 where product_info.date_of_sale is not null
+                 group by product_info.name,
+                          product_info.date_of_issue,
+                          product_info.provider,
+                          product_info.price,
+                          product_info.country
+                 order by cnt desc
+                 limit 1;
+end;
+$$ language plpgsql;

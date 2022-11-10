@@ -30,7 +30,6 @@ create table products
     price          integer
 );
 
-
 create table sales
 (
     id           serial primary key,
@@ -92,8 +91,6 @@ values ('ООО «Рыбные Приколы»', 1),
        ('ООО «Рыбалка круглый год»', 5),
        ('ООО «Сибирский медведь»', 9),
        ('ООО «Сибпромодежда»', 8);
-
-
 
 select add_n_products(10000);
 select add_n_sales(200);

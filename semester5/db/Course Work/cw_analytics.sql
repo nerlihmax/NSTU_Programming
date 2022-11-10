@@ -58,10 +58,12 @@ select round(avg(price)) || ' RUB' as avg_price
 from products_with_date_interval('[2021-01-01, 2021-12-31]'::daterange);
 
 --Goods whose price is higher than the average cost of a given producer
-select * from products_with_price_higher_than_given_providers_avg(1);
+select *
+from products_with_price_higher_than_given_providers_avg(1);
 
--- The ratio of regular deliveries of a given product
--- select
+-- The ratio of regular supplies of a given product
+select ratio_of_regular_supplies('Спиннинг', 7) || '%' as percentage;
 
 --Products that sell best with given parameters: cost, supplier, country
---select
+select *
+from most_popular_products();
