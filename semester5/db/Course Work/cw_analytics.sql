@@ -60,6 +60,8 @@ select defected_products_from_country_and_provider(10, 1);
 select *
 from products_by_provider_more_expensive_than_avg(1, 1);
 
+
+
 --Percentage of cheap goods received from a given supplier
 select products_cheaper_than_specified(10000, 4) || '%' as percentage;
 

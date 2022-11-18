@@ -251,25 +251,29 @@ create or replace function products_by_provider_more_expensive_than_avg(_country
                 price         integer,
                 country       text,
                 date_of_sale  date,
-                is_defect     boolean
+                is_defect     boolean,
+                avg_price     integer
             )
 as
 $$
 begin
-    return query select product_info.name,
+    return query with avg as (select avg(product_info.price)
+                              from product_info
+                                       inner join countries c on product_info.country = c.name
+                              where c.id = _country_id)
+                 select product_info.name,
                         product_info.date_of_issue,
                         product_info.provider,
                         product_info.price,
                         product_info.country,
                         product_info.date_of_sale,
-                        product_info.is_defect
+                        product_info.is_defect,
+                        avg::integer
                  from product_info
-                          inner join providers p on product_info.provider = p.name
+                          inner join providers p on product_info.provider = p.name,
+                      avg
                  where p.id = provider_id
-                   and product_info.price > (select avg(product_info.price)
-                                             from product_info
-                                                      inner join countries c on product_info.country = c.name
-                                             where c.id = _country_id);
+                   and product_info.price > avg;
 end;
 $$ language plpgsql;
 
@@ -307,18 +311,23 @@ create or replace function products_with_price_higher_than_given_providers_avg(_
                 price         integer,
                 country       text,
                 date_of_sale  date,
-                is_defect     boolean
+                is_defect     boolean,
+                avg_price     integer
             )
 as
 $$
 begin
-    return query select product_info.*
+    return query with avg as (select avg(product_info.price)
+                              from product_info
+                                       inner join providers p on product_info.provider = p.name
+                              where p.id = _provider_id)
+                 select product_info.*,
+                        avg::integer
                  from product_info
-                          inner join providers provider on product_info.provider = provider.name
-                 where product_info.price > (select avg(product_info.price)
-                                             from product_info
-                                                      inner join providers p on product_info.provider = p.name
-                                             where p.id = _provider_id);
+                          inner join providers provider
+                                     on product_info.provider = provider.name,
+                      avg
+                 where product_info.price > avg;
 end;
 $$ language plpgsql;
 
