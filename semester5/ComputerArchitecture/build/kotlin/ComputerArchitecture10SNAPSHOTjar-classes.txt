@@ -1,1 +1,0 @@
-/Users/kheynov/code/NSTU_LABS/semester5/ComputerArchitecture/build/classes/kotlin/main/MainKt.class
