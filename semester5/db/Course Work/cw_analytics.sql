@@ -69,6 +69,8 @@ select products_cheaper_than_specified(10000, 4) || '%' as percentage;
 select round(avg(price)) || ' RUB' as avg_price
 from products_with_date_interval('[2021-01-01, 2021-12-31]'::daterange);
 
+-- Найти среднюю стоимость товаров
+
 --Goods whose price is higher than the average cost of a given producer
 select *
 from products_with_price_higher_than_given_providers_avg(1);
