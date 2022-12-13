@@ -215,3 +215,33 @@ end;
 $DO$ language plpgsql;
 
 select fill_porcelain_products(1000);
+
+
+drop role if exists operator;
+drop role if exists db_user;
+drop role if exists admin;
+
+--Пересоздаем пользователей
+create role operator with login password '12345';
+create role db_user with login password '12345';
+create role admin with login password '12345';
+
+--Выделяем права на схему public
+grant usage on schema public to operator;
+grant usage on schema public to db_user;
+grant usage on schema public to admin;
+
+grant all on schema public to admin;
+grant all on schema public to operator;
+grant all on schema public to db_user;
+
+
+grant select, usage on all sequences in schema public to operator;
+grant select, usage on all sequences in schema public to db_user;
+grant all privileges on all sequences in schema public to admin;
+
+
+--Выдаем права на таблицы справочники оператору, на остальные таблицы обычному пользователю, администратору на все
+grant insert, select, update, delete on cities, manufacturers, porcelain_product_types to operator;
+grant insert, select, update, delete on porcelain_products, providers to db_user;
+grant all privileges on all tables in schema public to admin;
