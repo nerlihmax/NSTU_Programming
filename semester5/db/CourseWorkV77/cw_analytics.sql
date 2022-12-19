@@ -248,4 +248,8 @@ from equipments_info eq
 where price > (select * from avg_price)
 order by price;
 
--- Найти все спортивные товары, предназначенные для детей
+-- Найти все спортивные товары, предназначенные для клиентов заданного возраста (детские, для подростков, для взрослых, для пенсионеров)
+select *
+from equipments_info
+where age_category = 'Для детей';
+
