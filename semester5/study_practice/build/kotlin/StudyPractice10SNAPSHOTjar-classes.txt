@@ -1,0 +1,1 @@
+/Users/kheynov/code/StudyPractice/build/classes/kotlin/main/ClientKt.class:/Users/kheynov/code/StudyPractice/build/classes/kotlin/main/ServerKt.class
