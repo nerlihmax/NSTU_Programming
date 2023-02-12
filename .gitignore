@@ -8,6 +8,7 @@
 /semester4/kg/lab3/riugaa/vectorAdd.o
 /semester5/pp/labs/Task58/task58
 /semester5/fetch_lab.sh
+/semester6/web_prog/fetch_from_server.sh
 *.out
 *.o
 /db/.idea
