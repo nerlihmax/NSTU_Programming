@@ -19,6 +19,16 @@
     ini_set('display_startup_errors', '1');
     error_reporting(E_ALL);
 
+    session_start();
+
+    $authenticated = !empty($_SESSION['auth']);
+    $authenticated = $authenticated && $_SESSION['auth'] == true;
+
+    if (!$authenticated && $_SESSION['group'] < 1) {
+        header('location:forbidden.html');
+        exit();
+    }
+
     $queries = array();
     parse_str($_SERVER["QUERY_STRING"], $queries);
 

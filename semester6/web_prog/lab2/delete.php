@@ -2,6 +2,16 @@
 
 require_once "config.php";
 
+session_start();
+
+$authenticated = !empty($_SESSION['auth']);
+$authenticated = $authenticated && $_SESSION['auth'] == true;
+
+if (!$authenticated && $_SESSION['group'] < 2) {
+    header('location:forbidden.html');
+    exit();
+}
+
 $queries = array();
 parse_str($_SERVER["QUERY_STRING"], $queries);
 

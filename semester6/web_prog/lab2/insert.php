@@ -19,6 +19,16 @@
     ini_set('display_startup_errors', '1');
     error_reporting(E_ALL);
 
+    session_start();
+
+    $authenticated = !empty($_SESSION['auth']);
+    $authenticated = $authenticated && $_SESSION['auth'] == true;
+
+    if (!$authenticated && $_SESSION['group'] < 2) {
+        header('location:forbidden.html');
+        exit();
+    }
+
     $dbconn = pg_connect("host=$host port=$port user=$user password=$password dbname=$db")
         or die('Не удалось соединиться: ' . pg_last_error());
 

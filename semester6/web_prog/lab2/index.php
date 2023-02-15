@@ -71,9 +71,11 @@
     <th>price</th>
     <th>date</th>";
 
-    if ($authenticated && $_SESSION['group'] == 1) {
-        echo "<th></th>
-        <th></th>";
+    if ($authenticated && $_SESSION['group'] >= 1) {
+        echo "<th></th>";
+        if ($authenticated && $_SESSION['group'] >= 2) {
+            echo "<th></th>";
+        }
     }
 
     echo "</tr>\n";
@@ -85,7 +87,9 @@
         }
         if ($authenticated && $_SESSION['group'] >= 1) {
             echo "\t<td><a href=\"update.php?id=" . $line["id"] . "\">Update</a></td>";
-            echo "\t<td><a href=\"delete.php?id=" . $line["id"] . "\">Delete</a></td>";
+            if ($authenticated && $_SESSION['group'] >= 2) {
+                echo "\t<td><a href=\"delete.php?id=" . $line["id"] . "\">Delete</a></td>";
+            }
         }
         echo "\t</tr>\n";
     }
