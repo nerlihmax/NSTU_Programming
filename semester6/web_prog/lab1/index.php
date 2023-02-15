@@ -1,7 +1,7 @@
 <html>
 
 <head>
-    <title>Web programming NSTU course</title>
+    <title>Лабораторная №1</title>
     <style>
         body {
             display: block;
