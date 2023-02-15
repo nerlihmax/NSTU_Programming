@@ -2,6 +2,12 @@
 
 <head>
     <title>Web programming NSTU course</title>
+    <style>
+        body {
+            display: block;
+            text-align: -webkit-center;
+        }
+    </style>
 </head>
 
 <body>

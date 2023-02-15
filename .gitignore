@@ -10,6 +10,7 @@
 /semester5/fetch_lab.sh
 /semester6/web_prog/fetch_from_server.sh
 *.out
+/semester6/web_prog/lab2/config.php
 *.o
 /db/.idea
 /db/.DS_Store

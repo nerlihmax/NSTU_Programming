@@ -5,7 +5,8 @@
 </head>
 
 <body>
-    <h1>Hello World lab4!</h1>
+    <h1>Лабораторная №4</h1>
+    <h3>Вариант 17</h3>
 
 </body>
 
