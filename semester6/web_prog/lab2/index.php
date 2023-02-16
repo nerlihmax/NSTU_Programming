@@ -71,6 +71,10 @@
     <th>price</th>
     <th>date</th>";
 
+    echo "<br><br>";
+    echo var_dump($_SESSION);
+    echo "<br><br>";
+
     if ($authenticated && $_SESSION['group'] >= 1) {
         echo "<th></th>";
         if ($authenticated && $_SESSION['group'] >= 2) {

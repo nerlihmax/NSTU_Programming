@@ -13,7 +13,7 @@
 <body>
     <h1>Лабораторная №3</h1>
     <h3>Вариант 17</h3>
-
+    <h3>Часть 1</h3>
 
     <?php
     ini_set('display_errors', '1');
@@ -25,17 +25,8 @@
     $dbconn = pg_connect('host=' . $host . ' port=' . $port . ' user=' . $user . ' password=' . $password . ' dbname=' . $db)
         or die('Не удалось соединиться: ' . pg_last_error());
 
-    // $query = 'select ads.id, type.type, city.name as city, ads.address, ads.roominess, ads.price, ads.created_at from ads inner join ad_types as type on ads.type = type.id inner join cities as city on ads.city = city.id;';
-    
-    $query = 'select roominess, count(*) from ads group by roominess;';
+    $query = 'select ads.id, type.type, city.name as city, ads.address, ads.roominess, ads.price, ads.created_at from ads inner join ad_types as type on ads.type = type.id inner join cities as city on ads.city = city.id;';
 
-    $result = pg_query($dbconn, $query) or die('Ошибка запроса: ' . pg_last_error());
-
-    $result = pg_fetch_assoc($result, 3);
-
-    echo var_dump($result);
-    // echo $query . "<br><br>";
-    
     $result = pg_query($dbconn, $query) or die('Ошибка запроса: ' . pg_last_error());
 
     echo "<table border=\"1\">\n";
@@ -68,8 +59,34 @@
     <br><br>
 
     <h3>Количество объявлений/Количество комнат в квартирах</h3>
-    <img src="charts.php" alt="">
 
+    <style>
+        #v-legend {
+            display: inline-block;
+            transform: rotateZ(-90deg);
+            position: absolute;
+            top: 50%;
+            left: -20%;
+        }
+
+        .graph {
+            position: relative;
+            max-width: fit-content;
+        }
+    </style>
+
+    <div class="graph">
+        <span id="v-legend">Количество объявлений</span>
+        <img id="image" src="charts.php" alt="">
+    </div>
+
+    <span>Количество комнат в квартире</span>
+
+    <script>
+        setInterval(() => {
+            image.src = 'charts.php?' + new Date().getTime();
+        }, 1000);
+    </script>
 </body>
 
 </html>
