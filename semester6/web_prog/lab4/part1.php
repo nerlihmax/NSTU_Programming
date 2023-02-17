@@ -62,9 +62,6 @@
                         required: "Список пожеланий не может быть пустым.",
                     }
                 },
-                invalidHandler: (event, validator) => {
-                    console.log(validator, event)
-                }
             });
         });
     </script>

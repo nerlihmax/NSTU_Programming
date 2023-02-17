@@ -58,7 +58,7 @@
 
     <br><br>
 
-    <h3>Количество объявлений/Количество комнат в квартирах</h3>
+    <h3>Количество объявлений / Город</h3>
 
     <style>
         #v-legend {
@@ -76,12 +76,13 @@
     </style>
 
     <div class="graph">
-        <span id="v-legend">Количество объявлений</span>
+        <h3 id="v-legend">Количество объявлений</h3>
         <img id="image" src="charts.php" alt="">
     </div>
 
-    <span>Количество комнат в квартире</span>
-
+    <h3>Город</h3>
+    <br>
+    <br>
     <script>
         setInterval(() => {
             image.src = 'charts.php?' + new Date().getTime();

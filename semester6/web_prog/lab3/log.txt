@@ -6,3 +6,6 @@
 -Ну и зачем ты это сделал!?</p>
 ========================
 
+17.Feb.23 04:02:15	 <b>Gun<b>	<p><strong>Это </strong><span style="color: rgb(255, 0, 0);"><em>тест</em></span>, <a href="http://gun.cs.nstu.ru">меня</a> <span style="color: rgb(192, 192, 192);">видно</span>?-)</p>
+========================
+
