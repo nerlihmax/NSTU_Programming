@@ -10,7 +10,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
-public class HelloApplication extends Application {
+public class Lab1 extends Application {
     private int count = 1;
 
     private static final int WIDTH = 600;
@@ -52,14 +52,6 @@ public class HelloApplication extends Application {
         stage.show();
 
     }
-
-    AnimationTimer timer = new AnimationTimer() {
-        @Override
-        public void handle(long now) {
-
-        }
-    };
-
 
     private void drawLines(GraphicsContext gc) {
         gc.clearRect(0, 0, WIDTH, HEIGHT);
