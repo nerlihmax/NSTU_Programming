@@ -16,14 +16,10 @@ public class GraphicsController extends JPanel {
                 int x = e.getX();
                 int y = e.getY();
                 GraphicalObject object = null;
-                try {
-                    if (e.getButton() == MouseEvent.BUTTON1) {
-                        object = new Smiley(x, y, 50, 50, Color.GREEN);
-                    } else if (e.getButton() == MouseEvent.BUTTON3) {
-                        object = new ImageObject(x, y, 90, 90, Color.WHITE, "https://images.vexels.com/media/users/3/143390/isolated/lists/6e77e1e50898b0f14d32e17646332a01-dvd-logo-blue.png");
-                    }
-                } catch (IOException ex) {
-                    System.out.println("Failed to draw object");
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    object = new Smiley(x, y, 50, 50, Color.GREEN);
+                } else if (e.getButton() == MouseEvent.BUTTON3) {
+                    object = new Smiley(x, y, 50, 50, Color.RED);
                 }
                 if (object != null) {
                     objects.add(object);
@@ -32,15 +28,17 @@ public class GraphicsController extends JPanel {
         });
 
         // Screen updates ~60 FPS
-        var timer = new Timer(10, e -> {
-            // Move the objects
-            for (GraphicalObject obj : objects) {
-                obj.move(new Vector(getWidth(), getHeight()));
-            }
-            // Repaint the canvas
-            repaint();
+        SwingUtilities.invokeLater(() -> {
+            var timer = new Timer(10, e -> {
+                // Move the objects
+                for (GraphicalObject obj : objects) {
+                    obj.move(new Vector(getWidth(), getHeight()));
+                }
+                // Repaint the canvas
+                repaint();
+            });
+            timer.start();
         });
-        timer.start();
     }
 
     @Override
