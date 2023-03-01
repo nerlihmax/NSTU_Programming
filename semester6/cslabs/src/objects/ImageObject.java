@@ -1,3 +1,8 @@
+package objects;
+
+import objects.GraphicalObject;
+import utils.Vector;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.io.*;
@@ -16,7 +21,8 @@ public class ImageObject extends GraphicalObject {
     }
 
     @Override
-    public void draw(Graphics g, int canvasWidth, int canvasHeight) {
+    public void draw(Graphics g) {
+        super.draw(g);
         g.drawImage(image, x - width / 2, y - height / 2, width, height, null);
     }
 
@@ -37,11 +43,11 @@ public class ImageObject extends GraphicalObject {
     }
 
     @Override
-    public void move(Vector movement) {
-        if (x + width / 2 >= movement.x() || x - width / 2 <= 0) {
+    public void move(Vector canvas) {
+        if (x + width / 2 >= canvas.x() || x - width / 2 <= 0) {
             vx *= -1;
         }
-        if (y + height / 2 >= movement.y() || y - height / 2 <= 0) {
+        if (y + height / 2 >= canvas.y() || y - height / 2 <= 0) {
             vy *= -1;
         }
         x += vx;

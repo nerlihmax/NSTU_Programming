@@ -1,69 +1,118 @@
+import objects.GraphicalObject;
+import objects.ImageObject;
+import objects.Smiley;
+import ui_components.ButtonsPanel;
+import utils.EditorModes;
+import utils.Vector;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.*;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class GraphicsController extends JPanel {
-    private ArrayList<GraphicalObject> objects = new ArrayList<>();
+    private final ArrayList<GraphicalObject> objects = new ArrayList<>();
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+
+    private EditorModes mode = EditorModes.ADD;
 
     public GraphicsController() {
-        setBackground(Color.WHITE);
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                int x = e.getX();
-                int y = e.getY();
-                GraphicalObject object = null;
-                if (e.getButton() == MouseEvent.BUTTON1) {
-                    object = new Smiley(x, y, 50, 50, Color.GREEN);
-                } else if (e.getButton() == MouseEvent.BUTTON3) {
-                    object = new Smiley(x, y, 50, 50, Color.RED);
-                }
-                if (object != null) {
-                    objects.add(object);
-                }
-            }
-        });
-
-        // Screen updates ~60 FPS
-        SwingUtilities.invokeLater(() -> {
-            var timer = new Timer(10, e -> {
-                // Move the objects
-                for (GraphicalObject obj : objects) {
-                    obj.move(new Vector(getWidth(), getHeight()));
-                }
-                // Repaint the canvas
-                repaint();
-            });
-            timer.start();
-        });
+        start();
+        registerModesPanel();
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         for (GraphicalObject object : objects) {
-            object.draw(g, getWidth(), getHeight());
+            object.draw(g);
         }
     }
 
-    public void saveToFile(String fileName) throws IOException {
-        OutputStream output = new BufferedOutputStream(new FileOutputStream(fileName));
-        ObjectOutputStream oos = new ObjectOutputStream(output);
-        oos.writeObject(objects);
+    private void registerModesPanel() {
+        ButtonsPanel buttonsPanel = new ButtonsPanel();
+        add(buttonsPanel, BorderLayout.SOUTH);
+
+        buttonsPanel.onAddButtonClicked(e -> {
+            mode = EditorModes.ADD;
+            objects.forEach(GraphicalObject::hideOutline);
+        });
+
+        buttonsPanel.onRemoveButtonClicked(e -> {
+            mode = EditorModes.REMOVE;
+            objects.forEach(GraphicalObject::showOutline);
+        });
+
+        buttonsPanel.onStopButtonClicked(e -> {
+            mode = EditorModes.STOP_RESUME;
+            objects.forEach(GraphicalObject::showOutline);
+        });
+
+        buttonsPanel.onStopAllButtonClicked(e -> {
+            objects.forEach(GraphicalObject::stop);
+        });
+
+        buttonsPanel.onResumeAllButtonClicked(e -> {
+            objects.forEach(GraphicalObject::resume);
+        });
     }
 
-    public void loadFromFile(String fileName) throws IOException {
-        try (InputStream input = new BufferedInputStream(new FileInputStream(fileName))) {
-            ObjectInputStream ois = new ObjectInputStream(input);
-            try {
-                objects = (ArrayList<GraphicalObject>) ois.readObject();
-            } catch (Exception e) {
-                System.out.println(e.getLocalizedMessage());
+    private void start() {
+        scheduledExecutor.scheduleAtFixedRate(() -> {
+            executor.submit(() -> objects.forEach(obj -> {
+                if (obj.isMoving()) {
+                    obj.move(new Vector(getWidth(), getHeight()));
+                }
+            }));
+
+            SwingUtilities.invokeLater(this::repaint);
+        }, 0, 16, TimeUnit.MILLISECONDS);
+
+        setBackground(Color.WHITE);
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int x = e.getX();
+                int y = e.getY();
+
+                GraphicalObject object = null;
+
+                if (mode == EditorModes.REMOVE) {
+                    objects.removeIf(obj -> obj.contains(x, y));
+                    return;
+                }
+
+                if (mode == EditorModes.STOP_RESUME) {
+                    objects.stream().filter(obj -> obj.contains(x, y)).findFirst().ifPresent(obj -> {
+                        if (obj.isMoving()) {
+                            obj.stop();
+                        } else {
+                            obj.resume();
+                        }
+                    });
+                    return;
+                }
+
+                try {
+                    if (e.getButton() == MouseEvent.BUTTON1) {
+                        object = new Smiley(x, y, 50, 50, Color.YELLOW);
+                    } else if (e.getButton() == MouseEvent.BUTTON3) {
+                        object = new ImageObject(x, y, 90, 90, Color.WHITE, "https://images.vexels.com/media/users/3/143390/isolated/lists/6e77e1e50898b0f14d32e17646332a01-dvd-logo-blue.png");
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+                if (object != null) {
+                    objects.add(object);
+                }
             }
-        }
-        repaint();
+        });
     }
 }
