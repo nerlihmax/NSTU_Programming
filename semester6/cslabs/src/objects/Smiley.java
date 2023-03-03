@@ -3,10 +3,13 @@ package objects;
 import utils.Vector;
 
 import java.awt.*;
+import java.util.Random;
 
 public class Smiley extends GraphicalObject {
-    private int vx = 3;
-    private int vy = 3;
+    private final Random random = new Random();
+    private int vx = random.nextInt(1, 7);
+    private int vy = random.nextInt(1, 7);
+
 
     public Smiley(int x, int y, int width, int height, Color color) {
         super(x, y, width, height, color);
@@ -15,8 +18,6 @@ public class Smiley extends GraphicalObject {
     @Override
     public void draw(Graphics g) {
         super.draw(g);
-        Graphics2D g2d = (Graphics2D) g;
-
         g.setColor(color);
         g.fillOval(x - width / 2, y - height / 2, width, height);
         g.setColor(Color.BLACK);
