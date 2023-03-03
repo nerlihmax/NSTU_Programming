@@ -10,6 +10,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -19,6 +20,7 @@ public class GraphicsController extends JPanel {
     private final ArrayList<GraphicalObject> objects = new ArrayList<>();
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+    private final Random random = new Random();
 
     private EditorModes mode = EditorModes.ADD;
 
@@ -101,7 +103,9 @@ public class GraphicsController extends JPanel {
                 if (e.getButton() == MouseEvent.BUTTON1) {
                     object = new Smiley(x, y, 50, 50, Color.YELLOW);
                 } else if (e.getButton() == MouseEvent.BUTTON3) {
-                    object = new Star(x, y, 90, 90, Color.RED);
+                    var size = random.nextInt(50, 150);
+                    var vertices = random.nextInt(5,9);
+                    object = new Star(x, y, size, size, Color.RED, vertices);
                 }
 
                 if (object != null) {
