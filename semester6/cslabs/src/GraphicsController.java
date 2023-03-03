@@ -1,6 +1,6 @@
 import objects.GraphicalObject;
-import objects.ImageObject;
 import objects.Smiley;
+import objects.Star;
 import ui_components.ButtonsPanel;
 import utils.EditorModes;
 import utils.Vector;
@@ -9,7 +9,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,8 +23,8 @@ public class GraphicsController extends JPanel {
     private EditorModes mode = EditorModes.ADD;
 
     public GraphicsController() {
-        start();
         registerModesPanel();
+        start();
     }
 
     @Override
@@ -99,16 +98,12 @@ public class GraphicsController extends JPanel {
                     });
                     return;
                 }
-
-                try {
-                    if (e.getButton() == MouseEvent.BUTTON1) {
-                        object = new Smiley(x, y, 50, 50, Color.YELLOW);
-                    } else if (e.getButton() == MouseEvent.BUTTON3) {
-                        object = new ImageObject(x, y, 90, 90, Color.WHITE, "https://images.vexels.com/media/users/3/143390/isolated/lists/6e77e1e50898b0f14d32e17646332a01-dvd-logo-blue.png");
-                    }
-                } catch (IOException ex) {
-                    ex.printStackTrace();
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    object = new Smiley(x, y, 50, 50, Color.YELLOW);
+                } else if (e.getButton() == MouseEvent.BUTTON3) {
+                    object = new Star(x, y, 90, 90, Color.RED);
                 }
+
                 if (object != null) {
                     objects.add(object);
                 }

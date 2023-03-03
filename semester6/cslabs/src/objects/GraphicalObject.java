@@ -41,6 +41,10 @@ public abstract class GraphicalObject {
         isShowOutline = false;
     }
 
+    public boolean isShowOutline() {
+        return isShowOutline;
+    }
+
     public void draw(Graphics g) {
         if (isShowOutline) {
             g.setColor(Color.GREEN);
