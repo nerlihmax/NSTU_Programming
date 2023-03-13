@@ -1,19 +1,19 @@
-sudo apt update -y 
-sudo apt upgrade -y
-sudo apt install zsh -y
-sudo chsh /bin/zsh
-sudo apt install git curl -y
-sudo apt install software-properties-common -y
-sudo add-apt-repository ppa:neovim-ppa/stable -y
-sudo apt update
-sudo apt install neovim -y
+apt update -y 
+apt upgrade -y
+apt install zsh -y
+chsh -s /bin/zsh ${USER}
+apt install git curl -y
+apt install software-properties-common -y
+add-apt-repository ppa:neovim-ppa/stable -y
+apt update
+apt install neovim -y
 sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
        https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
 
-curl -L https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh | sh
-git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
-git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
-git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
+curl -L https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh | sh &&
+git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions &&
+git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting &&
+git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k 
 
 echo '
 export ZSH="$HOME/.oh-my-zsh"
@@ -87,26 +87,27 @@ inoremap <silent><expr> <TAB> pumvisible() ? coc#_select_confirm() : "\<C-g>u\<T
 :set termguicolors
 colorscheme onedark' > ~/.config/nvim/init.vim
 
-sudo apt install nginx
+apt install nginx
 
-sudo apt install apt-transport-https ca-certificates curl software-properties-common
+apt install apt-transport-https ca-certificates curl software-properties-common
 
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
 
-sudo apt update
+apt update
 
-sudo apt-cache policy docker-ce
+apt-cache policy docker-ce
 
-sudo apt install docker-ce -y
+apt install docker-ce -y
 
-sudo curl -L "https://github.com/docker/compose/releases/download/1.26.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+curl -L "https://github.com/docker/compose/releases/download/1.26.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 
-sudo chmod +x /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
 
-sudo usermod -aG docker ${USER}
+usermod -aG docker ${USER}
 
-sudo su - ${USER}
+su - ${USER}
 
 id -nG
+
