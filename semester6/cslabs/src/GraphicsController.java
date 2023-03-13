@@ -101,7 +101,7 @@ public class GraphicsController extends JPanel {
                     return;
                 }
                 if (e.getButton() == MouseEvent.BUTTON1) {
-                    object = new Smiley(x, y, 50, 50, Color.YELLOW);
+                    object = new Smiley(x, y, 50, 50, Color.CYAN);
                 } else if (e.getButton() == MouseEvent.BUTTON3) {
                     var size = random.nextInt(50, 150);
                     var vertices = random.nextInt(5,9);
