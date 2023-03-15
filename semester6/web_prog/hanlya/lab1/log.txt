@@ -1,0 +1,4 @@
+{"encoding":"CP-1251","font":"Apple Mono"}
+{"encoding":"UTF-8","font":"Arial"}
+{"encoding":"UTF-16","font":"Times New Roman"}
+{"encoding":"CP-1251","font":"Times New Roman"}
