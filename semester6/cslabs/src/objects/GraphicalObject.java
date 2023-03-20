@@ -56,27 +56,34 @@ public abstract class GraphicalObject {
         return (x >= this.x - width / 2 && x <= this.x + width / 2 && y >= this.y - height / 2 && y <= this.y + height / 2);
     }
 
-    public void read(InputStream input) throws IOException {
-        var dis = new DataInputStream(input);
-        x = dis.readInt();
-        y = dis.readInt();
-        width = dis.readInt();
-        height = dis.readInt();
-        int r = dis.readInt();
-        int g = dis.readInt();
-        int b = dis.readInt();
-        color = new Color(r, g, b);
+    public void read(byte[] input) throws IOException {
+        try (
+                ByteArrayInputStream bis = new ByteArrayInputStream(input);
+                ObjectInputStream dis = new ObjectInputStream(bis)) {
+            x = dis.readInt();
+            y = dis.readInt();
+            width = dis.readInt();
+            height = dis.readInt();
+            int r = dis.readInt();
+            int g = dis.readInt();
+            int b = dis.readInt();
+            color = new Color(r, g, b);
+        }
     }
 
-    public void write(OutputStream output) throws IOException {
-        var dos = new DataOutputStream(output);
-        dos.writeInt(x);
-        dos.writeInt(y);
-        dos.writeInt(width);
-        dos.writeInt(height);
-        dos.writeInt(color.getRed());
-        dos.writeInt(color.getGreen());
-        dos.writeInt(color.getBlue());
+    public byte[] write() throws IOException {
+        try (
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                ObjectOutputStream out = new ObjectOutputStream(bos)) {
+            out.writeInt(x);
+            out.writeInt(y);
+            out.writeInt(width);
+            out.writeInt(height);
+            out.writeInt(color.getRed());
+            out.writeInt(color.getGreen());
+            out.writeInt(color.getBlue());
+            return bos.toByteArray();
+        }
     }
 
     public abstract void move(Vector movement);

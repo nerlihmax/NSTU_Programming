@@ -1,14 +1,22 @@
+import network.NetworkRepository;
+import network.TCPNetworkRepository;
 import objects.GraphicalObject;
 import objects.Smiley;
 import objects.Star;
+import org.json.JSONObject;
 import ui_components.ButtonsPanel;
 import utils.EditorModes;
+import utils.NetworkCommands;
+import utils.ObjectInfo;
 import utils.Vector;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
@@ -16,17 +24,19 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class GraphicsController extends JPanel {
+public class GraphicsController extends JPanel implements Runnable {
     private final ArrayList<GraphicalObject> objects = new ArrayList<>();
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
     private final Random random = new Random();
+    private final NetworkRepository networkRepository;
 
     private EditorModes mode = EditorModes.ADD;
 
-    public GraphicsController() {
+    public GraphicsController(boolean isServer) {
         registerModesPanel();
         start();
+        networkRepository = new TCPNetworkRepository(isServer);
     }
 
     @Override
@@ -35,6 +45,9 @@ public class GraphicsController extends JPanel {
         for (GraphicalObject object : objects) {
             object.draw(g);
         }
+        var thread = new Thread(this);
+        thread.setDaemon(true);
+        thread.start();
     }
 
     private void registerModesPanel() {
@@ -56,13 +69,9 @@ public class GraphicsController extends JPanel {
             objects.forEach(GraphicalObject::showOutline);
         });
 
-        buttonsPanel.onStopAllButtonClicked(e -> {
-            objects.forEach(GraphicalObject::stop);
-        });
+        buttonsPanel.onStopAllButtonClicked(e -> objects.forEach(GraphicalObject::stop));
 
-        buttonsPanel.onResumeAllButtonClicked(e -> {
-            objects.forEach(GraphicalObject::resume);
-        });
+        buttonsPanel.onResumeAllButtonClicked(e -> objects.forEach(GraphicalObject::resume));
     }
 
     private void start() {
@@ -102,9 +111,10 @@ public class GraphicsController extends JPanel {
                 }
                 if (e.getButton() == MouseEvent.BUTTON1) {
                     object = new Smiley(x, y, 50, 50, Color.CYAN);
+                    networkRepository.sendObject(object);
                 } else if (e.getButton() == MouseEvent.BUTTON3) {
                     var size = random.nextInt(50, 150);
-                    var vertices = random.nextInt(5,9);
+                    var vertices = random.nextInt(5, 9);
                     object = new Star(x, y, size, size, Color.RED, vertices);
                 }
 
@@ -113,5 +123,39 @@ public class GraphicsController extends JPanel {
                 }
             }
         });
+    }
+
+    @Override
+    public void run() {
+        eventLoop:
+        while (true) {
+            try (var br = new BufferedReader(new InputStreamReader(networkRepository.getInputStream()))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    var jsonObject = new JSONObject(line);
+                    var command = jsonObject.getString("command");
+                    switch (command) {
+                        case NetworkCommands.CLOSE_CONNECTION -> {
+                            networkRepository.closeConnection();
+                            break eventLoop;
+                        }
+                        case NetworkCommands.CLEAR_OBJECTS -> {
+                            networkRepository.clearObjects();
+                            objects.clear();
+                            repaint();
+                        }
+                        case NetworkCommands.GET_OBJ_BY_INDEX -> {
+                            var index = jsonObject.getInt("index");
+                            networkRepository.sendObject(objects.get(index));
+                        }
+                        case NetworkCommands.GET_OBJ -> {}
+                        case NetworkCommands.GET_OBJ_LIST -> networkRepository.sendObjectsList(objects.stream().map(item -> new ObjectInfo(item.getClass().getSimpleName(), item.hashCode())).toList());
+                        case NetworkCommands.GET_OBJ_LIST_SIZE -> networkRepository.sendObjectsListSize(objects.size());
+                    }
+                }
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
+            }
+        }
     }
 }
