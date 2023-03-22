@@ -1,5 +1,5 @@
 package utils;
 
-public record ObjectInfo(String objectType, int hash) {
+public record ObjectInfo(String objectType, String hash) {
 
 }

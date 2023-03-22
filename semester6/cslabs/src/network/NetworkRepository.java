@@ -3,9 +3,6 @@ package network;
 import objects.GraphicalObject;
 import utils.ObjectInfo;
 
-import java.io.InputStream;
-import java.util.List;
-
 public interface NetworkRepository {
     void closeConnection();
 
@@ -13,9 +10,15 @@ public interface NetworkRepository {
 
     void sendObject(GraphicalObject object);
 
-    void sendObjectsList(List<ObjectInfo> objects);
+    void sendObjectByIndex(int index, GraphicalObject object);
+
+    void sendObjectsList(ObjectInfo[] objects);
 
     void sendObjectsListSize(int size);
 
-    InputStream getInputStream();
+    void requestObjectByIndex(int index);
+
+    void requestObjectsList();
+
+    void requestObjectsListSize();
 }

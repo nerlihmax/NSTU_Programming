@@ -1,5 +1,6 @@
 package objects;
 
+import org.json.JSONObject;
 import utils.Vector;
 
 import java.awt.*;
@@ -84,6 +85,27 @@ public abstract class GraphicalObject {
             out.writeInt(color.getBlue());
             return bos.toByteArray();
         }
+    }
+
+    public void readFromJson(String json) {
+        var jsonObject = new JSONObject(json);
+        x = jsonObject.getInt("x");
+        y = jsonObject.getInt("y");
+        width = jsonObject.getInt("width");
+        height = jsonObject.getInt("height");
+        color = new Color(jsonObject.getInt("r"), jsonObject.getInt("g"), jsonObject.getInt("b"));
+    }
+
+    public String writeToJson() {
+        var jsonObject = new JSONObject();
+        jsonObject.put("x", x);
+        jsonObject.put("y", y);
+        jsonObject.put("width", width);
+        jsonObject.put("height", height);
+        jsonObject.put("r", color.getRed());
+        jsonObject.put("g", color.getGreen());
+        jsonObject.put("b", color.getBlue());
+        return jsonObject.toString();
     }
 
     public abstract void move(Vector movement);

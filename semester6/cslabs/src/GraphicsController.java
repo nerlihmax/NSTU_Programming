@@ -1,22 +1,18 @@
+import network.NetworkEventListener;
 import network.NetworkRepository;
 import network.TCPNetworkRepository;
 import objects.GraphicalObject;
 import objects.Smiley;
 import objects.Star;
-import org.json.JSONObject;
 import ui_components.ButtonsPanel;
 import utils.EditorModes;
-import utils.NetworkCommands;
-import utils.ObjectInfo;
 import utils.Vector;
+import utils.network_events.NetworkEvent;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
@@ -24,7 +20,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class GraphicsController extends JPanel implements Runnable {
+public class GraphicsController extends JPanel implements NetworkEventListener {
     private final ArrayList<GraphicalObject> objects = new ArrayList<>();
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
@@ -36,7 +32,10 @@ public class GraphicsController extends JPanel implements Runnable {
     public GraphicsController(boolean isServer) {
         registerModesPanel();
         start();
-        networkRepository = new TCPNetworkRepository(isServer);
+        networkRepository = new TCPNetworkRepository(isServer, this);
+        var thread = new Thread((Runnable) networkRepository);
+//        thread.setDaemon(true);
+        thread.start();
     }
 
     @Override
@@ -45,9 +44,7 @@ public class GraphicsController extends JPanel implements Runnable {
         for (GraphicalObject object : objects) {
             object.draw(g);
         }
-        var thread = new Thread(this);
-        thread.setDaemon(true);
-        thread.start();
+
     }
 
     private void registerModesPanel() {
@@ -126,36 +123,7 @@ public class GraphicsController extends JPanel implements Runnable {
     }
 
     @Override
-    public void run() {
-        eventLoop:
-        while (true) {
-            try (var br = new BufferedReader(new InputStreamReader(networkRepository.getInputStream()))) {
-                String line;
-                while ((line = br.readLine()) != null) {
-                    var jsonObject = new JSONObject(line);
-                    var command = jsonObject.getString("command");
-                    switch (command) {
-                        case NetworkCommands.CLOSE_CONNECTION -> {
-                            networkRepository.closeConnection();
-                            break eventLoop;
-                        }
-                        case NetworkCommands.CLEAR_OBJECTS -> {
-                            networkRepository.clearObjects();
-                            objects.clear();
-                            repaint();
-                        }
-                        case NetworkCommands.GET_OBJ_BY_INDEX -> {
-                            var index = jsonObject.getInt("index");
-                            networkRepository.sendObject(objects.get(index));
-                        }
-                        case NetworkCommands.GET_OBJ -> {}
-                        case NetworkCommands.GET_OBJ_LIST -> networkRepository.sendObjectsList(objects.stream().map(item -> new ObjectInfo(item.getClass().getSimpleName(), item.hashCode())).toList());
-                        case NetworkCommands.GET_OBJ_LIST_SIZE -> networkRepository.sendObjectsListSize(objects.size());
-                    }
-                }
-            } catch (IOException e) {
-                System.out.println(e.getMessage());
-            }
-        }
+    public void onEvent(NetworkEvent event) {
+
     }
 }
