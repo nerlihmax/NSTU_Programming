@@ -6,16 +6,16 @@ import objects.Smiley;
 import objects.Star;
 import ui_components.ButtonsPanel;
 import utils.EditorModes;
+import utils.ObjectInfo;
 import utils.Vector;
-import utils.network_events.ClearObjects;
-import utils.network_events.NetworkEvent;
-import utils.network_events.ResponseObject;
+import utils.network_events.*;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -51,7 +51,7 @@ public class GraphicsController extends JPanel implements NetworkEventListener {
 
     private void registerModesPanel() {
         ButtonsPanel buttonsPanel = new ButtonsPanel();
-        add(buttonsPanel, BorderLayout.SOUTH);
+        add(buttonsPanel, BorderLayout.NORTH);
 
         buttonsPanel.onAddButtonClicked(e -> {
             mode = EditorModes.ADD;
@@ -146,6 +146,32 @@ public class GraphicsController extends JPanel implements NetworkEventListener {
                 };
                 object.readFromJson(responseObject.object());
                 objects.add(object);
+            }
+            case ResponseObjectByIndex responseObjectByIndex -> {
+                System.out.println("ResponseObjectByIndex: " + responseObjectByIndex.index());
+                var object = switch (responseObjectByIndex.type()) {
+                    case "Star" -> new Star(100, 100, 100, 100, Color.RED);
+                    case "Smiley" -> new Smiley(100, 100, 100, 100, Color.RED);
+                    default -> throw new IllegalStateException("Unexpected value: " + responseObjectByIndex.object());
+                };
+                object.readFromJson(responseObjectByIndex.object());
+                objects.set(responseObjectByIndex.index(), object);
+            }
+
+            case ResponseObjectListSize responseObjectListSize ->
+                    System.out.println("ResponseObjectListSize: " + responseObjectListSize.size());
+            case ResponseObjectList responseObjectList -> System.out.println("ResponseObjectList: " + Arrays.toString(responseObjectList.objects()));
+            case RequestObjectList ignored -> {
+                System.out.println("RequestObjectList");
+                networkRepository.sendObjectsList(objects.stream().map(item -> new ObjectInfo(item.getClass().getSimpleName(), String.valueOf(item.hashCode()))).toArray(ObjectInfo[]::new));
+            }
+            case RequestObjectListSize ignored -> {
+                System.out.println("RequestObjectListSize");
+                networkRepository.sendObjectsListSize(objects.size());
+            }
+            case RequestObjectByIndex requestObjectByIndex -> {
+                System.out.println("RequestObjectByIndex: " + requestObjectByIndex.index());
+                networkRepository.sendObjectByIndex(requestObjectByIndex.index(), objects.get(requestObjectByIndex.index()));
             }
             default -> System.out.println("Unknown event: " + event);
         }

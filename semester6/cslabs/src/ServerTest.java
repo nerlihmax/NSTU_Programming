@@ -24,11 +24,11 @@ class Util {
             case ClearObjects ignored -> System.out.println("ClearObjects");
             case ResponseObjectByIndex responseObjectByIndex -> {
                 System.out.println("ResponseObjectByIndex: " + "index: " + responseObjectByIndex.index() + " object: " + responseObjectByIndex.object());
-                var object = switch (responseObjectByIndex.objectType()) {
+                var object = switch (responseObjectByIndex.type()) {
                     case "Star" -> new Star(100, 100, 100, 100, Color.RED);
                     case "Smiley" -> new Smiley(100, 100, 100, 100, Color.RED);
                     default ->
-                            throw new IllegalStateException("Unexpected value: " + responseObjectByIndex.objectType());
+                            throw new IllegalStateException("Unexpected value: " + responseObjectByIndex.type());
                 };
                 object.readFromJson(responseObjectByIndex.object());
                 System.out.println(object.writeToJson());

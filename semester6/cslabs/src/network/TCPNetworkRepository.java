@@ -12,8 +12,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class TCPNetworkRepository implements NetworkRepository, Runnable {
-    public static final int SERVER_PORT = 8080;
-    public static final String HOST = "localhost";
+    private int port = 8080;
+    private String host = "localhost";
 
     private ServerSocket serverSocket;
     private Socket clientSocket;
@@ -23,17 +23,23 @@ public class TCPNetworkRepository implements NetworkRepository, Runnable {
     private PrintWriter out;
     private BufferedReader in;
 
+    public TCPNetworkRepository(boolean isServer, NetworkEventListener listener, int port, String hostname) {
+        this(isServer, listener);
+        this.port = port;
+        this.host = hostname;
+    }
+
     public TCPNetworkRepository(boolean isServer, NetworkEventListener listener) {
         this.listener = listener;
         InputStream inputStream;
         OutputStream outputStream;
         try {
             if (isServer) {
-                serverSocket = new ServerSocket(SERVER_PORT);
+                serverSocket = new ServerSocket(port);
                 System.out.println("waiting for client...");
                 clientSocket = serverSocket.accept();
             } else {
-                clientSocket = new Socket(HOST, SERVER_PORT);
+                clientSocket = new Socket(host, port);
             }
             inputStream = clientSocket.getInputStream();
             outputStream = clientSocket.getOutputStream();
