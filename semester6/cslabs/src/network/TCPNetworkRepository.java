@@ -14,6 +14,7 @@ import java.net.Socket;
 public class TCPNetworkRepository implements NetworkRepository, Runnable {
     public static final int SERVER_PORT = 8080;
     public static final String HOST = "localhost";
+
     private ServerSocket serverSocket;
     private Socket clientSocket;
 
@@ -26,28 +27,20 @@ public class TCPNetworkRepository implements NetworkRepository, Runnable {
         this.listener = listener;
         InputStream inputStream;
         OutputStream outputStream;
-        if (isServer) {
-            try {
+        try {
+            if (isServer) {
                 serverSocket = new ServerSocket(SERVER_PORT);
                 System.out.println("waiting for client...");
                 clientSocket = serverSocket.accept();
-                inputStream = clientSocket.getInputStream();
-                outputStream = clientSocket.getOutputStream();
-                out = new PrintWriter(outputStream, true);
-                in = new BufferedReader(new InputStreamReader(inputStream));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else {
-            try {
+            } else {
                 clientSocket = new Socket(HOST, SERVER_PORT);
-                inputStream = clientSocket.getInputStream();
-                outputStream = clientSocket.getOutputStream();
-                out = new PrintWriter(outputStream, true);
-                in = new BufferedReader(new InputStreamReader(inputStream));
-            } catch (IOException e) {
-                e.printStackTrace();
             }
+            inputStream = clientSocket.getInputStream();
+            outputStream = clientSocket.getOutputStream();
+            out = new PrintWriter(outputStream, true);
+            in = new BufferedReader(new InputStreamReader(inputStream));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -181,7 +174,7 @@ public class TCPNetworkRepository implements NetworkRepository, Runnable {
                     case NetworkCommands.RESPONSE_OBJ_LIST_SIZE ->
                             listener.onEvent(new ResponseObjectListSize(jsonObject.getInt("obj_list_size")));
                     case NetworkCommands.RESPONSE_OBJ ->
-                            listener.onEvent(new ResponseObject(jsonObject.getString("object")));
+                            listener.onEvent(new ResponseObject(jsonObject.getString("object"), jsonObject.getString("obj_type")));
                 }
             } catch (IOException e) {
                 System.out.println(e.getMessage());

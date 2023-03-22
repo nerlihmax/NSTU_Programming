@@ -7,7 +7,9 @@ import objects.Star;
 import ui_components.ButtonsPanel;
 import utils.EditorModes;
 import utils.Vector;
+import utils.network_events.ClearObjects;
 import utils.network_events.NetworkEvent;
+import utils.network_events.ResponseObject;
 
 import javax.swing.*;
 import java.awt.*;
@@ -34,7 +36,7 @@ public class GraphicsController extends JPanel implements NetworkEventListener {
         start();
         networkRepository = new TCPNetworkRepository(isServer, this);
         var thread = new Thread((Runnable) networkRepository);
-//        thread.setDaemon(true);
+        thread.setDaemon(true);
         thread.start();
     }
 
@@ -69,6 +71,12 @@ public class GraphicsController extends JPanel implements NetworkEventListener {
         buttonsPanel.onStopAllButtonClicked(e -> objects.forEach(GraphicalObject::stop));
 
         buttonsPanel.onResumeAllButtonClicked(e -> objects.forEach(GraphicalObject::resume));
+
+        buttonsPanel.onClearAllButtonClicked(e -> {
+            networkRepository.clearObjects();
+            objects.clear();
+            repaint();
+        });
     }
 
     private void start() {
@@ -108,7 +116,6 @@ public class GraphicsController extends JPanel implements NetworkEventListener {
                 }
                 if (e.getButton() == MouseEvent.BUTTON1) {
                     object = new Smiley(x, y, 50, 50, Color.CYAN);
-                    networkRepository.sendObject(object);
                 } else if (e.getButton() == MouseEvent.BUTTON3) {
                     var size = random.nextInt(50, 150);
                     var vertices = random.nextInt(5, 9);
@@ -116,6 +123,7 @@ public class GraphicsController extends JPanel implements NetworkEventListener {
                 }
 
                 if (object != null) {
+                    networkRepository.sendObject(object);
                     objects.add(object);
                 }
             }
@@ -124,6 +132,22 @@ public class GraphicsController extends JPanel implements NetworkEventListener {
 
     @Override
     public void onEvent(NetworkEvent event) {
-
+        switch (event) {
+            case ClearObjects ignored -> {
+                objects.clear();
+                repaint();
+            }
+            case ResponseObject responseObject -> {
+                System.out.println("ResponseObject: " + responseObject.object());
+                var object = switch (responseObject.type()) {
+                    case "Star" -> new Star(100, 100, 100, 100, Color.RED);
+                    case "Smiley" -> new Smiley(100, 100, 100, 100, Color.RED);
+                    default -> throw new IllegalStateException("Unexpected value: " + responseObject.object());
+                };
+                object.readFromJson(responseObject.object());
+                objects.add(object);
+            }
+            default -> System.out.println("Unknown event: " + event);
+        }
     }
 }

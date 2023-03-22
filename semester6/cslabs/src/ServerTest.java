@@ -38,7 +38,8 @@ class Util {
                 System.out.println("RequestObjectListSize");
                 networkRepository.sendObjectsListSize(2);
             }
-            case ResponseObjectList responseObjectList -> System.out.println("ResponseObjectList: " + Arrays.toString(responseObjectList.objects()));
+            case ResponseObjectList responseObjectList ->
+                    System.out.println("ResponseObjectList: " + Arrays.toString(responseObjectList.objects()));
             case ResponseObjectListSize responseObjectListSize ->
                     System.out.println("ResponseObjectListSize: " + responseObjectListSize.size());
             case ResponseObject responseObject -> System.out.println("ResponseObject: " + responseObject.object());
@@ -138,7 +139,6 @@ class ClientTest implements NetworkEventListener {
 
     @Override
     public void onEvent(NetworkEvent event) {
-        System.out.println("EVENT!");
         Util.handleEvent(event, networkRepository);
     }
 }

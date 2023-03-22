@@ -1,5 +1,6 @@
 package objects;
 
+import org.json.JSONObject;
 import utils.Vector;
 
 import java.awt.*;
@@ -37,6 +38,33 @@ public class Smiley extends GraphicalObject {
         }
         x += vx;
         y += vy;
+    }
+
+    @Override
+    public void readFromJson(String json) {
+        var jsonObject = new JSONObject(json);
+        x = jsonObject.getInt("x");
+        y = jsonObject.getInt("y");
+        width = jsonObject.getInt("width");
+        height = jsonObject.getInt("height");
+        color = new Color(jsonObject.getInt("r"), jsonObject.getInt("g"), jsonObject.getInt("b"));
+        vx = jsonObject.getInt("vx");
+        vy = jsonObject.getInt("vy");
+    }
+
+    @Override
+    public String writeToJson() {
+        var jsonObject = new JSONObject();
+        jsonObject.put("x", x);
+        jsonObject.put("y", y);
+        jsonObject.put("width", width);
+        jsonObject.put("height", height);
+        jsonObject.put("r", color.getRed());
+        jsonObject.put("g", color.getGreen());
+        jsonObject.put("b", color.getBlue());
+        jsonObject.put("vx", vx);
+        jsonObject.put("vy", vy);
+        return jsonObject.toString();
     }
 }
 

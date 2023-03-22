@@ -10,6 +10,7 @@ public class ButtonsPanel extends JPanel {
     private final JButton stopButton = new JButton("Stop/Resume");
     private final JButton stopAllButton = new JButton("Stop all");
     private final JButton resumeAllButton = new JButton("Resume all");
+    private final JButton clearAllButton = new JButton("ClearAll");
 
     public ButtonsPanel() {
         setLayout(new GridLayout(1, 5));
@@ -18,6 +19,7 @@ public class ButtonsPanel extends JPanel {
         add(stopButton);
         add(stopAllButton);
         add(resumeAllButton);
+        add(clearAllButton);
     }
 
     public void onAddButtonClicked(ActionListener listener) {
@@ -38,5 +40,8 @@ public class ButtonsPanel extends JPanel {
 
     public void onResumeAllButtonClicked(ActionListener listener) {
         resumeAllButton.addActionListener(listener);
+    }
+    public void onClearAllButtonClicked(ActionListener listener) {
+        clearAllButton.addActionListener(listener);
     }
 }
