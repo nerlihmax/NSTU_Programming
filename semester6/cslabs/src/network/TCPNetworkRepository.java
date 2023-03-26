@@ -1,12 +1,14 @@
 package network;
 
 import objects.GraphicalObject;
+import objects.Smiley;
+import objects.Star;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import utils.NetworkCommands;
-import utils.ObjectInfo;
 import utils.network_events.*;
 
+import java.awt.*;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -95,14 +97,14 @@ public class TCPNetworkRepository implements NetworkRepository, Runnable {
     }
 
     @Override
-    public void sendObjectsList(ObjectInfo[] objects) {
+    public void sendObjectsList(GraphicalObject[] objects) {
         var jsonObject = new JSONObject();
         jsonObject.put("command", NetworkCommands.RESPONSE_OBJ_LIST);
         var jsonArray = new JSONArray();
-        for (ObjectInfo object : objects) {
+        for (GraphicalObject object : objects) {
             var obj = new JSONObject();
-            obj.put("type", object.objectType());
-            obj.put("hash", object.hash());
+            obj.put("obj_type", object.getClass().getSimpleName());
+            obj.put("object", object.writeToJson());
             jsonArray.put(obj);
         }
         jsonObject.put("objects", jsonArray);
@@ -170,10 +172,18 @@ public class TCPNetworkRepository implements NetworkRepository, Runnable {
                             listener.onEvent(new ResponseObjectByIndex(jsonObject.getInt("index"), jsonObject.getString("obj_type"), jsonObject.getString("object")));
                     case NetworkCommands.RESPONSE_OBJ_LIST -> {
                         var jsonArray = jsonObject.getJSONArray("objects");
-                        var objects = new ObjectInfo[jsonArray.length()];
+                        var objects = new GraphicalObject[jsonArray.length()];
                         for (int i = 0; i < jsonArray.length(); i++) {
                             var obj = jsonArray.getJSONObject(i);
-                            objects[i] = new ObjectInfo(obj.getString("type"), obj.getString("hash"));
+//                            objects[i] = new ObjectInfo(obj.getString("obj_type"), obj.getString("object"));
+                            var object = switch (obj.getString("obj_type")) {
+                                case "Star" -> new Star(100, 100, 100, 100, Color.RED);
+                                case "Smiley" -> new Smiley(100, 100, 100, 100, Color.RED);
+                                default ->
+                                        throw new IllegalStateException("Unexpected value: " + obj.getString("obj_type"));
+                            };
+                            object.readFromJson(obj.getString("object"));
+                            objects[i] = object;
                         }
                         listener.onEvent(new ResponseObjectList(objects));
                     }

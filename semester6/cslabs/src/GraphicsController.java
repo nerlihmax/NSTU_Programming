@@ -6,7 +6,6 @@ import objects.Smiley;
 import objects.Star;
 import ui_components.ButtonsPanel;
 import utils.EditorModes;
-import utils.ObjectInfo;
 import utils.Vector;
 import utils.network_events.*;
 
@@ -46,12 +45,11 @@ public class GraphicsController extends JPanel implements NetworkEventListener {
         for (GraphicalObject object : objects) {
             object.draw(g);
         }
-
     }
 
     private void registerModesPanel() {
         ButtonsPanel buttonsPanel = new ButtonsPanel();
-        add(buttonsPanel, BorderLayout.NORTH);
+        add(buttonsPanel, BorderLayout.WEST);
 
         buttonsPanel.onAddButtonClicked(e -> {
             mode = EditorModes.ADD;
@@ -160,10 +158,12 @@ public class GraphicsController extends JPanel implements NetworkEventListener {
 
             case ResponseObjectListSize responseObjectListSize ->
                     System.out.println("ResponseObjectListSize: " + responseObjectListSize.size());
-            case ResponseObjectList responseObjectList -> System.out.println("ResponseObjectList: " + Arrays.toString(responseObjectList.objects()));
+            case ResponseObjectList responseObjectList ->
+                    System.out.println("ResponseObjectList: " + Arrays.toString(responseObjectList.objects()));
             case RequestObjectList ignored -> {
                 System.out.println("RequestObjectList");
-                networkRepository.sendObjectsList(objects.stream().map(item -> new ObjectInfo(item.getClass().getSimpleName(), String.valueOf(item.hashCode()))).toArray(ObjectInfo[]::new));
+                var objList = new GraphicalObject[objects.size()];
+                networkRepository.sendObjectsList(objects.toArray(objList));
             }
             case RequestObjectListSize ignored -> {
                 System.out.println("RequestObjectListSize");

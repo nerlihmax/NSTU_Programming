@@ -1,6 +1,6 @@
 package utils.network_events;
 
-import utils.ObjectInfo;
+import objects.GraphicalObject;
 
-public record ResponseObjectList(ObjectInfo[] objects) implements NetworkEvent {
+public record ResponseObjectList(GraphicalObject[] objects) implements NetworkEvent {
 }

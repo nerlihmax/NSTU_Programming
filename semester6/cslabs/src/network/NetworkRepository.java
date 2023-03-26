@@ -1,7 +1,6 @@
 package network;
 
 import objects.GraphicalObject;
-import utils.ObjectInfo;
 
 public interface NetworkRepository {
     void closeConnection();
@@ -12,7 +11,7 @@ public interface NetworkRepository {
 
     void sendObjectByIndex(int index, GraphicalObject object);
 
-    void sendObjectsList(ObjectInfo[] objects);
+    void sendObjectsList(GraphicalObject[] objects);
 
     void sendObjectsListSize(int size);
 

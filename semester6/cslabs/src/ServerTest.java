@@ -1,9 +1,9 @@
 import network.NetworkEventListener;
 import network.NetworkRepository;
 import network.TCPNetworkRepository;
+import objects.GraphicalObject;
 import objects.Smiley;
 import objects.Star;
-import utils.ObjectInfo;
 import utils.network_events.*;
 
 import java.awt.*;
@@ -19,7 +19,7 @@ class Util {
             }
             case RequestObjectList ignored -> {
                 System.out.println("RequestObjectList");
-                networkRepository.sendObjectsList(new ObjectInfo[]{new ObjectInfo("Star", "1231234"), new ObjectInfo("Smiley", "452345236")});
+                networkRepository.sendObjectsList(new GraphicalObject[]{new Star(10, 10, 10, 10, Color.RED), new Smiley(10, 10, 10, 10, Color.black)});
             }
             case ClearObjects ignored -> System.out.println("ClearObjects");
             case ResponseObjectByIndex responseObjectByIndex -> {
@@ -27,8 +27,7 @@ class Util {
                 var object = switch (responseObjectByIndex.type()) {
                     case "Star" -> new Star(100, 100, 100, 100, Color.RED);
                     case "Smiley" -> new Smiley(100, 100, 100, 100, Color.RED);
-                    default ->
-                            throw new IllegalStateException("Unexpected value: " + responseObjectByIndex.type());
+                    default -> throw new IllegalStateException("Unexpected value: " + responseObjectByIndex.type());
                 };
                 object.readFromJson(responseObjectByIndex.object());
                 System.out.println(object.writeToJson());

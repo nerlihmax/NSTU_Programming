@@ -13,7 +13,7 @@ public class ButtonsPanel extends JPanel {
     private final JButton clearAllButton = new JButton("ClearAll");
 
     public ButtonsPanel() {
-        setLayout(new GridLayout(1, 5));
+        setLayout(new GridLayout(1, 6));
         add(addButton);
         add(removeButton);
         add(stopButton);
