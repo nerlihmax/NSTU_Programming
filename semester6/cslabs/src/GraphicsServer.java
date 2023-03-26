@@ -1,6 +1,6 @@
 import javax.swing.*;
 
-public class Main {
+public class GraphicsServer {
     public static void main(String[] args) {
         final var frame = new JFrame("Server");
         final var editor = new GraphicsController(true);
@@ -13,7 +13,7 @@ public class Main {
 }
 
 
-class Main2 {
+class GraphicsClient {
     public static void main(String[] args) {
         final var frame = new JFrame("Client");
         final var editor = new GraphicsController(false);

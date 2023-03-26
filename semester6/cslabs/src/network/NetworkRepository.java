@@ -7,8 +7,6 @@ public interface NetworkRepository {
 
     void clearObjects();
 
-    void sendObject(GraphicalObject object);
-
     void sendObjectByIndex(int index, GraphicalObject object);
 
     void sendObjectsList(GraphicalObject[] objects);

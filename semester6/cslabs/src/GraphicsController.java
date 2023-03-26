@@ -16,12 +16,13 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class GraphicsController extends JPanel implements NetworkEventListener {
+public class GraphicsController extends JPanel implements NetworkEventListener, Runnable {
     private final ArrayList<GraphicalObject> objects = new ArrayList<>();
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
@@ -30,6 +31,8 @@ public class GraphicsController extends JPanel implements NetworkEventListener {
 
     private EditorModes mode = EditorModes.ADD;
 
+    private volatile boolean waitingForData = false;
+
     public GraphicsController(boolean isServer) {
         registerModesPanel();
         start();
@@ -37,6 +40,10 @@ public class GraphicsController extends JPanel implements NetworkEventListener {
         var thread = new Thread((Runnable) networkRepository);
         thread.setDaemon(true);
         thread.start();
+
+        var mainThread = new Thread(this);
+        mainThread.setDaemon(true);
+        mainThread.start();
     }
 
     @Override
@@ -69,12 +76,6 @@ public class GraphicsController extends JPanel implements NetworkEventListener {
         buttonsPanel.onStopAllButtonClicked(e -> objects.forEach(GraphicalObject::stop));
 
         buttonsPanel.onResumeAllButtonClicked(e -> objects.forEach(GraphicalObject::resume));
-
-        buttonsPanel.onClearAllButtonClicked(e -> {
-            networkRepository.clearObjects();
-            objects.clear();
-            repaint();
-        });
     }
 
     private void start() {
@@ -121,11 +122,11 @@ public class GraphicsController extends JPanel implements NetworkEventListener {
                 }
 
                 if (object != null) {
-                    networkRepository.sendObject(object);
                     objects.add(object);
                 }
             }
         });
+
     }
 
     @Override
@@ -136,7 +137,7 @@ public class GraphicsController extends JPanel implements NetworkEventListener {
                 repaint();
             }
             case ResponseObject responseObject -> {
-                System.out.println("ResponseObject: " + responseObject.object());
+                System.out.println("Received Object: " + responseObject.object());
                 var object = switch (responseObject.type()) {
                     case "Star" -> new Star(100, 100, 100, 100, Color.RED);
                     case "Smiley" -> new Smiley(100, 100, 100, 100, Color.RED);
@@ -146,34 +147,104 @@ public class GraphicsController extends JPanel implements NetworkEventListener {
                 objects.add(object);
             }
             case ResponseObjectByIndex responseObjectByIndex -> {
-                System.out.println("ResponseObjectByIndex: " + responseObjectByIndex.index());
+                System.out.println("Received object with index: " + responseObjectByIndex.index());
                 var object = switch (responseObjectByIndex.type()) {
                     case "Star" -> new Star(100, 100, 100, 100, Color.RED);
                     case "Smiley" -> new Smiley(100, 100, 100, 100, Color.RED);
                     default -> throw new IllegalStateException("Unexpected value: " + responseObjectByIndex.object());
                 };
                 object.readFromJson(responseObjectByIndex.object());
-                objects.set(responseObjectByIndex.index(), object);
+                objects.add(object);
             }
 
             case ResponseObjectListSize responseObjectListSize ->
-                    System.out.println("ResponseObjectListSize: " + responseObjectListSize.size());
+                    System.out.println("Received objects list size: " + responseObjectListSize.size());
             case ResponseObjectList responseObjectList ->
-                    System.out.println("ResponseObjectList: " + Arrays.toString(responseObjectList.objects()));
+                    System.out.println("Received objects list: " + Arrays.toString(responseObjectList.objects()));
             case RequestObjectList ignored -> {
-                System.out.println("RequestObjectList");
+                System.out.println("Requested object list");
                 var objList = new GraphicalObject[objects.size()];
                 networkRepository.sendObjectsList(objects.toArray(objList));
             }
             case RequestObjectListSize ignored -> {
-                System.out.println("RequestObjectListSize");
+                System.out.println("Requested object list size");
                 networkRepository.sendObjectsListSize(objects.size());
             }
             case RequestObjectByIndex requestObjectByIndex -> {
-                System.out.println("RequestObjectByIndex: " + requestObjectByIndex.index());
+                System.out.println("Requested object by index: " + requestObjectByIndex.index());
                 networkRepository.sendObjectByIndex(requestObjectByIndex.index(), objects.get(requestObjectByIndex.index()));
             }
             default -> System.out.println("Unknown event: " + event);
         }
+        System.out.println("============\n");
+        waitingForData = false;
+    }
+
+    @Override
+    public void run() {
+        Scanner scanner = new Scanner(System.in);
+        String input;
+        boolean running = true;
+
+        while (running) {
+            if (waitingForData) {
+                System.out.println("Waiting for response...");
+                while (waitingForData) Thread.onSpinWait();
+            }
+            System.out.println("Please select an option:");
+            System.out.println("1. Close connection");
+            System.out.println("2. Clear objects");
+            System.out.println("3. Request object by index");
+            System.out.println("4. Request objects list");
+            System.out.println("5. Request objects list size");
+            System.out.println("6. Show local list");
+            System.out.println("7. Send object by index");
+            System.out.println("0. Exit");
+
+            input = scanner.nextLine();
+            waitingForData = true;
+            switch (input) {
+                case "1" -> {
+                    networkRepository.closeConnection();
+                    waitingForData = false;
+                    System.out.println("============\n");
+                }
+                case "2" -> {
+                    networkRepository.clearObjects();
+                    objects.clear();
+                    repaint();
+                    waitingForData = false;
+                    System.out.println("============\n");
+                }
+                case "3" -> {
+                    System.out.print("Enter index: ");
+                    input = scanner.nextLine();
+                    networkRepository.requestObjectByIndex(Integer.parseInt(input));
+                }
+                case "4" -> networkRepository.requestObjectsList();
+                case "5" -> networkRepository.requestObjectsListSize();
+                case "6" -> {
+                    System.out.println(objects.toString());
+                    waitingForData = false;
+                    System.out.println("============\n");
+                }
+                case "7" -> {
+                    System.out.print("Enter index: ");
+                    input = scanner.nextLine();
+                    try {
+                        var idx = Integer.parseInt(input);
+                        var obj = objects.get(idx);
+                        networkRepository.sendObjectByIndex(idx, obj);
+                    } catch (Exception e) {
+                        System.out.println("ERROR: " + e.getMessage());
+                    }
+                    waitingForData = false;
+                    System.out.println("============\n");
+                }
+                case "0" -> running = false;
+                default -> System.out.println("Invalid input, please try again.");
+            }
+        }
+        scanner.close();
     }
 }

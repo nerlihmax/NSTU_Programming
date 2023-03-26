@@ -25,6 +25,8 @@ public class TCPNetworkRepository implements NetworkRepository, Runnable {
     private PrintWriter out;
     private BufferedReader in;
 
+    private final boolean isServer;
+
     public TCPNetworkRepository(boolean isServer, NetworkEventListener listener, int port, String hostname) {
         this(isServer, listener);
         this.port = port;
@@ -33,6 +35,11 @@ public class TCPNetworkRepository implements NetworkRepository, Runnable {
 
     public TCPNetworkRepository(boolean isServer, NetworkEventListener listener) {
         this.listener = listener;
+        this.isServer = isServer;
+    }
+
+    @Override
+    public void run() {
         InputStream inputStream;
         OutputStream outputStream;
         try {
@@ -47,6 +54,7 @@ public class TCPNetworkRepository implements NetworkRepository, Runnable {
             outputStream = clientSocket.getOutputStream();
             out = new PrintWriter(outputStream, true);
             in = new BufferedReader(new InputStreamReader(inputStream));
+            handleEvents();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -74,17 +82,6 @@ public class TCPNetworkRepository implements NetworkRepository, Runnable {
     }
 
     @Override
-    public void sendObject(GraphicalObject object) {
-        var jsonObject = new JSONObject();
-        jsonObject.put("command", NetworkCommands.RESPONSE_OBJ);
-        var type = object.getClass().getSimpleName();
-        jsonObject.put("obj_type", type);
-        jsonObject.put("object", object.writeToJson());
-        var res = jsonObject.toString();
-        out.println(res);
-    }
-
-    @Override
     public void sendObjectByIndex(int index, GraphicalObject object) {
         var jsonObject = new JSONObject();
         jsonObject.put("command", NetworkCommands.RESPONSE_OBJ_BY_INDEX);
@@ -101,8 +98,10 @@ public class TCPNetworkRepository implements NetworkRepository, Runnable {
         var jsonObject = new JSONObject();
         jsonObject.put("command", NetworkCommands.RESPONSE_OBJ_LIST);
         var jsonArray = new JSONArray();
-        for (GraphicalObject object : objects) {
+        for (int i = 0; i < objects.length; i++) {
+            var object = objects[i];
             var obj = new JSONObject();
+            obj.put("index", i);
             obj.put("obj_type", object.getClass().getSimpleName());
             obj.put("object", object.writeToJson());
             jsonArray.put(obj);
@@ -146,13 +145,12 @@ public class TCPNetworkRepository implements NetworkRepository, Runnable {
         out.println(res);
     }
 
-    @Override
-    public void run() {
+    public void handleEvents() {
         eventLoop:
         while (true) {
             try {
                 String line = in.readLine();
-                System.out.println("received: " + line);
+//                System.out.println("received: " + line);
                 var jsonObject = new JSONObject(line);
                 var command = jsonObject.getString("command");
                 switch (command) {

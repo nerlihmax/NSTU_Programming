@@ -66,6 +66,17 @@ public class Smiley extends GraphicalObject {
         jsonObject.put("vy", vy);
         return jsonObject.toString();
     }
+
+    @Override
+    public String toString() {
+        return "Smiley{" +
+                "x=" + x +
+                ", y=" + y +
+                ", width=" + width +
+                ", height=" + height +
+                ", color=" + color +
+                '}';
+    }
 }
 
 

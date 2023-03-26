@@ -85,4 +85,17 @@ public class Star extends GraphicalObject {
     public void move(Vector movement) {
         angle += 0.1;
     }
+
+    @Override
+    public String toString() {
+        return "Star{" +
+                "numberOfVertices=" + numberOfVertices +
+                ", angle=" + angle +
+                ", x=" + x +
+                ", y=" + y +
+                ", width=" + width +
+                ", height=" + height +
+                ", color=" + color +
+                '}';
+    }
 }
