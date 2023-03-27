@@ -11,18 +11,30 @@ import io.ktor.server.plugins.defaultheaders.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.sessions.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import org.slf4j.event.Level
 import java.sql.Connection
 import java.sql.DriverManager
+import java.util.*
 
 fun main() {
     embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module).start(wait = true)
 }
 
+@Serializable
+data class Client(val host: String, val port: String, val user: String, val password: String, val database: String)
+
+data class ClientSession(val uuid: UUID = UUID.randomUUID())
+
 fun Application.module() {
     install(ContentNegotiation) {
         json()
+    }
+    install(Sessions) {
+        cookie<ClientSession>("user_session")
     }
     install(CallLogging) {
         level = Level.INFO
@@ -35,114 +47,151 @@ fun Application.module() {
 }
 
 fun Application.mainApplication() {
-    val dbConnection: Connection = connectToPostgres()
-//    val cityService = CityService(dbConnection)
+    var client: Client? = null
+    var session: ClientSession? = null
+    var dbConnection: Connection? = null
+    var dbService: DbService? = null
     routing {
         get("/") {
             call.respondText("Hello World!")
         }
-
-        // Create city
-        post("/cities") {
-//            val city = call.receive<City>()
-//            val id = cityService.create(city)
-//            call.respond(HttpStatusCode.Created, id)
-        }
-        // Read city
-        get("/cities/{id}") {
-//            val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
+        post("/connect") {
+            if (client != null && session?.uuid != call.sessions.get<ClientSession>()?.uuid) {
+                call.respond(HttpStatusCode.Forbidden, "Service already in use")
+                return@post
+            }
+            client = call.receiveNullable<Client>() ?: run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@post
+            }
             try {
-//                val city = cityService.read(id)
-//                call.respond(HttpStatusCode.OK, city)
+                dbConnection = connectToPostgres(client!!)
+                dbService = DbService(dbConnection!!)
+                session = ClientSession()
             } catch (e: Exception) {
-                call.respond(HttpStatusCode.NotFound)
+                dbConnection = null
+                dbService = null
+                session = null
+                client = null
+                call.respond(HttpStatusCode.NotAcceptable, "Failed to connect")
+                println(e)
+                return@post
+            }
+            call.sessions.set(session)
+            call.respond(HttpStatusCode.OK)
+        }
+
+        post("/disconnect") {
+            val currentSession = call.sessions.get<ClientSession>()
+            println("current session: ${currentSession}, saved session: $session")
+            if (session?.uuid != currentSession?.uuid) {
+                call.respond(HttpStatusCode.Forbidden)
+                return@post
+            }
+            session = null
+            dbConnection = null
+            dbService = null
+            client = null
+            call.sessions.clear<ClientSession>()
+            call.respond(HttpStatusCode.OK)
+        }
+        post("/query") {
+            if (session != call.sessions.get<ClientSession>()) {
+                call.respond(HttpStatusCode.Forbidden)
+                return@post
+            }
+            if (client == null || dbConnection == null || dbService == null) {
+                call.respond(HttpStatusCode.Unauthorized)
+                return@post
+            }
+            val query = call.receiveText()
+            println(query)
+            try {
+                val res = dbService!!.executeQuery(query)
+                if (res is DbService.Companion.Result.Successful) call.respond(HttpStatusCode.OK, res.data)
+                else {
+                    call.respond(HttpStatusCode.BadRequest, "Failed to execute query")
+                    return@post
+                }
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.BadRequest, "Failed to execute query")
+                println(e)
+                return@post
             }
         }
-        // Update city
-        put("/cities/{id}") {
-//            val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
-//            val user = call.receive<City>()
-//            cityService.update(id, user)
-//            call.respond(HttpStatusCode.OK)
-        }
-        // Delete city
-        delete("/cities/{id}") {
-//            val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
-//            cityService.delete(id)
-//            call.respond(HttpStatusCode.OK)
+
+        get("/databases") {
+            try {
+                val res = dbService!!.fetchDatabases()
+                if (res is DbService.Companion.Result.List) call.respond(HttpStatusCode.OK, res.data)
+                else {
+                    call.respond(HttpStatusCode.BadRequest, "Failed to execute query")
+                    return@get
+                }
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.BadRequest, "Failed to execute query")
+                println(e)
+                return@get
+            }
         }
     }
 }
 
-fun Application.connectToPostgres(): Connection {
+fun connectToPostgres(client: Client): Connection {
     Class.forName("org.postgresql.Driver")
-    val url = environment.config.property("postgres.url").getString()
-    val user = environment.config.property("postgres.user").getString()
-    val password = environment.config.property("postgres.password").getString()
-
+    val url = "jdbc:postgresql://${client.host}:${client.port}/${client.database}"
+    val user = client.user
+    val password = client.password
     return DriverManager.getConnection(url, user, password)
 }
 
-@Serializable
-data class City(val name: String, val population: Int)
-class CityService(private val connection: Connection) {
+class DbService(private val connection: Connection) {
     companion object {
-//        private const val CREATE_TABLE_CITIES =
-//            "CREATE TABLE CITIES (ID SERIAL PRIMARY KEY, NAME VARCHAR(255), POPULATION INT);"
-//        private const val SELECT_CITY_BY_ID = "SELECT name, population FROM cities WHERE id = ?"
-//        private const val INSERT_CITY = "INSERT INTO cities (name, population) VALUES (?, ?)"
-//        private const val UPDATE_CITY = "UPDATE cities SET name = ?, population = ? WHERE id = ?"
-//        private const val DELETE_CITY = "DELETE FROM cities WHERE id = ?"
+        sealed interface Result {
+            data class Successful(val data: Map<Int, Map<String, String>>) : Result
+            data class List(val data: kotlin.collections.List<String>) : Result
+            object Failed : Result
+        }
     }
 
-//    init {
-//        val statement = connection.createStatement()
-//        statement.executeUpdate(CREATE_TABLE_CITIES)
-//    }
+    suspend fun executeQuery(query: String): Result = withContext(Dispatchers.IO) {
+        try {
+            val statement = connection.prepareStatement(query)
+            statement.executeQuery()
+            val result = statement.resultSet
+            val metadata = result.metaData
+            val columns = mutableMapOf<Int, Map<String, String>>()
+            var count = 0
+            while (result.next()) {
+                val row = mutableMapOf<String, String>()
+                (1..metadata.columnCount).forEach { idx ->
+                    val element: Any? = result.getObject(idx)
+                    row[metadata.getColumnName(idx)] = element.toString()
+                }
+                columns[count] = row
+                count++
+            }
+            return@withContext Result.Successful(columns.toMap())
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return@withContext Result.Failed
+        }
+    }
 
-    // Create new city
-//    suspend fun create(city: City): Int = withContext(Dispatchers.IO) {
-//        val statement = connection.prepareStatement(INSERT_CITY, Statement.RETURN_GENERATED_KEYS)
-//        statement.setString(1, city.name)
-//        statement.setInt(2, city.population)
-//        statement.executeUpdate()
-//
-//        val generatedKeys = statement.generatedKeys
-//        if (generatedKeys.next()) {
-//            return@withContext generatedKeys.getInt(1)
-//        } else {
-//            throw Exception("Unable to retrieve the id of the newly inserted city")
-//        }
-//    }
-
-    // Read a city
-//    suspend fun read(id: Int): City = withContext(Dispatchers.IO) {
-//        val statement = connection.prepareStatement(SELECT_CITY_BY_ID)
-//        statement.setInt(1, id)
-//        val resultSet = statement.executeQuery()
-//
-//        if (resultSet.next()) {
-//            val name = resultSet.getString("name")
-//            val population = resultSet.getInt("population")
-//            return@withContext City(name, population)
-//        } else {
-//            throw Exception("Record not found")
-//        }
-//    }
-
-    // Update a city
-//    suspend fun update(id: Int, city: City) = withContext(Dispatchers.IO) {
-//        val statement = connection.prepareStatement(UPDATE_CITY)
-//        statement.setString(1, city.name)
-//        statement.setInt(2, city.population)
-//        statement.setInt(3, id)
-//        statement.executeUpdate()
-//    }
-
-    // Delete a city
-//    suspend fun delete(id: Int) = withContext(Dispatchers.IO) {
-//        val statement = connection.prepareStatement(DELETE_CITY)
-//        statement.setInt(1, id)
-//        statement.executeUpdate()
-//    }
+    suspend fun fetchDatabases(): Result = withContext(Dispatchers.IO) {
+        try {
+            val query = "SELECT datname From pg_database WHERE pg_database.datistemplate=false;"
+            val statement = connection.prepareStatement(query)
+            statement.executeQuery()
+            val result = statement.resultSet
+            val names = mutableListOf<String>()
+            while (result.next()) {
+                names.add(result.getString("datname"))
+            }
+            return@withContext Result.List(names.toList())
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return@withContext Result.Failed
+        }
+    }
 }
