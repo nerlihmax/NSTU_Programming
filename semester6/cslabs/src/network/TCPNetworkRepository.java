@@ -62,6 +62,10 @@ public class TCPNetworkRepository implements NetworkRepository, Runnable {
 
     public void closeConnection() {
         try {
+            var jsonObject = new JSONObject();
+            jsonObject.put("command", NetworkCommands.CLOSE_CONNECTION);
+            var res = jsonObject.toString();
+            out.println(res);
             if (serverSocket != null) {
                 serverSocket.close();
             }
@@ -69,7 +73,7 @@ public class TCPNetworkRepository implements NetworkRepository, Runnable {
                 clientSocket.close();
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.out.println("closing connection");
         }
     }
 
