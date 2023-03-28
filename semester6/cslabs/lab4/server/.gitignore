@@ -91,5 +91,7 @@ fabric.properties
 !.idea/codeStyles
 !.idea/runConfigurations
 
+resources/backup.json
+
 # End of https://www.toptal.com/developers/gitignore/api/intellij+all
 /.gradle/
