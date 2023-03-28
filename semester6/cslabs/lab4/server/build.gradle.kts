@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.7.21"
+    kotlin("plugin.serialization") version "1.7.21"
 }
 
 group = "ru.kheynov"
@@ -14,7 +15,8 @@ repositories {
 dependencies {
     testImplementation(kotlin("test"))
     implementation("com.sparkjava:spark-core:2.9.4")
-    implementation("com.sparkjava:spark-kotlin:1.0.0")
+    implementation("com.sparkjava:spark-kotlin:1.0.0-alpha")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
 }
 
 tasks.test {
