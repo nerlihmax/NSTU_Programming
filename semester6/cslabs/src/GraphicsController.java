@@ -1,6 +1,6 @@
 import network.NetworkEventListener;
 import network.NetworkRepository;
-import network.TCPNetworkRepository;
+import network.UDPNetworkRepository;
 import objects.GraphicalObject;
 import objects.Smiley;
 import objects.Star;
@@ -36,7 +36,7 @@ public class GraphicsController extends JPanel implements NetworkEventListener, 
     public GraphicsController(boolean isServer) {
         registerModesPanel();
         start();
-        networkRepository = new TCPNetworkRepository(isServer, this);
+        networkRepository = new UDPNetworkRepository(isServer, this);
         var thread = new Thread((Runnable) networkRepository);
         thread.setDaemon(true);
         thread.start();
@@ -242,7 +242,10 @@ public class GraphicsController extends JPanel implements NetworkEventListener, 
                     System.out.println("============\n");
                 }
                 case "0" -> running = false;
-                default -> System.out.println("Invalid input, please try again.");
+                default -> {
+                    System.out.println("Invalid input, please try again.");
+                    waitingForData = false;
+                }
             }
         }
         scanner.close();
