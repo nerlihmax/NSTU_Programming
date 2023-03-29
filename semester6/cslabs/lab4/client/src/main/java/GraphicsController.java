@@ -1,13 +1,16 @@
 import network.NetworkEventListener;
 import network.NetworkRepository;
-import network.UDPNetworkRepository;
+import network.RESTNetworkRepository;
 import objects.GraphicalObject;
 import objects.Smiley;
 import objects.Star;
 import ui_components.ButtonsPanel;
 import utils.EditorModes;
 import utils.Vector;
-import utils.network_events.*;
+import utils.network_events.NetworkEvent;
+import utils.network_events.ResponseObject;
+import utils.network_events.ResponseObjectList;
+import utils.network_events.ResponseObjectListNames;
 
 import javax.swing.*;
 import java.awt.*;
@@ -33,13 +36,10 @@ public class GraphicsController extends JPanel implements NetworkEventListener, 
 
     private volatile boolean waitingForData = false;
 
-    public GraphicsController(boolean isServer) {
+    public GraphicsController() {
         registerModesPanel();
         start();
-        networkRepository = new UDPNetworkRepository(isServer, this);
-        var thread = new Thread((Runnable) networkRepository);
-        thread.setDaemon(true);
-        thread.start();
+        networkRepository = new RESTNetworkRepository(this);
 
         var mainThread = new Thread(this);
         mainThread.setDaemon(true);
@@ -76,6 +76,8 @@ public class GraphicsController extends JPanel implements NetworkEventListener, 
         buttonsPanel.onStopAllButtonClicked(e -> objects.forEach(GraphicalObject::stop));
 
         buttonsPanel.onResumeAllButtonClicked(e -> objects.forEach(GraphicalObject::resume));
+
+        buttonsPanel.onClearButtonClicked(e -> objects.clear());
     }
 
     private void start() {
@@ -132,51 +134,21 @@ public class GraphicsController extends JPanel implements NetworkEventListener, 
     @Override
     public void onEvent(NetworkEvent event) {
         switch (event) {
-            case ClearObjects ignored -> {
-                objects.clear();
-                repaint();
-            }
             case ResponseObject responseObject -> {
-                System.out.println("Received Object: " + responseObject.object());
-                var object = switch (responseObject.type()) {
-                    case "Star" -> new Star(100, 100, 100, 100, Color.RED);
-                    case "Smiley" -> new Smiley(100, 100, 100, 100, Color.RED);
-                    default -> throw new IllegalStateException("Unexpected value: " + responseObject.object());
-                };
-                object.readFromJson(responseObject.object());
-                objects.add(object);
+                objects.add(responseObject.object());
             }
-            case ResponseObjectByIndex responseObjectByIndex -> {
-                System.out.println("Received object with index: " + responseObjectByIndex.index());
-                var object = switch (responseObjectByIndex.type()) {
-                    case "Star" -> new Star(100, 100, 100, 100, Color.RED);
-                    case "Smiley" -> new Smiley(100, 100, 100, 100, Color.RED);
-                    default -> throw new IllegalStateException("Unexpected value: " + responseObjectByIndex.object());
-                };
-                object.readFromJson(responseObjectByIndex.object());
-                objects.add(object);
+            case ResponseObjectList responseObjectList -> {
+                objects.addAll(Arrays.asList(responseObjectList.objects()));
             }
-
-            case ResponseObjectListSize responseObjectListSize ->
-                    System.out.println("Received objects list size: " + responseObjectListSize.size());
-            case ResponseObjectList responseObjectList ->
-                    System.out.println("Received objects list: " + Arrays.toString(responseObjectList.objects()));
-            case RequestObjectList ignored -> {
-                System.out.println("Requested object list");
-                var objList = new GraphicalObject[objects.size()];
-                networkRepository.sendObjectsList(objects.toArray(objList));
-            }
-            case RequestObjectListSize ignored -> {
-                System.out.println("Requested object list size");
-                networkRepository.sendObjectsListSize(objects.size());
-            }
-            case RequestObjectByIndex requestObjectByIndex -> {
-                System.out.println("Requested object by index: " + requestObjectByIndex.index());
-                networkRepository.sendObjectByIndex(requestObjectByIndex.index(), objects.get(requestObjectByIndex.index()));
+            case ResponseObjectListNames responseObjectListNames -> {
+                System.out.println("Objects list names:");
+                for (GraphicalObject object : responseObjectListNames.objects()) {
+                    System.out.println(object.toString());
+                }
             }
             default -> System.out.println("Unknown event: " + event);
         }
-        System.out.println("============\n");
+
         waitingForData = false;
     }
 
@@ -191,50 +163,40 @@ public class GraphicsController extends JPanel implements NetworkEventListener, 
                 System.out.println("Waiting for response...");
                 while (waitingForData) Thread.onSpinWait();
             }
+            System.out.println("============\n");
             System.out.println("Please select an option:");
-            System.out.println("1. Close connection");
-            System.out.println("2. Clear objects");
-            System.out.println("3. Request object by index");
-            System.out.println("4. Request objects list");
-            System.out.println("5. Request objects list size");
-            System.out.println("6. Show local list");
-            System.out.println("7. Send object by index");
+            System.out.println("1. Request object by index");
+            System.out.println("2. Request objects list names");
+            System.out.println("3. Synchronize objects list");
+            System.out.println("4. Remove object by index");
+            System.out.println("5. Add object by index");
             System.out.println("0. Exit");
 
             input = scanner.nextLine();
             waitingForData = true;
             switch (input) {
                 case "1" -> {
-                    networkRepository.closeConnection();
-                    waitingForData = false;
-                    System.out.println("============\n");
-                }
-                case "2" -> {
-                    networkRepository.clearObjects();
-                    objects.clear();
-                    repaint();
-                    waitingForData = false;
-                    System.out.println("============\n");
-                }
-                case "3" -> {
                     System.out.print("Enter index: ");
                     input = scanner.nextLine();
                     networkRepository.requestObjectByIndex(Integer.parseInt(input));
                 }
-                case "4" -> networkRepository.requestObjectsList();
-                case "5" -> networkRepository.requestObjectsListSize();
-                case "6" -> {
-                    System.out.println(objects.toString());
+                case "2" -> networkRepository.requestObjectsListNames();
+                case "3" -> networkRepository.requestObjectsList();
+
+                case "4" -> {
+                    System.out.print("Enter index: ");
+                    input = scanner.nextLine();
+                    objects.remove(Integer.parseInt(input));
+                    networkRepository.removeObjectByIndex(Integer.parseInt(input));
                     waitingForData = false;
-                    System.out.println("============\n");
                 }
-                case "7" -> {
+
+                case "5" -> {
                     System.out.print("Enter index: ");
                     input = scanner.nextLine();
                     try {
-                        var idx = Integer.parseInt(input);
-                        var obj = objects.get(idx);
-                        networkRepository.sendObjectByIndex(idx, obj);
+                        var obj = objects.get(Integer.parseInt(input));
+                        networkRepository.sendObject(obj);
                     } catch (Exception e) {
                         System.out.println("ERROR: " + e.getMessage());
                     }

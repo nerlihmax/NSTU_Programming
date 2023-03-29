@@ -5,19 +5,21 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 
 public class ButtonsPanel extends JPanel {
-    private final JButton addButton = new JButton("Insert");
-    private final JButton removeButton = new JButton("Remove");
-    private final JButton stopButton = new JButton("Stop/Resume");
-    private final JButton stopAllButton = new JButton("Stop all");
-    private final JButton resumeAllButton = new JButton("Resume all");
+    private final JButton addButton = new JButton("Insert"),
+            removeButton = new JButton("Remove"),
+            stopButton = new JButton("Stop/Resume"),
+            stopAllButton = new JButton("Stop all"),
+            resumeAllButton = new JButton("Resume all"),
+            clearAllButton = new JButton("Clear");
 
     public ButtonsPanel() {
-        setLayout(new GridLayout(1, 5));
+        setLayout(new GridLayout(1, 6));
         add(addButton);
         add(removeButton);
         add(stopButton);
         add(stopAllButton);
         add(resumeAllButton);
+        add(clearAllButton);
     }
 
     public void onAddButtonClicked(ActionListener listener) {
@@ -38,5 +40,9 @@ public class ButtonsPanel extends JPanel {
 
     public void onResumeAllButtonClicked(ActionListener listener) {
         resumeAllButton.addActionListener(listener);
+    }
+
+    public void onClearButtonClicked(ActionListener listener) {
+        clearAllButton.addActionListener(listener);
     }
 }

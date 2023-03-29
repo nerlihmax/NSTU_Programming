@@ -1,12 +1,7 @@
 package utils.network_events;
 
-public sealed interface NetworkEvent permits CloseConnection,
-        ClearObjects,
-        RequestObjectByIndex,
-        RequestObjectList,
-        RequestObjectListSize,
-        ResponseObjectByIndex,
+public sealed interface NetworkEvent permits
         ResponseObjectList,
-        ResponseObjectListSize,
+        ResponseObjectListNames,
         ResponseObject {
 }

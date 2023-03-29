@@ -1,6 +1,5 @@
 package objects;
 
-import org.json.JSONObject;
 import utils.Vector;
 
 import java.awt.*;
@@ -10,8 +9,8 @@ public class Star extends GraphicalObject {
     private int numberOfVertices = 5;
     private double angle = 0.0;
 
-    public Star(int x, int y, int width, int height, Color color) {
-        super(x - width / 2, y - height / 2, width, height, color);
+    public int getNumberOfVertices() {
+        return numberOfVertices;
     }
 
     public Star(int x, int y, int width, int height, Color color, int numberOfVertices) {
@@ -54,31 +53,6 @@ public class Star extends GraphicalObject {
         g.drawLine(X[X.length - 2], Y[Y.length - 2], X[0], Y[0]);
 
         gd.setTransform(originalTransform);
-    }
-
-    @Override
-    public void readFromJson(String json) {
-        var jsonObject = new JSONObject(json);
-        x = jsonObject.getInt("x");
-        y = jsonObject.getInt("y");
-        width = jsonObject.getInt("width");
-        height = jsonObject.getInt("height");
-        color = new Color(jsonObject.getInt("r"), jsonObject.getInt("g"), jsonObject.getInt("b"));
-        numberOfVertices = jsonObject.getInt("numberOfVertices");
-    }
-
-    @Override
-    public String writeToJson() {
-        var jsonObject = new JSONObject();
-        jsonObject.put("x", x);
-        jsonObject.put("y", y);
-        jsonObject.put("width", width);
-        jsonObject.put("height", height);
-        jsonObject.put("r", color.getRed());
-        jsonObject.put("g", color.getGreen());
-        jsonObject.put("b", color.getBlue());
-        jsonObject.put("numberOfVertices", numberOfVertices);
-        return jsonObject.toString();
     }
 
     @Override

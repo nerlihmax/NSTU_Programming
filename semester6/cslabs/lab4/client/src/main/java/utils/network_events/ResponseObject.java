@@ -1,4 +1,6 @@
 package utils.network_events;
 
-public record ResponseObject(String object, String type) implements NetworkEvent {
+import objects.GraphicalObject;
+
+public record ResponseObject(GraphicalObject object) implements NetworkEvent {
 }

@@ -9,9 +9,10 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import utils.RuntimeTypeAdapterFactory;
+import utils.network_events.ResponseObject;
 import utils.network_events.ResponseObjectList;
+import utils.network_events.ResponseObjectListNames;
 
-import javax.xml.transform.Source;
 import java.util.List;
 
 public class RESTNetworkRepository implements NetworkRepository {
@@ -45,44 +46,52 @@ public class RESTNetworkRepository implements NetworkRepository {
     }
 
     @Override
-    public void closeConnection() {
-    }
+    public void sendObject(GraphicalObject object) {
+        api.sendObject(GraphicalObjectDTO.fromGraphicalObject(object)).enqueue(new Callback<>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                System.out.println("Object sent");
+            }
 
-    @Override
-    public void clearObjects() {
-    }
-
-    @Override
-    public void sendObjectByIndex(int index, GraphicalObject object) {
-
-    }
-
-    @Override
-    public void sendObjectsList(GraphicalObject[] objects) {
-
-    }
-
-    @Override
-    public void sendObjectsListSize(int size) {
-
+            @Override
+            public void onFailure(Call<Void> call, Throwable throwable) {
+                System.out.println("Error occurred");
+                throwable.printStackTrace();
+            }
+        });
     }
 
     @Override
     public void requestObjectByIndex(int index) {
+        api.fetchObjectByIndex(index).enqueue(new Callback<>() {
+            @Override
+            public void onResponse(Call<GraphicalObjectDTO> call, Response<GraphicalObjectDTO> response) {
+                if (response.body() == null) {
+                    System.out.println("Body is empty");
+                    return;
+                }
+                listener.onEvent(new ResponseObject(response.body().toGraphicalObject()));
+            }
 
+            @Override
+            public void onFailure(Call<GraphicalObjectDTO> call, Throwable throwable) {
+                System.out.println("Error occurred");
+                throwable.printStackTrace();
+            }
+        });
     }
 
     @Override
     public void requestObjectsList() {
-        api.fetchObject().enqueue(new Callback<>() {
+        api.fetchObjects().enqueue(new Callback<>() {
             @Override
             public void onResponse(Call<List<GraphicalObjectDTO>> call, Response<List<GraphicalObjectDTO>> response) {
                 if (response.body() == null) {
                     System.out.println("Body is empty");
                     return;
                 }
-                response.body().forEach(System.out::println);
-                System.out.println(response.body().toString());
+                var list = response.body().stream().map(GraphicalObjectDTO::toGraphicalObject).toArray(GraphicalObject[]::new);
+                listener.onEvent(new ResponseObjectList(list));
             }
 
             @Override
@@ -94,7 +103,39 @@ public class RESTNetworkRepository implements NetworkRepository {
     }
 
     @Override
-    public void requestObjectsListSize() {
+    public void requestObjectsListNames() {
+        api.fetchObjects().enqueue(new Callback<>() {
+            @Override
+            public void onResponse(Call<List<GraphicalObjectDTO>> call, Response<List<GraphicalObjectDTO>> response) {
+                if (response.body() == null) {
+                    System.out.println("Body is empty");
+                    return;
+                }
+                var list = response.body().stream().map(GraphicalObjectDTO::toGraphicalObject).toArray(GraphicalObject[]::new);
+                listener.onEvent(new ResponseObjectListNames(list));
+            }
 
+            @Override
+            public void onFailure(Call<List<GraphicalObjectDTO>> call, Throwable throwable) {
+                System.out.println("Error occurred");
+                throwable.printStackTrace();
+            }
+        });
+    }
+
+    @Override
+    public void removeObjectByIndex(int index) {
+        api.removeObjectByIndex(index).enqueue(new Callback<>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                System.out.println("Object removed");
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable throwable) {
+                System.out.println("Error occurred");
+                throwable.printStackTrace();
+            }
+        });
     }
 }
