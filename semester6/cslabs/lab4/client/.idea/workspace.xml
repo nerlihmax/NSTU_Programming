@@ -4,33 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3c986ad5-03d1-4d85-a314-ebbd9334ad70" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/utils/network_events/ResponseObjectListNames.java" afterDir="false" />
+    <list default="true" id="3c986ad5-03d1-4d85-a314-ebbd9334ad70" name="Changes" comment="feat(cslabs): lab4 done">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ClientTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/GraphicsController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/GraphicsController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/network/GraphicalObjectDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/network/GraphicalObjectDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/network/GraphicsAPI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/network/GraphicsAPI.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/network/NetworkRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/network/NetworkRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/network/RESTNetworkRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/network/RESTNetworkRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/network/TCPNetworkRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/network/UDPNetworkRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/objects/GraphicalObject.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/objects/GraphicalObject.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/objects/Smiley.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/objects/Smiley.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/objects/Star.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/objects/Star.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ui_components/ButtonsPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ui_components/ButtonsPanel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/utils/NetworkCommands.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/utils/network_events/ClearObjects.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/utils/network_events/CloseConnection.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/utils/network_events/NetworkEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/utils/network_events/NetworkEvent.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/utils/network_events/RequestObjectByIndex.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/utils/network_events/RequestObjectList.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/utils/network_events/RequestObjectListSize.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/utils/network_events/ResponseObject.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/utils/network_events/ResponseObject.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/utils/network_events/ResponseObjectByIndex.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/utils/network_events/ResponseObjectListSize.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../server/resources/backup.json" beforeDir="false" afterPath="$PROJECT_DIR$/../server/resources/backup.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/main/kotlin/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/main/kotlin/Main.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,6 +35,11 @@
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="client" type="f1a62948:ProjectNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="client" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
               </path>
             </expand>
             <select />
@@ -131,11 +114,23 @@
       <updated>1680064659329</updated>
       <workItem from="1680064660565" duration="1009000" />
       <workItem from="1680065684170" duration="2223000" />
-      <workItem from="1680073198201" duration="2584000" />
+      <workItem from="1680073198201" duration="4267000" />
     </task>
+    <task id="LOCAL-00001" summary="feat(cslabs): lab4 done">
+      <created>1680076032762</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1680076032762</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="feat(cslabs): lab4 done" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat(cslabs): lab4 done" />
   </component>
 </project>

@@ -10,7 +10,7 @@ import spark.kotlin.get
 import spark.kotlin.post
 import java.io.File
 
-fun main() {
+fun main() { // точка входа в программу
     ObjectsContainer.restoreFromFile() // восстановление объектов из файла
 
     get("/objects") {
@@ -62,7 +62,7 @@ fun main() {
 }
 
 @Serializable // аннотация для сериализации в json
-sealed interface GraphicalObject { // интерфейс графического объекта
+sealed interface GraphicalObject { // интерфейс графического объекта (data class аналог record в Java)
     @Serializable
     @SerialName("star")
     data class Star( // звезда
@@ -91,7 +91,7 @@ sealed interface GraphicalObject { // интерфейс графическог�
     ) : GraphicalObject
 }
 
-object ObjectsContainer {
+object ObjectsContainer { // object -- синглтон (аналог static в Java)
     private val objects = mutableListOf<GraphicalObject>() // список объектов
 
     fun getObjects(): List<GraphicalObject> = objects.toList() // получение списка объектов
