@@ -1,5 +1,6 @@
 import network.NetworkEventListener;
 import network.NetworkRepository;
+import network.RESTNetworkRepository;
 import network.TCPNetworkRepository;
 import objects.GraphicalObject;
 import objects.Smiley;
@@ -46,55 +47,8 @@ class Util {
     }
 }
 
-class ServerTest implements NetworkEventListener {
-    NetworkRepository networkRepository;
 
-    public static void main(String[] args) {
-        new ServerTest();
-    }
-
-    public ServerTest() {
-        super();
-        networkRepository = new TCPNetworkRepository(true, this);
-        var thread = new Thread((Runnable) networkRepository);
-        thread.setDaemon(true);
-        thread.start();
-
-        Scanner scanner = new Scanner(System.in);
-        String input;
-        boolean running = true;
-
-        while (running) {
-            System.out.println("Please select an option:");
-            System.out.println("1. CLOSE_CONNECTION");
-            System.out.println("2. CLEAR_OBJECTS");
-            System.out.println("3. REQUEST_OBJ_BY_INDEX");
-            System.out.println("4. REQUEST_OBJ_LIST");
-            System.out.println("5. REQUEST_OBJ_LIST_SIZE");
-            System.out.println("0. Exit");
-
-            input = scanner.nextLine();
-
-            switch (input) {
-                case "1" -> networkRepository.closeConnection();
-                case "2" -> networkRepository.clearObjects();
-                case "3" -> networkRepository.requestObjectByIndex(1);
-                case "4" -> networkRepository.requestObjectsList();
-                case "5" -> networkRepository.requestObjectsListSize();
-                case "0" -> running = false;
-                default -> System.out.println("Invalid input, please try again.");
-            }
-        }
-        scanner.close();
-    }
-
-    @Override
-    public void onEvent(NetworkEvent event) {
-        Util.handleEvent(event, networkRepository);
-    }
-}
-
-class ClientTest implements NetworkEventListener {
+public class ClientTest implements NetworkEventListener {
     NetworkRepository networkRepository;
 
     public static void main(String[] args) {
@@ -103,10 +57,7 @@ class ClientTest implements NetworkEventListener {
 
     public ClientTest() {
         super();
-        networkRepository = new TCPNetworkRepository(false, this);
-        var thread = new Thread((Runnable) networkRepository);
-        thread.setDaemon(true);
-        thread.start();
+        networkRepository = new RESTNetworkRepository(this);
 
         Scanner scanner = new Scanner(System.in);
         String input;
@@ -114,21 +65,17 @@ class ClientTest implements NetworkEventListener {
 
         while (running) {
             System.out.println("Please select an option:");
-            System.out.println("1. CLOSE_CONNECTION");
-            System.out.println("2. CLEAR_OBJECTS");
-            System.out.println("3. REQUEST_OBJ_BY_INDEX");
-            System.out.println("4. REQUEST_OBJ_LIST");
-            System.out.println("5. REQUEST_OBJ_LIST_SIZE");
+            System.out.println("1. REQUEST_OBJ_BY_INDEX");
+            System.out.println("2. REQUEST_OBJ_LIST");
+            System.out.println("3. REQUEST_OBJ_LIST_SIZE");
             System.out.println("0. Exit");
 
             input = scanner.nextLine();
 
             switch (input) {
-                case "1" -> networkRepository.closeConnection();
-                case "2" -> networkRepository.clearObjects();
-                case "3" -> networkRepository.requestObjectByIndex(1);
-                case "4" -> networkRepository.requestObjectsList();
-                case "5" -> networkRepository.requestObjectsListSize();
+                case "1" -> networkRepository.requestObjectByIndex(1);
+                case "2" -> networkRepository.requestObjectsList();
+                case "3" -> networkRepository.requestObjectsListSize();
                 case "0" -> running = false;
                 default -> System.out.println("Invalid input, please try again.");
             }

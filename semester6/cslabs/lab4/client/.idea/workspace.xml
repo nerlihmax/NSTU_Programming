@@ -4,14 +4,38 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4f673962-1b5c-41cf-b59d-197c0de1538f" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
+    <list default="true" id="3c986ad5-03d1-4d85-a314-ebbd9334ad70" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle.kts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradlew" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradlew.bat" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/settings.gradle.kts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/converter-gson-2.9.0.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/json-20230227.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/retrofit-2.9.0.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GraphicsController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GraphicsServer.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ServerTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/network/NetworkEventListener.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/network/NetworkRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/network/TCPNetworkRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/network/UDPNetworkRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/objects/GraphicalObject.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/objects/Smiley.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/objects/Star.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ui_components/ButtonsPanel.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/EditorModes.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/NetworkCommands.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/Vector.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/network_events/ClearObjects.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/network_events/CloseConnection.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/network_events/NetworkEvent.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/network_events/RequestObjectByIndex.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/network_events/RequestObjectList.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/network_events/RequestObjectListSize.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/network_events/ResponseObject.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/network_events/ResponseObjectByIndex.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/network_events/ResponseObjectList.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/network_events/ResponseObjectListSize.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/.gitignore" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -21,10 +45,35 @@
   <component name="ComposerSettings">
     <execution />
   </component>
-  <component name="MacroExpansionManager">
-    <option name="directoryName" value="ouezyckp" />
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
   </component>
-  <component name="ProjectId" id="2Nfk4GzJDrsZWZDnCCQIF0cuCT5" />
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <task path="$PROJECT_DIR$">
+          <activation />
+        </task>
+        <projects_view>
+          <tree_state>
+            <expand>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="client" type="f1a62948:ProjectNode" />
+              </path>
+            </expand>
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
+  </component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="19cafin8" />
+  </component>
+  <component name="ProjectId" id="2NfomhZk0re7pTMEgje25LK5T4C" />
   <component name="ProjectViewState">
     <option name="showLibraryContents" value="true" />
   </component>
@@ -34,27 +83,64 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
     "dart.analysis.tool.window.visible": "false",
-    "project.structure.last.edited": "Modules",
+    "ignore.preview.features.used": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Project",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "AndroidSdkUpdater",
+    "settings.editor.selected.configurable": "build.tools",
     "show.migrate.to.gradle.popup": "false",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="RunManager">
+    <configuration name="ClientTest" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="ClientTest" />
+      <module name="client.main" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.ClientTest" />
+      </list>
+    </recent_temporary>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="4f673962-1b5c-41cf-b59d-197c0de1538f" name="Changes" comment="" />
-      <created>1680062333165</created>
+      <changelist id="3c986ad5-03d1-4d85-a314-ebbd9334ad70" name="Changes" comment="" />
+      <created>1680064659329</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1680062333165</updated>
-      <workItem from="1680062334290" duration="152000" />
+      <updated>1680064659329</updated>
+      <workItem from="1680064660565" duration="1009000" />
+      <workItem from="1680065684170" duration="694000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/network/RESTNetworkRepository.java</url>
+          <line>78</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/network/RESTNetworkRepository.java</url>
+          <line>87</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
