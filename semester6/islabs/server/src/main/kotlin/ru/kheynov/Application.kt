@@ -7,6 +7,7 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.callloging.*
 import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.defaultheaders.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -34,7 +35,7 @@ fun Application.module() {
         json()
     }
     install(Sessions) {
-        cookie<ClientSession>("user_session")
+        header<ClientSession>("user_session")
     }
     install(CallLogging) {
         level = Level.INFO
@@ -42,6 +43,14 @@ fun Application.module() {
     }
     install(DefaultHeaders) {
         header("X-Engine", "Ktor") // will send this header with each response
+    }
+    install(CORS) {
+        anyHost()
+        HttpMethod.DefaultMethods.forEach(::allowMethod)
+        allowHeader(HttpHeaders.Authorization)
+        allowHeader(HttpHeaders.ContentType)
+        allowHeader("user_session")
+        exposeHeader("user_session")
     }
     mainApplication()
 }
@@ -55,83 +64,93 @@ fun Application.mainApplication() {
         get("/") {
             call.respondText("Hello World!")
         }
-        post("/connect") {
-            if (client != null && session?.uuid != call.sessions.get<ClientSession>()?.uuid) {
-                call.respond(HttpStatusCode.Forbidden, "Service already in use")
-                return@post
-            }
-            client = call.receiveNullable<Client>() ?: run {
-                call.respond(HttpStatusCode.BadRequest)
-                return@post
-            }
-            try {
-                dbConnection = connectToPostgres(client!!)
-                dbService = DbService(dbConnection!!)
-                session = ClientSession()
-            } catch (e: Exception) {
-                dbConnection = null
-                dbService = null
-                session = null
-                client = null
-                call.respond(HttpStatusCode.NotAcceptable, "Failed to connect")
-                println(e)
-                return@post
-            }
-            call.sessions.set(session)
-            call.respond(HttpStatusCode.OK)
-        }
-
-        post("/disconnect") {
-            val currentSession = call.sessions.get<ClientSession>()
-            println("current session: ${currentSession}, saved session: $session")
-            if (session?.uuid != currentSession?.uuid) {
-                call.respond(HttpStatusCode.Forbidden)
-                return@post
-            }
-            session = null
-            dbConnection = null
-            dbService = null
-            client = null
-            call.sessions.clear<ClientSession>()
-            call.respond(HttpStatusCode.OK)
-        }
-        post("/query") {
-            if (session != call.sessions.get<ClientSession>()) {
-                call.respond(HttpStatusCode.Forbidden)
-                return@post
-            }
-            if (client == null || dbConnection == null || dbService == null) {
-                call.respond(HttpStatusCode.Unauthorized)
-                return@post
-            }
-            val query = call.receiveText()
-            println(query)
-            try {
-                val res = dbService!!.executeQuery(query)
-                if (res is DbService.Companion.Result.Successful) call.respond(HttpStatusCode.OK, res.data)
-                else {
-                    call.respond(HttpStatusCode.BadRequest, "Failed to execute query")
+        route("/api") {
+            post("/connect") {
+                if (client != null && session?.uuid != call.sessions.get<ClientSession>()?.uuid) {
+                    call.respond(HttpStatusCode.Forbidden, "Service already in use")
                     return@post
                 }
-            } catch (e: Exception) {
-                call.respond(HttpStatusCode.BadRequest, "Failed to execute query")
-                println(e)
-                return@post
+                client = call.receiveNullable<Client>() ?: run {
+                    call.respond(HttpStatusCode.BadRequest)
+                    return@post
+                }
+                try {
+                    dbConnection = connectToPostgres(client!!)
+                    dbService = DbService(dbConnection!!)
+                    session = ClientSession()
+                } catch (e: Exception) {
+                    dbConnection = null
+                    dbService = null
+                    session = null
+                    client = null
+                    call.respond(HttpStatusCode.NotAcceptable, "Failed to connect")
+                    println(e)
+                    return@post
+                }
+                call.sessions.set(session)
+                call.respond(HttpStatusCode.OK)
             }
-        }
 
-        get("/databases") {
-            try {
-                val res = dbService!!.fetchDatabases()
-                if (res is DbService.Companion.Result.List) call.respond(HttpStatusCode.OK, res.data)
-                else {
+            post("/disconnect") {
+                val currentSession = call.sessions.get<ClientSession>()
+                println("current session: ${currentSession}, saved session: $session")
+                if (session?.uuid != currentSession?.uuid) {
+                    call.respond(HttpStatusCode.Forbidden)
+                    return@post
+                }
+                session = null
+                dbConnection = null
+                dbService = null
+                client = null
+                call.sessions.clear<ClientSession>()
+                call.respond(HttpStatusCode.OK)
+            }
+            post("/query") {
+                val currentSession = call.sessions.get<ClientSession>()
+                println("current session: ${currentSession}, saved session: $session")
+                if (session?.uuid != currentSession?.uuid) {
+                    call.respond(HttpStatusCode.Forbidden)
+                    return@post
+                }
+                if (client == null || dbConnection == null || dbService == null) {
+                    call.respond(HttpStatusCode.Unauthorized)
+                    return@post
+                }
+                val query = call.receiveText()
+                println(query)
+                try {
+                    val res = dbService!!.executeQuery(query)
+                    if (res is DbService.Companion.Result.Successful) call.respond(HttpStatusCode.OK, res.data)
+                    else {
+                        call.respond(HttpStatusCode.BadRequest, "Failed to execute query")
+                        return@post
+                    }
+                } catch (e: Exception) {
                     call.respond(HttpStatusCode.BadRequest, "Failed to execute query")
+                    println(e)
+                    return@post
+                }
+            }
+
+            get("/databases") {
+                val currentSession = call.sessions.get<ClientSession>()
+                println("current session: ${currentSession}, saved session: $session")
+                if (session?.uuid != currentSession?.uuid) {
+                    call.respond(HttpStatusCode.Forbidden)
                     return@get
                 }
-            } catch (e: Exception) {
-                call.respond(HttpStatusCode.BadRequest, "Failed to execute query")
-                println(e)
-                return@get
+                try {
+                    val res = dbService!!.fetchDatabases()
+                    if (res is DbService.Companion.Result.List) call.respond(HttpStatusCode.OK, res.data)
+                    else {
+                        call.respond(HttpStatusCode.BadRequest, "Failed to execute query")
+                        return@get
+                    }
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.BadRequest, "Failed to execute query")
+                    println(e)
+                    return@get
+                }
             }
         }
     }

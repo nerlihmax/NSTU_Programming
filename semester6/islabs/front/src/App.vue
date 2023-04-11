@@ -1,53 +1,46 @@
 <script setup lang="ts">
-import HelloWorld from "./components/HelloWorld.vue";
-import TheWelcome from "./components/TheWelcome.vue";
+  import { connectDb } from '@/core/use-cases/db-connection'
+  import { fetchDatabases } from '@/core/use-cases/fetch-databases'
+  import { NButton, NList, NListItem, NSpace } from 'naive-ui'
+  import { ref } from 'vue'
+  import { checkConnection } from '@/core/use-cases/get-connection-status'
+
+  const databasesList = ref()
+
+  console.log(checkConnection())
+
+  if (!checkConnection()) {
+    connectDb({
+      host: '10.1.0.5',
+      port: '5432',
+      user: 'admin',
+      password: 'a1128f6',
+      database: 'admin',
+    }).catch(reason => console.log(reason))
+
+    console.log(checkConnection())
+  }
+
+  const connect = () => {
+    fetchDatabases()
+      .then(data => {
+        databasesList.value = data
+        console.log(data)
+      })
+      .catch(reason => console.log(reason))
+  }
 </script>
-
 <template>
-  <header>
-    <img
-      alt="Vue logo"
-      class="logo"
-      src="./assets/logo.svg"
-      width="125"
-      height="125"
-    />
+  <NSpace>
+    <div class="flex flex-col">
+      <NButton v-on:click="connect" type="tertiary">Получить список БД</NButton>
 
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
+      <NList class="mt-10">
+        <template #header>Список баз данных</template>
+        <NListItem v-for="it in databasesList">
+          {{ it }}
+        </NListItem>
+      </NList>
     </div>
-  </header>
-
-  <main>
-    <TheWelcome />
-  </main>
+  </NSpace>
 </template>
-
-<style scoped>
-header {
-  line-height: 1.5;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-}
-</style>
