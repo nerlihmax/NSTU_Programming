@@ -35,4 +35,5 @@ dependencies {
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-sessions:$ktorVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
+    implementation("io.ktor:ktor-server-cors:$ktorVersion")
 }
