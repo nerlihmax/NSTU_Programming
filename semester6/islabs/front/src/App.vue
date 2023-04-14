@@ -1,46 +1,50 @@
 <script setup lang="ts">
   import { connectDb } from '@/core/use-cases/db-connection'
   import { fetchDatabases } from '@/core/use-cases/fetch-databases'
-  import { NButton, NList, NListItem, NSpace } from 'naive-ui'
   import { ref } from 'vue'
   import { checkConnection } from '@/core/use-cases/get-connection-status'
+  import SideList from '@/SideList.vue'
+  import { NButton } from 'naive-ui'
 
   const databasesList = ref()
 
-  console.log(checkConnection())
+  const authenticated = ref(checkConnection())
 
-  if (!checkConnection()) {
-    connectDb({
-      host: '10.1.0.5',
-      port: '5432',
-      user: 'admin',
-      password: 'a1128f6',
-      database: 'admin',
-    }).catch(reason => console.log(reason))
-
-    console.log(checkConnection())
-  }
-
-  const connect = () => {
-    fetchDatabases()
-      .then(data => {
-        databasesList.value = data
-        console.log(data)
+  const connect = async () => {
+    try {
+      await connectDb({
+        host: 'localhost',
+        port: '5432',
+        user: 'postgres',
+        password: 'qwertyqwerty',
+        database: 'postgres',
       })
-      .catch(reason => console.log(reason))
+      authenticated.value = true
+    } catch (error) {
+      console.error(error)
+      authenticated.value = false
+      return
+    }
+
+    try {
+      const databases = await fetchDatabases()
+      databasesList.value = databases
+      console.log(databases)
+    } catch (error) {
+      console.error(error)
+    }
   }
 </script>
-<template>
-  <NSpace>
-    <div class="flex flex-col">
-      <NButton v-on:click="connect" type="tertiary">Получить список БД</NButton>
 
-      <NList class="mt-10">
-        <template #header>Список баз данных</template>
-        <NListItem v-for="it in databasesList">
-          {{ it }}
-        </NListItem>
-      </NList>
+<template>
+  <div class="flex flex-row">
+    <SideList
+      v-if="authenticated"
+      :databases-list="databasesList"
+      v-on:connect="console.log('aboba')"
+    />
+    <div v-else>
+      <NButton :onclick="connect" tertiary>Подключиться к БД</NButton>
     </div>
-  </NSpace>
+  </div>
 </template>
