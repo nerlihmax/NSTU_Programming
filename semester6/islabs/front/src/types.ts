@@ -1,1 +1,1 @@
-export type DatabaseEntry = { name: string; id: number }
+export type DatabaseEntry = { name: string; id: number };

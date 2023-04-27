@@ -1,0 +1,29 @@
+<template>
+  <main class="flex flex-col items-center justify-center px-8 md:px-48">
+    <tables-list :tables="tables" @click="openTable" />
+  </main>
+</template>
+
+<script setup lang="ts">
+  import { onMounted, ref } from 'vue';
+  import { useRouter } from 'vue-router';
+  import TablesList from '@/components/tables-list.vue';
+  import { useConnectionState } from '@/stores/connection';
+
+  const connection = useConnectionState();
+  const router = useRouter();
+
+  const tables = ref<string[]>([]);
+
+  onMounted(async () => {
+    const result = await connection.execute<Record<'table_name', string>>(`
+      SELECT datname as table_name
+      FROM pg_database
+      WHERE datistemplate = false;
+    `);
+
+    tables.value = result.map(it => it.table_name);
+  });
+
+  const openTable = (table: string) => router.push(`/database/${table}`);
+</script>
