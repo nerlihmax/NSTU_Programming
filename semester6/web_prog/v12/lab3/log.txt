@@ -1,0 +1,6 @@
+Виды приветствия: official	nonformal	
+Размер сообщения: 18 pt
+Комментарий: <p>&nbsp;TEST</p>
+Виды приветствия: nonformal	
+Размер сообщения: 18 pt
+Комментарий: <p><strong>Это </strong><em>тест</em>, <a href="http://gun.cs.nstu.ru">меня</a> <span style="color: rgb(192, 192, 192);">видно</span>?-)</p>

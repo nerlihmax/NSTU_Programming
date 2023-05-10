@@ -1,39 +1,39 @@
-DROP SCHEMA IF EXISTS public CASCADE;
-CREATE SCHEMA IF NOT EXISTS public;
+drop schema if exists public cascade;
+create schema if not exists public;
 
-CREATE TABLE author
+create table author
 (
-    id      serial PRIMARY KEY,
-    name    text NOT NULL,
-    address text NOT NULL
+    id      serial primary key,
+    name    text not null,
+    address text not null
 );
 
-CREATE TABLE publisher
+create table publisher
 (
-    id      serial PRIMARY KEY,
-    name    text NOT NULL,
-    address text NOT NULL
+    id      serial primary key,
+    name    text not null,
+    address text not null
 );
 
-CREATE TABLE seller
+create table seller
 (
-    id   serial PRIMARY KEY,
-    name text NOT NULL
+    id   serial primary key,
+    name text not null
 );
 
-CREATE TABLE book
+create table book
 (
-    id           serial PRIMARY KEY,
-    title        text NOT NULL,
-    author_id    int REFERENCES author (id),
-    publisher_id int REFERENCES publisher (id),
-    year         int  NOT NULL,
-    price        real NOT NULL,
-    seller_id    int REFERENCES seller (id)
+    id           serial primary key,
+    title        text not null,
+    author_id    int references author (id),
+    publisher_id int references publisher (id),
+    year         int  not null,
+    price        real not null,
+    seller_id    int references seller (id)
 );
 
-INSERT INTO author (name, address)
-VALUES ('J. K. Rowling', 'London, UK'),
+insert into author (name, address)
+values ('J. K. Rowling', 'London, UK'),
        ('J. R. R. Tolkien', 'Bournmouth, UK'),
        ('Stephen King', 'Portland, ME, USA'),
        ('George R. R. Martin', 'Bayonne, NJ, USA'),
@@ -41,20 +41,20 @@ VALUES ('J. K. Rowling', 'London, UK'),
        ('J. D. Salinger', 'New York, NY, USA'),
        ('J. D. Robb', 'New York, NY, USA');
 
-INSERT INTO publisher (name, address)
-VALUES ('Bloomsbury', 'London, UK'),
+insert into publisher (name, address)
+values ('Bloomsbury', 'London, UK'),
        ('Allen & Unwin', 'Sydney, Australia'),
        ('Houghton Mifflin', 'Boston, MA, USA'),
        ('HarperCollins', 'New York, NY, USA'),
        ('Bloomsbury', 'London, UK');
 
-INSERT INTO seller (name)
-VALUES ('Amazon'),
+insert into seller (name)
+values ('Amazon'),
        ('Barnes & Noble'),
        ('Books-A-Million');
 
-INSERT INTO book (title, author_id, publisher_id, year, price, seller_id)
-VALUES ('Harry Potter and the Philosopher''s Stone', 1, 1, 1997, 8.99, 1),
+insert into book (title, author_id, publisher_id, year, price, seller_id)
+values ('Harry Potter and the Philosopher''s Stone', 1, 1, 1997, 8.99, 1),
        ('Harry Potter and the Chamber of Secrets', 1, 1, 1998, 9.50, 1),
        ('Harry Potter and the Prisoner of Azkaban', 1, 1, 1999, 5.20, 1),
        ('Harry Potter and the Goblet of Fire', 1, 1, 2000, 4.40, 1),
@@ -83,28 +83,28 @@ VALUES ('Harry Potter and the Philosopher''s Stone', 1, 1, 1997, 8.99, 1),
        ('A Feast for Crows', 4, 2, 2005, 60.99, 2),
        ('A Dance with Dragons', 5, 4, 2011, 11.99, 1);
 
-CREATE TABLE users
+create table users
 (
-    id           serial PRIMARY KEY,
-    login        text NOT NULL,
-    password     text NOT NULL,
-    access_level int  NOT NULL DEFAULT 0
+    id           serial primary key,
+    login        text not null,
+    password     text not null,
+    access_level int  not null default 0
 );
 
-INSERT INTO users (login, password, access_level)
-VALUES ('admin', 'adminpassword', 2),
+insert into users (login, password, access_level)
+values ('admin', 'adminpassword', 2),
        ('operator', 'operatorpassword', 1);
 
-SELECT book.id,
+select book.id,
        book.title,
        book.year,
        book.price,
-       a.name    AS author,
-       p.name    AS publisher,
-       s.name    AS seller,
-       a.address AS author_address,
-       p.address AS publisher_address
-FROM book
-         INNER JOIN author a ON a.id = book.author_id
-         INNER JOIN publisher p ON book.publisher_id = p.id
-         INNER JOIN seller s ON s.id = book.seller_id;
+       a.name    as author,
+       p.name    as publisher,
+       s.name    as seller,
+       a.address as author_address,
+       p.address as publisher_address
+from book
+         inner join author a on a.id = book.author_id
+         inner join publisher p on book.publisher_id = p.id
+         inner join seller s on s.id = book.seller_id;
