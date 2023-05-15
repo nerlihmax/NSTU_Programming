@@ -3,8 +3,10 @@
     class="px-4 py-2 md:px-8 md:py-4 flex flex-row justify-between items-center"
   >
     <span>
-      сделал с ♥️
-      <a class="text-blue-700" href="https://github.com/kheynov">@kheynov</a>
+      сделано с ♥️ командой
+      <a class="text-blue-700" href="https://github.com/kheynov">
+        шальные ананасики
+      </a>
     </span>
     <n-switch
       :value="theme === 'dark'"
