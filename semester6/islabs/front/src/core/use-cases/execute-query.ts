@@ -1,8 +1,15 @@
-import { client } from '@/core/axios-client'
+import { client } from '@/core/axios-client';
 
-export const executeQuery = async (
+export const executeQuery = async <T extends Record<string, unknown>>(
   query: string,
-): Promise<boolean | string> => {
-  const res = await client.post('/query', query)
-  return res.status == 200 ? true : res.data
-}
+): Promise<T[]> => {
+  const res = await client.post<Record<string, T>>('/query', query);
+
+  const arr = [];
+
+  for (const key in res.data) {
+    arr.push(res.data[key]);
+  }
+
+  return arr;
+};
