@@ -33,10 +33,13 @@
 
   onMounted(async () => {
     const result = await connection.execute<Record<'table_name', string>>(`
-    SELECT datname as table_name
-    FROM pg_database
-    WHERE datistemplate = false;
-  `);
+      SELECT table_name
+      FROM information_schema.tables
+      WHERE table_schema='public'
+      AND table_type='BASE TABLE';
+    `);
+
+    console.log(result);
 
     tables.value = result.map(it => it.table_name);
   });
