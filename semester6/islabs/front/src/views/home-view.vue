@@ -11,5 +11,5 @@
 
   const router = useRouter();
 
-  const start = () => router.push('/database');
+  const start = () => router.push('/databases');
 </script>

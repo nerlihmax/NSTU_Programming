@@ -35,13 +35,6 @@
           :disabled="$props.disabled"
         />
       </n-form-item>
-      <n-form-item path="database" label="База данных">
-        <n-input
-          placeholder="Введите базу данных"
-          v-model:value="formValue.database"
-          :disabled="$props.disabled"
-        />
-      </n-form-item>
     </n-form>
     <n-button type="default" @click="submit" :disabled="$props.disabled">
       Подключиться
@@ -49,22 +42,19 @@
   </n-card>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
   type FormValue = {
     host?: string;
     port?: number;
     user?: string;
     password?: string;
-    database?: string;
   };
 
-  export type FormSubmitValue = Required<FormValue>;
-</script>
+  export type FormSubmitValue = Required<FormValue> & { database: string };
 
-<script setup lang="ts">
   import { ref } from 'vue';
   import type { FormInst, FormRules } from 'naive-ui';
-  import { NButton, NForm, NFormItem, NInput, NCard } from 'naive-ui';
+  import { NButton, NCard, NForm, NFormItem, NInput } from 'naive-ui';
 
   const $props = defineProps<{ disabled?: boolean }>();
 
@@ -96,18 +86,16 @@
       message: 'Пожалуйста, введите пароль',
       trigger: ['blur'],
     },
-    database: {
-      required: true,
-      message: 'Пожалуйста, введите базу данных',
-      trigger: ['blur'],
-    },
   };
 
   const submit = (e: MouseEvent) => {
     e.preventDefault();
     formRef.value?.validate(errors => {
       if (!errors) {
-        $emit('submit', { ...formValue.value } as FormSubmitValue);
+        $emit('submit', {
+          ...formValue.value,
+          database: formValue.value.user,
+        } as FormSubmitValue);
       }
     });
   };

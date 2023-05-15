@@ -1,11 +1,11 @@
 <template>
   <database-header class="w-full" />
   <div class="p-4 md:p-8 flex flex-grow flex-row gap-4">
-    <nav v-if="showTablesList">
-      <tables-list
-        :tables="tables"
+    <nav v-if="shouldShowTablesList">
+      <entities-list
+        :entities="tables"
         @click="openTable"
-        :active-table="currentTable"
+        :active-entity="currentTable"
       />
     </nav>
     <router-view class="w-full h-full" />
@@ -13,39 +13,43 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, onMounted, ref } from 'vue';
-  import { RouterView, useRouter, useRoute } from 'vue-router';
+  import { computed, ref, watchEffect } from 'vue';
+  import { RouterView, useRoute, useRouter } from 'vue-router';
   import { useConnectionState } from '@/stores/connection';
   import DatabaseHeader from '@/components/database-header.vue';
-  import TablesList from '@/components/tables-list.vue';
+  import EntitiesList from '@/components/entities-list.vue';
 
   const router = useRouter();
   const route = useRoute();
   const connection = useConnectionState();
 
   if (connection.isConnected) {
-    router.replace('/database');
+    router.replace('/databases');
   } else {
     router.replace('/authorize');
   }
 
   const tables = ref<string[]>([]);
 
-  onMounted(async () => {
+  watchEffect(async () => {
+    if (!connection.isConnected) return;
     const result = await connection.execute<Record<'table_name', string>>(`
-      SELECT table_name
-      FROM information_schema.tables
-      WHERE table_schema='public'
-      AND table_type='BASE TABLE';
-    `);
+    SELECT table_name
+    FROM information_schema.tables
+    WHERE table_schema = 'public'
+      AND table_type = 'BASE TABLE';
+  `);
 
     console.log(result);
 
     tables.value = result.map(it => it.table_name);
   });
 
-  const showTablesList = computed(() => route.path !== '/database');
+  const shouldShowTablesList = computed(
+    () => !!route.params.database && !!route.params.table,
+  );
   const currentTable = computed(() => route.params['table'] as string);
 
-  const openTable = (table: string) => router.push(`/database/${table}`);
+  const openTable = (table: string) =>
+    router.push(`/databases/${route.params.database}/tables/${table}`);
 </script>

@@ -1,13 +1,14 @@
 import {
-  type RouteRecordRaw,
   createRouter,
   createWebHistory,
+  type RouteRecordRaw,
 } from 'vue-router';
 import HomeView from '@/views/home-view.vue';
 import TablesSelectView from '@/views/tables-select-view.vue';
 import AuthView from '@/views/auth-view.vue';
 import TableView from '@/views/table-view.vue';
 import DatabaseLayout from '@/layouts/database-layout.vue';
+import DatabasesSelectView from '@/views/databases-select-view.vue';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -19,16 +20,30 @@ const routes: RouteRecordRaw[] = [
     component: AuthView,
   },
   {
-    path: '/database',
+    path: '/databases',
     component: DatabaseLayout,
     children: [
       {
         path: '',
-        component: TablesSelectView,
+        component: DatabasesSelectView,
       },
       {
-        path: ':table',
-        component: TableView,
+        path: ':database',
+        children: [
+          {
+            path: 'tables',
+            children: [
+              {
+                path: '',
+                component: TablesSelectView,
+              },
+              {
+                path: ':table',
+                component: TableView,
+              },
+            ],
+          },
+        ],
       },
     ],
   },
