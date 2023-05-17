@@ -17,9 +17,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import org.slf4j.event.Level
+import java.io.File
 import java.sql.Connection
 import java.sql.DriverManager
+import java.time.Instant
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 fun main() {
     embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module).start(wait = true)
@@ -76,7 +79,7 @@ fun Application.mainApplication() {
                 }
                 try {
                     dbConnection = connectToPostgres(client!!)
-                    dbService = DbService(dbConnection!!)
+                    dbService = DbService(dbConnection!!, client!!)
                     session = ClientSession()
                 } catch (e: Exception) {
                     dbConnection = null
@@ -120,7 +123,10 @@ fun Application.mainApplication() {
                 println(query)
                 try {
                     val res = dbService!!.executeQuery(query)
-                    if (res is DbService.Companion.Result.Successful) call.respond(HttpStatusCode.OK, res.data)
+                    if (res is DbService.Result.Successful) call.respond(
+                        HttpStatusCode.OK,
+                        res.data ?: res.message ?: "No data provided"
+                    )
                     else {
                         call.respond(HttpStatusCode.BadRequest, "Failed to execute query")
                         return@post
@@ -141,7 +147,7 @@ fun Application.mainApplication() {
                 }
                 try {
                     val res = dbService!!.fetchDatabases()
-                    if (res is DbService.Companion.Result.List) call.respond(HttpStatusCode.OK, res.data)
+                    if (res is DbService.Result.List) call.respond(HttpStatusCode.OK, res.data)
                     else {
                         call.respond(HttpStatusCode.BadRequest, "Failed to execute query")
                         return@get
@@ -150,6 +156,62 @@ fun Application.mainApplication() {
                     call.respond(HttpStatusCode.BadRequest, "Failed to execute query")
                     println(e)
                     return@get
+                }
+            }
+
+            get("/backups") {
+                val currentSession = call.sessions.get<ClientSession>()
+                println("current session: ${currentSession}, saved session: $session")
+                if (session?.uuid != currentSession?.uuid) {
+                    call.respond(HttpStatusCode.Forbidden)
+                    return@get
+                }
+                try {
+                    val res = dbService!!.listBackups()
+                    call.respond(HttpStatusCode.OK, res)
+                    return@get
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.BadRequest, "Failed to fetch backups")
+                    println(e)
+                    return@get
+                }
+            }
+            post("save") {
+                val currentSession = call.sessions.get<ClientSession>()
+                println("current session: ${currentSession}, saved session: $session")
+                if (session?.uuid != currentSession?.uuid) {
+                    call.respond(HttpStatusCode.Forbidden)
+                    return@post
+                }
+                try {
+                    val res = dbService!!.createBackup()
+                    if (res is DbService.Result.Successful)
+                        call.respond(HttpStatusCode.OK, res.message ?: "No data provided")
+                    return@post
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.BadRequest, "Failed to dump database")
+                    println(e)
+                    return@post
+                }
+            }
+
+            post("restore") {
+                val currentSession = call.sessions.get<ClientSession>()
+                println("current session: ${currentSession}, saved session: $session")
+                if (session?.uuid != currentSession?.uuid) {
+                    call.respond(HttpStatusCode.Forbidden)
+                    return@post
+                }
+                val backupName = call.receiveText()
+                try {
+                    val res = dbService!!.restoreBackup(backupName)
+                    if (res is DbService.Result.Successful)
+                        call.respond(HttpStatusCode.OK, res.message ?: "No data provided")
+                    return@post
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.BadRequest, "Failed to restore backup")
+                    println(e)
+                    return@post
                 }
             }
         }
@@ -164,15 +226,10 @@ fun connectToPostgres(client: Client): Connection {
     return DriverManager.getConnection(url, user, password)
 }
 
-class DbService(private val connection: Connection) {
-    companion object {
-        sealed interface Result {
-            data class Successful(val data: Map<Int, Map<String, String>>) : Result
-            data class List(val data: kotlin.collections.List<String>) : Result
-            object Failed : Result
-        }
-    }
-
+class DbService(
+    private val connection: Connection,
+    private val client: Client,
+) {
     suspend fun executeQuery(query: String): Result = withContext(Dispatchers.IO) {
         try {
             val statement = connection.prepareStatement(query)
@@ -197,7 +254,28 @@ class DbService(private val connection: Connection) {
             return@withContext Result.Successful(columns.toMap())
         } catch (e: Exception) {
             e.printStackTrace()
-            return@withContext Result.Failed
+            return@withContext Result.Failed(e.localizedMessage)
+        }
+    }
+
+    sealed interface Result {
+        data class Successful(val data: Map<Int, Map<String, String>>? = null, val message: String? = null) : Result
+        data class List(val data: kotlin.collections.List<String>) : Result
+        data class Failed(val reason: String? = null) : Result
+    }
+
+
+    private fun Iterable<String>.runCommands(workingDir: File, envs: Map<String, String>) {
+        this.forEach {
+            ProcessBuilder(it.split(" "))
+                .directory(workingDir)
+                .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+                .redirectError(ProcessBuilder.Redirect.INHERIT)
+                .apply {
+                    environment().putAll(envs)
+                }
+                .start()
+                .waitFor(60, TimeUnit.MINUTES)
         }
     }
 
@@ -214,7 +292,36 @@ class DbService(private val connection: Connection) {
             return@withContext Result.List(names.toList())
         } catch (e: Exception) {
             e.printStackTrace()
-            return@withContext Result.Failed
+            return@withContext Result.Failed(e.localizedMessage)
         }
     }
+
+    suspend fun createBackup(): Result = try {
+        val backupPath = "/tmp/backups/${client.database}-${Instant.now().epochSecond}.sql"
+        withContext(Dispatchers.IO) {
+            listOf(
+                "/opt/homebrew/bin/pg_dump -h ${client.host} -p ${client.port} -U ${client.user} -f $backupPath -d ${client.database}",
+            ).runCommands(File("/tmp/backups"), mapOf("PGPASSWORD" to client.password))
+        }
+        Result.Successful(message = "Successfully backed up")
+    } catch (e: Exception) {
+        e.printStackTrace()
+        Result.Failed(e.localizedMessage)
+    }
+
+    fun listBackups(): List<String> =
+        File("/tmp/backups").walkTopDown().filter { it.name.endsWith(".sql") }.map { it.name }.toList()
+
+    suspend fun restoreBackup(backupName: String): Result = try {
+        withContext(Dispatchers.IO) {
+            listOf(
+                "/opt/homebrew/bin/psql -h ${client.host} -p ${client.port} -U ${client.user} -d ${client.database} -f /tmp/backups/$backupName"
+            ).runCommands(File("/tmp/backups"), mapOf("PGPASSWORD" to client.password))
+        }
+        Result.Successful(message = "Successfully restored")
+    } catch (e: Exception) {
+        e.printStackTrace()
+        Result.Failed(e.localizedMessage)
+    }
+
 }
