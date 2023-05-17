@@ -1,6 +1,7 @@
 <template>
-  <main class="flex items-center justify-center flex-col gap-8">
-    <h1 class="text-4xl">Привет</h1>
+  <main class="flex items-center justify-center flex-col gap-4">
+    <img src="src/assets/logo.svg" alt="" width="250" height="250" />
+    <h1 class="text-4xl">Привет, мы команда «шальные ананасики»</h1>
     <n-button size="large" @click="start">Начать работу</n-button>
   </main>
 </template>

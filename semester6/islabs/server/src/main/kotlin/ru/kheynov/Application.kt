@@ -300,6 +300,7 @@ class DbService(
     suspend fun createBackup(): Result = try {
         val backupPath = "/tmp/backups/${client.database}-${Instant.now().epochSecond}.sql"
         withContext(Dispatchers.IO) {
+            println("/opt/homebrew/bin/pg_dump -h ${client.host} -p ${client.port} -U ${client.user} -f $backupPath -d ${client.database}")
             listOf(
                 "/opt/homebrew/bin/pg_dump -h ${client.host} -p ${client.port} -U ${client.user} -f $backupPath -d ${client.database}",
             ).runCommands(File("/tmp/backups"), mapOf("PGPASSWORD" to client.password))
@@ -316,6 +317,7 @@ class DbService(
 
     suspend fun restoreBackup(backupName: String): Result = try {
         withContext(Dispatchers.IO) {
+            executeQuery("drop schema if exists public cascade; create schema public;")
             listOf(
                 "/opt/homebrew/bin/psql -h ${client.host} -p ${client.port} -U ${client.user} -d ${client.database} -f /tmp/backups/$backupName"
             ).runCommands(File("/tmp/backups"), mapOf("PGPASSWORD" to client.password))
