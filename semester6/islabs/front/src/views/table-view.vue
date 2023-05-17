@@ -1,29 +1,43 @@
 <template>
-  <div class="flex flex-col items-center">
-    <n-data-table :columns="columns" :data="data" />
-    <n-button @click="addItem" size="large" :type="'success'" class="mt-8">
+  <div class="flex flex-col items-center space-y-4">
+    <n-data-table :columns="[...columns, ...deleteCols]" :data="data" />
+    <n-button @click="openModal" size="large" :type="'success'">
       Добавить запись
+      <template #icon>
+        <n-icon :component="Add24Regular" />
+      </template>
     </n-button>
-    <n-button @click="saveEdited" size="large" :type="'success'" class="mt-8">
+    <n-button @click="saveEdited" size="large" :type="'success'">
       Сохранить
+      <template #icon>
+        <n-icon :component="Save24Regular" />
+      </template>
     </n-button>
+    <create-record-modal :fields="columns.map(col => 'key' in col ? col.key as string : '').filter(col => col !== 'id')" :table="tableName" v-model:show="showCreateModal" @submit="createRecord" />
   </div>
 </template>
 
 <script setup lang="ts">
   import { useRoute } from 'vue-router';
-  import { type DataTableColumns, NButton, NDataTable, NInput } from 'naive-ui';
-  import { useConnectionState } from '@/stores/connection';
   import { computed, createTextVNode, h, ref, watch, watchEffect } from 'vue';
+  import { type DataTableColumns, NButton, NDataTable, NInput, NIcon } from 'naive-ui';
   import type { InternalRowData } from 'naive-ui/es/data-table/src/interface';
+  import { Delete24Regular, Add24Regular, Save24Regular } from '@vicons/fluent';
+  import { useConnectionState } from '@/stores/connection';
+  import CreateRecordModal from '@/components/create-record-modal.vue';
 
   const route = useRoute();
   const connection = useConnectionState();
 
-  const tableName = computed(() => route.params['table']);
+  const tableName = computed(() => route.params['table'] as string);
 
   const columns = ref<DataTableColumns>([]);
   const data = ref<Array<Record<string, unknown>>>([]);
+  const showCreateModal = ref(false);
+
+  watchEffect(() => {
+    console.log(columns.value);
+  });
 
   const edited = ref<
     {
@@ -82,20 +96,6 @@
           });
         },
       })),
-      cols.find(({ column_name }) => column_name === 'id')
-        ? {
-            key: 'D',
-            title: 'Delete',
-            render: row => {
-              return h(NButton, {
-                value: 'D',
-                onClick: () => {
-                  deleteRow(row['id'] as number);
-                },
-              });
-            },
-          }
-        : [],
     ] as DataTableColumns;
 
     data.value = await fetchData();
@@ -103,18 +103,31 @@
     console.log(columns);
   });
 
-  const addItem = () => {
-    edited.value.push({
-      isNew: true,
-      changedFields: {
-        // I have not any fucking idea how to implement this
-        ...Object.entries(data.value).map(() => {
-          {
-          }
-        }),
-      },
-    });
-    data.value.push({});
+  const deleteCols = computed<DataTableColumns>(() => 
+    columns.value.find((column) => 'key' in column && column.key === 'id')
+        ? [{
+            key: 'D',
+            title: 'Delete',
+            render: row => {
+              return h(
+                NButton,
+                {
+                  value: 'D',
+                  onClick: () => {
+                    deleteRow(row['id'] as number);
+                  },
+                  type: "error",
+                  ghost: true
+                }, 
+                [h(NIcon, { component: Delete24Regular })]
+              );
+            },
+          }]
+        : [],
+  );
+
+  const openModal = () => {
+    showCreateModal.value = true;
   };
 
   const fetchData = async () =>
@@ -130,6 +143,16 @@
              from ${tableName.value}
              where id = ${index};`,
     );
+    data.value = await fetchData();
+  };
+
+  const createRecord = async (record: Record<string, string>) => {
+    const entries = Object.entries(record).filter(([field]) => field !== 'id');
+    await connection.execute(`
+      insert into ${tableName.value}
+      (${entries.map(([field]) => field).join(',')})
+      values (${entries.map(([_, value]) => `'${value}'`).join(',')});
+    `);
     data.value = await fetchData();
   };
 

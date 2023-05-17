@@ -5,27 +5,37 @@
 </template>
 
 <script setup lang="ts">
-  import { onMounted, ref } from 'vue';
-  import { useRoute, useRouter } from 'vue-router';
-  import EntitiesList from '@/components/entities-list.vue';
-  import { fetchBackups, restoreBackup } from '@/core/use-cases/backups';
+import { onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import EntitiesList from '@/components/entities-list.vue';
+import { fetchBackups, restoreBackup } from '@/core/use-cases/backups';
+import { useLoadingBar, useMessage } from 'naive-ui';
 
-  const router = useRouter();
+const router = useRouter();
+const loadingBar = useLoadingBar();
+const message = useMessage();
 
-  const backups = ref<string[]>([]);
+const backups = ref<string[]>([]);
 
-  onMounted(async () => {
-    backups.value = await fetchBackups();
-  });
+onMounted(async () => {
+  backups.value = await fetchBackups();
+});
 
-  const route = useRoute();
+const route = useRoute();
 
-  const restoreBackupOnClick = async (backup: string) => {
-    console.log('loading backup...');
+const restoreBackupOnClick = async (backup: string) => {
+
+  loadingBar.start();
+  try {
     await restoreBackup(backup);
-    alert('Backup loaded');
+    loadingBar.finish();
+    message.success('Бэкап загружен!');
     await router.push(
       `/databases/${route.params['database']}/tables/${route.params['table']}`,
     );
-  };
+  } catch {
+    message.warning('Не удалось загрузить бэкап!');
+    loadingBar.error();
+  }
+};
 </script>
