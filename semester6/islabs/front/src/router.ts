@@ -9,6 +9,7 @@ import AuthView from '@/views/auth-view.vue';
 import TableView from '@/views/table-view.vue';
 import DatabaseLayout from '@/layouts/database-layout.vue';
 import DatabasesSelectView from '@/views/databases-select-view.vue';
+import BackupSelectView from '@/views/backup-select-view.vue';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -39,7 +40,16 @@ const routes: RouteRecordRaw[] = [
               },
               {
                 path: ':table',
-                component: TableView,
+                children: [
+                  {
+                    path: '',
+                    component: TableView,
+                  },
+                  {
+                    path: 'backups',
+                    component: BackupSelectView,
+                  },
+                ],
               },
             ],
           },

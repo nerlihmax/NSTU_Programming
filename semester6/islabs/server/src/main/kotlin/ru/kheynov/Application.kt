@@ -123,10 +123,11 @@ fun Application.mainApplication() {
                 println(query)
                 try {
                     val res = dbService!!.executeQuery(query)
-                    if (res is DbService.Result.Successful) call.respond(
-                        HttpStatusCode.OK,
-                        res.data ?: res.message ?: "No data provided"
-                    )
+                    if (res is DbService.Result.Successful)
+                        call.respond(
+                            HttpStatusCode.OK,
+                            res.data
+                        )
                     else {
                         call.respond(HttpStatusCode.BadRequest, "Failed to execute query")
                         return@post
@@ -186,7 +187,7 @@ fun Application.mainApplication() {
                 try {
                     val res = dbService!!.createBackup()
                     if (res is DbService.Result.Successful)
-                        call.respond(HttpStatusCode.OK, res.message ?: "No data provided")
+                        call.respond(HttpStatusCode.OK, "OK")
                     return@post
                 } catch (e: Exception) {
                     call.respond(HttpStatusCode.BadRequest, "Failed to dump database")
@@ -206,7 +207,7 @@ fun Application.mainApplication() {
                 try {
                     val res = dbService!!.restoreBackup(backupName)
                     if (res is DbService.Result.Successful)
-                        call.respond(HttpStatusCode.OK, res.message ?: "No data provided")
+                        call.respond(HttpStatusCode.OK, "OK")
                     return@post
                 } catch (e: Exception) {
                     call.respond(HttpStatusCode.BadRequest, "Failed to restore backup")
@@ -259,7 +260,7 @@ class DbService(
     }
 
     sealed interface Result {
-        data class Successful(val data: Map<Int, Map<String, String>>? = null, val message: String? = null) : Result
+        data class Successful(val data: Map<Int, Map<String, String>>) : Result
         data class List(val data: kotlin.collections.List<String>) : Result
         data class Failed(val reason: String? = null) : Result
     }
@@ -303,14 +304,15 @@ class DbService(
                 "/opt/homebrew/bin/pg_dump -h ${client.host} -p ${client.port} -U ${client.user} -f $backupPath -d ${client.database}",
             ).runCommands(File("/tmp/backups"), mapOf("PGPASSWORD" to client.password))
         }
-        Result.Successful(message = "Successfully backed up")
+        Result.Successful(emptyMap())
     } catch (e: Exception) {
         e.printStackTrace()
         Result.Failed(e.localizedMessage)
     }
 
     fun listBackups(): List<String> =
-        File("/tmp/backups").walkTopDown().filter { it.name.endsWith(".sql") }.map { it.name }.toList()
+        File("/tmp/backups").walkTopDown().filter { it.name.endsWith(".sql") && it.name.startsWith(client.database) }
+            .map { it.name }.toList()
 
     suspend fun restoreBackup(backupName: String): Result = try {
         withContext(Dispatchers.IO) {
@@ -318,7 +320,7 @@ class DbService(
                 "/opt/homebrew/bin/psql -h ${client.host} -p ${client.port} -U ${client.user} -d ${client.database} -f /tmp/backups/$backupName"
             ).runCommands(File("/tmp/backups"), mapOf("PGPASSWORD" to client.password))
         }
-        Result.Successful(message = "Successfully restored")
+        Result.Successful(emptyMap())
     } catch (e: Exception) {
         e.printStackTrace()
         Result.Failed(e.localizedMessage)
