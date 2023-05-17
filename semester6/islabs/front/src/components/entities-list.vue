@@ -1,17 +1,15 @@
 <template>
   <n-card class="max-w-xs">
-    <ul class="flex flex-col gap-4">
-      <li v-for="entity in entities" :key="entity">
-        <n-button
-          class="w-full"
-          size="large"
-          @click="$emit('click', entity)"
-          :type="activeEntity === entity ? 'success' : 'default'"
-        >
-          {{ entity }}
-        </n-button>
-      </li>
-    </ul>
+    <div class="flex flex-col" v-for="entity in entities" :key="entity">
+      <n-button
+        class="w-full my-1"
+        size="large"
+        @click="$emit('click', entity)"
+        :type="activeEntity === entity ? 'success' : 'default'"
+      >
+        {{ entity }}
+      </n-button>
+    </div>
   </n-card>
 </template>
 

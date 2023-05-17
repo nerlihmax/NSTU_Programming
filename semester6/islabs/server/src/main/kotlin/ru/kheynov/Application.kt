@@ -176,8 +176,12 @@ class DbService(private val connection: Connection) {
     suspend fun executeQuery(query: String): Result = withContext(Dispatchers.IO) {
         try {
             val statement = connection.prepareStatement(query)
-            statement.executeQuery()
-            val result = statement.resultSet
+            if (query.lowercase().run { contains("update") || contains("insert") || contains("delete") }) {
+                statement.executeUpdate()
+            } else {
+                statement.executeQuery()
+            }
+            val result = statement.resultSet ?: return@withContext Result.Successful(emptyMap())
             val metadata = result.metaData
             val columns = mutableMapOf<Int, Map<String, String>>()
             var count = 0

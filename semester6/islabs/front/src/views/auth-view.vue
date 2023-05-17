@@ -21,7 +21,7 @@
   const connection = useConnectionState();
 
   if (connection.isConnected) {
-    router.replace('/database');
+    router.replace('/databases');
   }
 
   const loading = ref<boolean>(false);
@@ -30,6 +30,6 @@
     loading.value = true;
     await connection.connect(value);
     loading.value = false;
-    router.push('/database');
+    router.push('/databases');
   };
 </script>
