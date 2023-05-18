@@ -13,21 +13,38 @@
         <n-icon :component="Save24Regular" />
       </template>
     </n-button>
-    <create-record-modal :fields="columns.map(col => 'key' in col ? col.key as string : '').filter(col => col !== 'id')" :table="tableName" v-model:show="showCreateModal" @submit="createRecord" />
+    <create-record-modal
+      :fields="columns.map(col => 'key' in col ? col.key as string : '').filter(col => col !== 'id')"
+      :table="tableName"
+      v-model:show="showCreateModal"
+      @submit="createRecord"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
   import { useRoute } from 'vue-router';
   import { computed, createTextVNode, h, ref, watch, watchEffect } from 'vue';
-  import { type DataTableColumns, NButton, NDataTable, NInput, NIcon } from 'naive-ui';
+  import {
+    type DataTableColumns,
+    NButton,
+    NDataTable,
+    NIcon,
+    NInput,
+    useLoadingBar,
+    useMessage,
+  } from 'naive-ui';
   import type { InternalRowData } from 'naive-ui/es/data-table/src/interface';
-  import { Delete24Regular, Add24Regular, Save24Regular } from '@vicons/fluent';
+  import { Add24Regular, Delete24Regular, Save24Regular } from '@vicons/fluent';
   import { useConnectionState } from '@/stores/connection';
   import CreateRecordModal from '@/components/create-record-modal.vue';
 
   const route = useRoute();
   const connection = useConnectionState();
+
+  const loadingBar = useLoadingBar();
+
+  const message = useMessage();
 
   const tableName = computed(() => route.params['table'] as string);
 
@@ -55,9 +72,9 @@
       column_name: string;
       data_type: 'integer' | 'text';
     }>(`
-            SELECT column_name, data_type
-            FROM information_schema.columns
-            WHERE table_name = '${tableName.value}';`);
+    SELECT column_name, data_type
+    FROM information_schema.columns
+    WHERE table_name = '${tableName.value}';`);
 
     columns.value = [
       ...cols.map(({ column_name }) => ({
@@ -103,9 +120,10 @@
     console.log(columns);
   });
 
-  const deleteCols = computed<DataTableColumns>(() => 
-    columns.value.find((column) => 'key' in column && column.key === 'id')
-        ? [{
+  const deleteCols = computed<DataTableColumns>(() =>
+    columns.value.find(column => 'key' in column && column.key === 'id')
+      ? [
+          {
             key: 'D',
             title: 'Delete',
             render: row => {
@@ -116,63 +134,97 @@
                   onClick: () => {
                     deleteRow(row['id'] as number);
                   },
-                  type: "error",
-                  ghost: true
-                }, 
-                [h(NIcon, { component: Delete24Regular })]
+                  type: 'error',
+                  ghost: true,
+                },
+                [h(NIcon, { component: Delete24Regular })],
               );
             },
-          }]
-        : [],
+          },
+        ]
+      : [],
   );
 
   const openModal = () => {
     showCreateModal.value = true;
   };
 
-  const fetchData = async () =>
-    await connection.execute(`
+  const fetchData = async () => {
+    if (!tableName.value) return;
+    try {
+      loadingBar.start();
+      const res = await connection.execute(`
       SELECT *
       FROM "${tableName.value}"
     `);
+      loadingBar.finish();
+      return res;
+    } catch {
+      loadingBar.error();
+      message.error('Произошла ошибка при получении данных');
+      return;
+    }
+  };
 
   const deleteRow = async (index: number) => {
     if (!index) return;
-    await connection.execute(
-      `delete
-             from ${tableName.value}
-             where id = ${index};`,
-    );
+    try {
+      loadingBar.start();
+      await connection.execute(
+        `delete
+       from ${tableName.value}
+       where id = ${index};`,
+      );
+      loadingBar.finish();
+      message.success('Запись удалена!1!');
+    } catch {
+      loadingBar.error();
+      message.error('Произошло недоразумение при удалении!1!');
+    }
     data.value = await fetchData();
   };
 
   const createRecord = async (record: Record<string, string>) => {
     const entries = Object.entries(record).filter(([field]) => field !== 'id');
-    await connection.execute(`
+    loadingBar.start();
+    try {
+      await connection.execute(`
       insert into ${tableName.value}
-      (${entries.map(([field]) => field).join(',')})
+        (${entries.map(([field]) => field).join(',')})
       values (${entries.map(([_, value]) => `'${value}'`).join(',')});
     `);
+      loadingBar.finish();
+      message.success('Сохранено!1!');
+    } catch {
+      loadingBar.error();
+      message.error('Произошло недоразумение при добавлении записи!1!');
+    }
     data.value = await fetchData();
   };
 
   const saveEdited = async () => {
     for (const value of edited.value) {
       const insertOperation = `insert into ${tableName.value}
-                                     values (${Object.entries(
-                                       value.changedFields,
-                                     )
-                                       .filter(it => it[0] != 'id')
-                                       .map(col => col[1])
-                                       .join(', ')});`;
+                             values (${Object.entries(value.changedFields)
+                               .filter(it => it[0] != 'id')
+                               .map(col => col[1])
+                               .join(', ')});`;
       const updateOperation = `update ${tableName.value}
-                                     set ${Object.entries(value.changedFields)
-                                       .map(col => `${col[0]} = '${col[1]}'`)
-                                       .join(', ')}
-                                     WHERE id = '${value.id}';`;
+                             set ${Object.entries(value.changedFields)
+                               .map(col => `${col[0]} = '${col[1]}'`)
+                               .join(', ')}
+                             WHERE id = '${value.id}';`;
       console.log(insertOperation);
-      if (value.isNew) await connection.execute(insertOperation);
-      else await connection.execute(updateOperation);
+      loadingBar.start();
+      try {
+        if (value.isNew) await connection.execute(insertOperation);
+        else await connection.execute(updateOperation);
+        loadingBar.finish();
+        message.success('Сохранено!1!');
+      } catch {
+        loadingBar.error();
+        message.error('Произошло недоразумение при сохранении!1!');
+      }
     }
   };
 </script>

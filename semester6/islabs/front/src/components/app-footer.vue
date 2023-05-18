@@ -4,7 +4,10 @@
   >
     <span>
       сделано с ♥️ командой
-      <a class="text-blue-700" href="https://github.com/kheynov">
+      <a
+        class="text-blue-700"
+        href="https://github.com/kheynov/NSTU_Programming/tree/master/semester6/islabs"
+      >
         шальные ананасики
       </a>
     </span>
