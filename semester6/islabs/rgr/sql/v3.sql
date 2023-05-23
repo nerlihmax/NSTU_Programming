@@ -11,7 +11,7 @@ create table teachers
 (
     id         serial primary key,
     full_name  text not null,
-    department int references departments (id),
+    department int references departments (id) on delete cascade on update cascade,
     post       text not null,
     hire_date  date not null
 );
@@ -34,8 +34,8 @@ create table disciplines
 create table disciplines_schedule
 (
     id         serial primary key,
-    discipline int references disciplines (id),
-    teacher    int references teachers (id),
+    discipline int references disciplines (id) on delete cascade on update cascade,
+    teacher    int references teachers (id) on delete cascade on update cascade,
     hours      int check ( hours > 2 )
 );
 
