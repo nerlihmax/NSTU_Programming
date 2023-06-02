@@ -1,4 +1,4 @@
-package v3.data.entities
+package v7.data.entities
 
 import core.DataRow
 import core.TableData
@@ -7,20 +7,20 @@ import org.ktorm.schema.Table
 import org.ktorm.schema.int
 import org.ktorm.schema.text
 
-interface Department : Entity<Department> {
-    companion object : Entity.Factory<Department>()
+interface Position : Entity<Position> {
+    companion object : Entity.Factory<Position>()
 
     var id: Int
     var name: String
 }
 
-val List<Department>.asTableData: TableData
+val List<Position>.asTableData: TableData
     get() = TableData(
         header = listOf("ID", "Название"),
         data = map { DataRow(listOf(it.id.toString(), it.name)) }
     )
 
-object Departments : Table<Department>("departments") {
-    var id = int("id").primaryKey().bindTo(Department::id)
-    var name = text("name").bindTo(Department::name)
+object Positions : Table<Position>("positions") {
+    var id = int("id").primaryKey().bindTo(Position::id)
+    var name = text("name").bindTo(Position::name)
 }

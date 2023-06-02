@@ -1,5 +1,7 @@
 package v3.data.entities
 
+import core.DataRow
+import core.TableData
 import org.ktorm.entity.Entity
 import org.ktorm.schema.Table
 import org.ktorm.schema.int
@@ -12,6 +14,12 @@ interface Group : Entity<Group> {
     var name: String
     var specialty: String
 }
+
+val List<Group>.asTableData: TableData
+    get() = TableData(
+        header = listOf("ID", "Название", "Специальность"),
+        data = map { DataRow(listOf(it.id.toString(), it.name, it.specialty)) }
+    )
 
 object Groups : Table<Group>("groups") {
     var id = int("id").primaryKey().bindTo(Group::id)
