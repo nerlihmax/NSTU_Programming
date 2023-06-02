@@ -53,30 +53,11 @@ class ViewModel {
             _state.update { State.Loading }
             val job = CoroutineScope(Dispatchers.IO).async {
                 when (route) {
-                    Routes.Departments -> {
-                        val data = repository.Departments().getAll().asTableData
-                        _data.update { data }
-                    }
-
-                    Routes.Courses -> {
-                        val data = repository.Courses().getAll().asTableData
-                        _data.update { data }
-                    }
-
-                    Routes.CoursesCompletion -> {
-                        val data = repository.CoursesCompletions().getAll().asTableData
-                        _data.update { data }
-                    }
-
-                    Routes.Employees -> {
-                        val data = repository.Employees().getAll().asTableData
-                        _data.update { data }
-                    }
-
-                    Routes.Positions -> {
-                        val data = repository.Positions().getAll().asTableData
-                        _data.update { data }
-                    }
+                    Routes.Departments -> _data.update { repository.Departments().getAll().asTableData }
+                    Routes.Courses -> _data.update { repository.Courses().getAll().asTableData }
+                    Routes.CoursesCompletion -> _data.update { repository.CoursesCompletions().getAll().asTableData }
+                    Routes.Employees -> _data.update { repository.Employees().getAll().asTableData }
+                    Routes.Positions -> _data.update { repository.Positions().getAll().asTableData }
                 }
             }
             awaitAll(job)
@@ -89,21 +70,34 @@ class ViewModel {
         loadData(route)
     }
 
-    fun startEditing(id: Int) {
-        _state.update { if (it is State.Editing) State.Idle else State.Editing(id) }
-    }
+    fun startEditing(id: Int) = _state.update { if (it is State.Editing) State.Idle else State.Editing(id) }
 
-    fun startAdding() {
-        _state.update { if (it is State.Adding) State.Idle else State.Adding }
-    }
+    fun startAdding() = _state.update { if (it is State.Adding) State.Idle else State.Adding }
 
     fun clearState() {
         _state.update { State.Idle }
         _errState.update { ErrorStates.Idle }
     }
 
-    fun hideInfo() {
-        _state.update { State.Idle }
+    fun hideInfo() = _state.update { State.Idle }
+
+    fun add(row: List<String>) {
+        CoroutineScope(Dispatchers.Default).launch {
+            _state.update { State.Loading }
+            val job = CoroutineScope(Dispatchers.IO).async {
+                when (route.value) {
+                    Routes.Departments -> repository.Departments().create(updateData(route.value, row))
+                    Routes.Courses -> repository.Courses().create(updateData(route.value, row))
+                    Routes.CoursesCompletion -> repository.CoursesCompletions().create(updateData(route.value, row))
+                    Routes.Employees -> repository.Employees().create(updateData(route.value, row))
+                    Routes.Positions -> repository.Positions().create(updateData(route.value, row))
+                }
+            }
+
+            awaitAll(job)
+            _state.update { State.Idle }
+            loadData(route.value)
+        }
     }
 
     fun edit(row: List<String>) {
@@ -111,86 +105,14 @@ class ViewModel {
             _state.update { State.Loading }
             val job = CoroutineScope(Dispatchers.IO).async {
                 when (route.value) {
-                    Routes.Departments -> {
-                        repository.Departments().update(Department {
-                            id = row[0].toInt()
-                            name = row[1]
-                        })
-                    }
+                    Routes.Departments -> repository.Departments().update(
+                        updateData(route.value, row)
+                    )
 
-                    Routes.Courses -> {
-                        repository.Courses().update(Course {
-                            id = row[0].toInt()
-                            name = row[1]
-                            department = repository.Departments().getByName(row[2]) ?: run {
-                                _errState.update { ErrorStates.ShowError("Отдел с именем ${row[2]} не найден!") }
-                                return@async
-                            }
-                            hours = row[3].toInt()
-                            description = row[4]
-                        })
-                    }
-
-                    Routes.CoursesCompletion -> {
-                        repository.CoursesCompletions().update(CourseCompletion {
-                            id = row[0].toInt()
-                            employee = repository.Employees().getByName(row[1]) ?: run {
-                                _errState.update { ErrorStates.ShowError("Сотрудник с именем ${row[1]} не найден!") }
-                                return@async
-                            }
-                            course = repository.Courses().getByName(row[2]) ?: run {
-                                _errState.update { ErrorStates.ShowError("Курс с именем ${row[2]} не найден!") }
-                                return@async
-                            }
-                            startDate = try {
-                                LocalDate.parse(row[3]).also {
-                                    if (it > LocalDate.now()) {
-                                        println("Wrong date format")
-                                        _errState.update { ErrorStates.ShowError("Неправильный формат даты") }
-                                        return@async
-                                    }
-                                }
-                            } catch (e: Exception) {
-                                println("Wrong date format")
-                                _errState.update { ErrorStates.ShowError("Неправильный формат даты") }
-                                return@async
-                            }
-                        })
-                    }
-
-                    Routes.Employees -> {
-                        repository.Employees().update(Employee {
-                            id = row[0].toInt()
-                            name = row[1]
-                            surname = row[2]
-                            department = repository.Departments().getByName(row[3]) ?: run {
-                                _errState.update { ErrorStates.ShowError("Отдел с именем ${row[3]} не найден!") }
-                                return@async
-                            }
-                            position = repository.Positions().getByName(row[4]) ?: run {
-                                _errState.update { ErrorStates.ShowError("Должность с именем ${row[4]} не найдена!") }
-                                return@async
-                            }
-                            hireDate = try {
-                                LocalDate.parse(row[5]).also {
-                                    if (it > LocalDate.now()) {
-                                        _errState.update { ErrorStates.ShowError("Неправильный формат даты") }
-                                        return@async
-                                    }
-                                }
-                            } catch (e: Exception) {
-                                _errState.update { ErrorStates.ShowError("Неправильный формат даты") }
-                                return@async
-                            }
-                        })
-                    }
-
-                    Routes.Positions -> {
-                        repository.Positions().update(Position {
-                            id = row[0].toInt()
-                            name = row[1]
-                        })
-                    }
+                    Routes.Courses -> repository.Courses().update(updateData(route.value, row))
+                    Routes.CoursesCompletion -> repository.CoursesCompletions().update(updateData(route.value, row))
+                    Routes.Employees -> repository.Employees().update(updateData(route.value, row))
+                    Routes.Positions -> repository.Positions().update(updateData(route.value, row))
                 }
             }
             awaitAll(job)
@@ -198,7 +120,6 @@ class ViewModel {
             loadData(route.value)
         }
     }
-
 
     fun deleteRow(id: Int) {
         CoroutineScope(Dispatchers.Default).launch {
@@ -226,85 +147,79 @@ class ViewModel {
         }
     }
 
-    fun add(row: List<String>) {
-        CoroutineScope(Dispatchers.Default).launch {
-            _state.update { State.Loading }
-            val job = CoroutineScope(Dispatchers.IO).async {
-                when (route.value) {
-                    Routes.Departments -> {
-                        repository.Departments().create(Department {
-                            name = row[1]
-                        })
-                    }
-
-                    Routes.Courses -> repository.Courses().create(Course {
-                        name = row[1]
-                        department = repository.Departments().getByName(row[2]) ?: run {
-                            _errState.update { ErrorStates.ShowError("Отдел с именем ${row[2]} не найден!") }
-                            return@async
-                        }
-                        hours = row[3].toInt()
-                        description = row[4]
-                    })
-
-
-                    Routes.CoursesCompletion -> repository.CoursesCompletions().create(CourseCompletion {
-                        course = repository.Courses().getByName(row[1]) ?: run {
-                            _errState.update { ErrorStates.ShowError("Курс с именем ${row[1]} не найден!") }
-                            return@async
-                        }
-                        employee = repository.Employees().getByName(row[2]) ?: run {
-                            _errState.update { ErrorStates.ShowError("Сотрудник с именем ${row[2]} не найден!") }
-                            return@async
-                        }
-                        startDate = try {
-                            LocalDate.parse(row[3]).also {
-                                if (it > LocalDate.now()) {
-                                    println("Wrong date format")
-                                    _errState.update { ErrorStates.ShowError("Неправильный формат даты") }
-                                    return@async
-                                }
-                            }
-                        } catch (e: Exception) {
-                            println("Wrong date format")
-                            _errState.update { ErrorStates.ShowError("Неправильный формат даты") }
-                            return@async
-                        }
-                    })
-
-                    Routes.Employees -> repository.Employees().create(Employee {
-                        name = row[1]
-                        surname = row[2]
-                        department = repository.Departments().getByName(row[3]) ?: run {
-                            _errState.update { ErrorStates.ShowError("Отдел с именем ${row[3]} не найден!") }
-                            return@async
-                        }
-                        position = repository.Positions().getByName(row[4]) ?: run {
-                            _errState.update { ErrorStates.ShowError("Должность с именем ${row[4]} не найдена!") }
-                            return@async
-                        }
-                        hireDate = try {
-                            LocalDate.parse(row[5]).also {
-                                if (it > LocalDate.now()) {
-                                    _errState.update { ErrorStates.ShowError("Неправильный формат даты") }
-                                    return@async
-                                }
-                            }
-                        } catch (e: Exception) {
-                            _errState.update { ErrorStates.ShowError("Неправильный формат даты") }
-                            return@async
-                        }
-                    })
-
-                    Routes.Positions -> repository.Positions().create(Position {
-                        name = row[1]
-                    })
-                }
+    @Suppress("UNCHECKED_CAST")
+    private fun <T> updateData(route: Routes, row: List<String>): T = when (route) {
+        Routes.Courses -> Course {
+            id = row[0].toInt()
+            name = row[1]
+            department = repository.Departments().getByName(row[2]) ?: run {
+                _errState.update { ErrorStates.ShowError("Отдел с именем ${row[2]} не найден!") }
+                return@Course
             }
+            hours = row[3].toInt()
+            description = row[4]
+        } as T
 
-            awaitAll(job)
-            _state.update { State.Idle }
-            loadData(route.value)
-        }
+        Routes.CoursesCompletion -> CourseCompletion {
+            id = row[0].toInt()
+            course = repository.Courses().getByName(row[1]) ?: run {
+                _errState.update { ErrorStates.ShowError("Курс с именем ${row[1]} не найден!") }
+                return@CourseCompletion
+            }
+            employee = repository.Employees().getByName(row[2].substringBefore(" ")) ?: run {
+                _errState.update {
+                    ErrorStates.ShowError(
+                        "Сотрудник с именем ${row[2].substringBefore(" ")} не найден!"
+                    )
+                }
+                return@CourseCompletion
+            }
+            startDate = try {
+                LocalDate.parse(row[3])
+            } catch (e: Exception) {
+                println("Wrong date format")
+                _errState.update { ErrorStates.ShowError("Неправильный формат даты") }
+                return@CourseCompletion
+            }
+        } as T
+
+        Routes.Departments -> Department {
+            id = row[0].toInt()
+            name = row[1]
+        } as T
+
+        Routes.Employees -> Employee {
+            id = row[0].toInt()
+            name = row[1]
+            surname = row[2]
+            department = repository.Departments().getByName(row[3]) ?: run {
+                _errState.update { ErrorStates.ShowError("Отдел с именем ${row[3]} не найден!") }
+                return@Employee
+            }
+            position = repository.Positions().getByName(row[4]) ?: run {
+                _errState.update { ErrorStates.ShowError("Должность с именем ${row[4]} не найдена!") }
+                return@Employee
+            }
+            hireDate = try {
+                LocalDate.parse(row[5]).also {
+                    if (it > LocalDate.now()) {
+                        _errState.update {
+                            ErrorStates.ShowError(
+                                "Дата найма должна быть раньше текущей даты"
+                            )
+                        }
+                        return@Employee
+                    }
+                }
+            } catch (e: Exception) {
+                _errState.update { ErrorStates.ShowError("Неправильный формат даты") }
+                return@Employee
+            }
+        } as T
+
+        Routes.Positions -> Position {
+            id = row[0].toInt()
+            name = row[1]
+        } as T
     }
 }

@@ -18,8 +18,8 @@ create table employees
     id         serial primary key,
     name       text not null,
     surname    text not null,
-    department int references departments (id),
-    position   int references positions (id),
+    department int references departments (id) on delete cascade on update cascade,
+    position   int references positions (id) on delete cascade on update cascade,
     hire_date  date not null
 );
 
@@ -27,16 +27,16 @@ create table courses
 (
     id          serial primary key,
     name        text not null,
-    department  int references departments (id),
-    hours    int  not null check ( hours > 0 ),
+    department  int references departments (id) on delete cascade on update cascade,
+    hours       int  not null check ( hours > 0 ),
     description text
 );
 
 create table courses_completion
 (
     id         serial primary key,
-    employee   int references employees (id),
-    course     int references courses (id),
+    employee   int references employees (id) on delete cascade on update cascade,
+    course     int references courses (id) on delete cascade on update cascade,
     start_date date not null
 );
 
