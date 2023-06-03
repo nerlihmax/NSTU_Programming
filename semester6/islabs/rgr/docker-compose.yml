@@ -1,11 +1,11 @@
 version: "3"
 services:
   db:
-    image: arm64v8/postgres:latest
+    image: postgres:latest
     ports:
       - "127.0.0.1:32768:5432"
     environment:
-      POSTGRES_DB: "santa"
+      POSTGRES_DB: "postgres"
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: postgrespw
     volumes:

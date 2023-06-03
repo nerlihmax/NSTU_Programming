@@ -25,7 +25,7 @@ import java.time.LocalDate
 
 class ViewModel {
     private var database: Database = Database.connect(
-        url = "jdbc:postgresql://localhost:32768/rgr_v7",
+        url = "jdbc:postgresql://localhost:32768/postgres",
         driver = "org.postgresql.Driver",
         user = "postgres",
         password = "postgrespw",
