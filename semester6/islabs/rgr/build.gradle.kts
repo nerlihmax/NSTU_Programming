@@ -4,19 +4,19 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.compose")
-    id("org.jlleitschuh.gradle.ktlint") version "11.3.1"
+//    id("org.jlleitschuh.gradle.ktlint") version "11.3.1"
 }
 
-ktlint {
-    ignoreFailures.set(false)
-    @Suppress("DEPRECATION")
-    disabledRules.set(setOf("no-wildcard-imports"))
-    reporters {
-        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.PLAIN)
-        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.CHECKSTYLE)
-        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.SARIF)
-    }
-}
+//ktlint {
+//    ignoreFailures.set(false)
+//    @Suppress("DEPRECATION")
+//    disabledRules.set(setOf("no-wildcard-imports"))
+//    reporters {
+//        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.PLAIN)
+//        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.CHECKSTYLE)
+//        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.SARIF)
+//    }
+//}
 
 group = "ru.kheynov"
 version = "1.0-SNAPSHOT"

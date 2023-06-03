@@ -33,7 +33,8 @@ class ViewModel {
 
     private val repository = Repository(database)
 
-    private val route: MutableStateFlow<Routes> = MutableStateFlow(Routes.Departments)
+    private val _route: MutableStateFlow<Routes> = MutableStateFlow(Routes.Departments)
+    val route: StateFlow<Routes> = _route.asStateFlow()
 
     private val _state: MutableStateFlow<State> = MutableStateFlow(State.Loading)
     val state: StateFlow<State> = _state.asStateFlow()
@@ -45,7 +46,7 @@ class ViewModel {
     val data: StateFlow<TableData> = _data.asStateFlow()
 
     init {
-        loadData(this.route.value)
+        loadData(this._route.value)
     }
 
     private fun loadData(route: Routes) {
@@ -66,7 +67,7 @@ class ViewModel {
     }
 
     fun navigate(route: Routes) {
-        this.route.update { route }
+        this._route.update { route }
         loadData(route)
     }
 
@@ -79,24 +80,23 @@ class ViewModel {
         _errState.update { ErrorStates.Idle }
     }
 
-    fun hideInfo() = _state.update { State.Idle }
 
     fun add(row: List<String>) {
         CoroutineScope(Dispatchers.Default).launch {
             _state.update { State.Loading }
             val job = CoroutineScope(Dispatchers.IO).async {
-                when (route.value) {
-                    Routes.Departments -> repository.Departments().create(updateData(route.value, row))
-                    Routes.Courses -> repository.Courses().create(updateData(route.value, row))
-                    Routes.CoursesCompletion -> repository.CoursesCompletions().create(updateData(route.value, row))
-                    Routes.Employees -> repository.Employees().create(updateData(route.value, row))
-                    Routes.Positions -> repository.Positions().create(updateData(route.value, row))
+                when (_route.value) {
+                    Routes.Departments -> repository.Departments().create(updateData(_route.value, row))
+                    Routes.Courses -> repository.Courses().create(updateData(_route.value, row))
+                    Routes.CoursesCompletion -> repository.CoursesCompletions().create(updateData(_route.value, row))
+                    Routes.Employees -> repository.Employees().create(updateData(_route.value, row))
+                    Routes.Positions -> repository.Positions().create(updateData(_route.value, row))
                 }
             }
 
             awaitAll(job)
             _state.update { State.Idle }
-            loadData(route.value)
+            loadData(_route.value)
         }
     }
 
@@ -104,20 +104,20 @@ class ViewModel {
         CoroutineScope(Dispatchers.Default).launch {
             _state.update { State.Loading }
             val job = CoroutineScope(Dispatchers.IO).async {
-                when (route.value) {
+                when (_route.value) {
                     Routes.Departments -> repository.Departments().update(
-                        updateData(route.value, row)
+                        updateData(_route.value, row)
                     )
 
-                    Routes.Courses -> repository.Courses().update(updateData(route.value, row))
-                    Routes.CoursesCompletion -> repository.CoursesCompletions().update(updateData(route.value, row))
-                    Routes.Employees -> repository.Employees().update(updateData(route.value, row))
-                    Routes.Positions -> repository.Positions().update(updateData(route.value, row))
+                    Routes.Courses -> repository.Courses().update(updateData(_route.value, row))
+                    Routes.CoursesCompletion -> repository.CoursesCompletions().update(updateData(_route.value, row))
+                    Routes.Employees -> repository.Employees().update(updateData(_route.value, row))
+                    Routes.Positions -> repository.Positions().update(updateData(_route.value, row))
                 }
             }
             awaitAll(job)
             _state.update { State.Idle }
-            loadData(route.value)
+            loadData(_route.value)
         }
     }
 
@@ -125,7 +125,7 @@ class ViewModel {
         CoroutineScope(Dispatchers.Default).launch {
             _state.update { State.Loading }
             val job = CoroutineScope(Dispatchers.IO).async {
-                when (route.value) {
+                when (_route.value) {
                     Routes.Departments -> repository.Departments().delete(id)
                     Routes.Courses -> repository.Courses().delete(id)
                     Routes.CoursesCompletion -> repository.CoursesCompletions().delete(id)
@@ -135,17 +135,26 @@ class ViewModel {
             }
             awaitAll(job)
             _state.update { State.Idle }
-            loadData(route.value)
+            loadData(_route.value)
         }
     }
 
-    fun showInfo(id: Int) {
-        when (route.value) {
-            else -> {
-                println("Not implemented")
-            }
-        }
+    fun showCurrentCourses() {
+        val courses = repository.getEmployeesCurrentCourses(LocalDate.now().monthValue, LocalDate.now().year)
+        _state.update { State.ShowCurrentCourses(courses) }
     }
+
+    fun showDepartmentCourses(id: Int) {
+        val courses = repository.getPassedEmployeeCoursesByDepartment(id)
+        _state.update { State.ShowPassedCourses(courses) }
+    }
+
+    fun showPlannedCourses() {
+        val courses = repository.getEmployeesPlannedCourses()
+        _state.update { State.ShowPlannedCourses(courses) }
+    }
+
+    fun hideInfo() = _state.update { State.Idle }
 
     @Suppress("UNCHECKED_CAST")
     private fun <T> updateData(route: Routes, row: List<String>): T = when (route) {

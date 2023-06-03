@@ -35,6 +35,7 @@ import v7.presentation.state_holders.State
 fun MainPageV7() {
     val viewModel = remember { ViewModel() }
 
+    val route = viewModel.route.collectAsState()
     val state = viewModel.state.collectAsState()
     val error = viewModel.errState.collectAsState()
     val data = viewModel.data.collectAsState()
@@ -71,42 +72,89 @@ fun MainPageV7() {
                         onDeleting = { id ->
                             viewModel.deleteRow(id)
                         },
+                        infoRequired = route.value is Routes.Departments,
                         onShowInfo = { id ->
-                            viewModel.showInfo(id)
+                            viewModel.showDepartmentCourses(id)
                         },
-                        infoRequired = false,
                     )
-                    Button(
-                        border = BorderStroke(1.dp, Color.Green),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Green),
-                        onClick = viewModel::startAdding,
-                        modifier = Modifier.padding(8.dp)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
-                        Text("ADD", color = Color.Black)
+                        Button(
+                            border = BorderStroke(1.dp, Color.Green),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Green),
+                            onClick = viewModel::startAdding,
+                            modifier = Modifier.padding(8.dp),
+                        ) {
+                            Text("ADD", color = Color.Black)
+                        }
+
+                        if (route.value is Routes.Employees || route.value is Routes.CoursesCompletion){
+                            Button(
+                                border = BorderStroke(1.dp, Color.Green),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Green),
+                                onClick = viewModel::showCurrentCourses,
+                                modifier = Modifier.padding(8.dp),
+                            ) {
+                                Text("Текущие курсы", color = Color.Black)
+                            }
+                            Button(
+                                border = BorderStroke(1.dp, Color.Green),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Green),
+                                onClick = viewModel::showPlannedCourses,
+                                modifier = Modifier.padding(8.dp),
+                            ) {
+                                Text("Запланированные курсы", color = Color.Black)
+                            }
+                        }
                     }
                 }
-                if (state.value is State.Editing) {
-                    DataInputDialog(
-                        header = data.value.header,
-                        data = data.value.data.firstOrNull { it.items[0].toInt() == (state.value as State.Editing).row }?.items
-                            ?: emptyList(),
-                        onEdited = { row ->
-                            viewModel.edit(row)
-                            viewModel.clearState()
-                        },
-                        onCanceled = viewModel::clearState,
-                    )
+
+                when (state.value) {
+                    State.Adding ->
+                        DataInputDialog(
+                            header = data.value.header,
+                            onEdited = { row ->
+                                viewModel.add(row)
+                                viewModel.clearState()
+                            },
+                            onCanceled = viewModel::clearState,
+                        )
+
+                    is State.Editing ->
+                        DataInputDialog(
+                            header = data.value.header,
+                            data = data.value.data.firstOrNull { it.items[0].toInt() == (state.value as State.Editing).row }?.items
+                                ?: emptyList(),
+                            onEdited = { row ->
+                                viewModel.edit(row)
+                                viewModel.clearState()
+                            },
+                            onCanceled = viewModel::clearState,
+                        )
+
+                    is State.ShowCurrentCourses ->
+                        CoursesInfo(
+                            info = (state.value as State.ShowCurrentCourses).data,
+                            onDismiss = viewModel::hideInfo,
+                        )
+
+                    is State.ShowPassedCourses ->
+                        CoursesInfo(
+                            info = (state.value as State.ShowPassedCourses).data,
+                            onDismiss = viewModel::hideInfo,
+                        )
+
+                    is State.ShowPlannedCourses ->
+                        CoursesInfo(
+                            info = (state.value as State.ShowPlannedCourses).data,
+                            onDismiss = viewModel::hideInfo,
+                        )
+
+                    else -> {}
                 }
-                if (state.value is State.Adding) {
-                    DataInputDialog(
-                        header = data.value.header,
-                        onEdited = { row ->
-                            viewModel.add(row)
-                            viewModel.clearState()
-                        },
-                        onCanceled = viewModel::clearState,
-                    )
-                }
+
                 if (error.value is ErrorStates.ShowError) {
                     AlertDialog(
                         title = { Text("Ошибка", color = Color.Black) },
@@ -114,8 +162,7 @@ fun MainPageV7() {
                         text = {
                             Text(
                                 text = (error.value as? ErrorStates.ShowError)?.error ?: "ERROR",
-                                textAlign = TextAlign.Center,
-                                color = Color.Black
+                                textAlign = TextAlign.Center, color = Color.Black
                             )
                         },
                         confirmButton = {

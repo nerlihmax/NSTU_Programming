@@ -76,14 +76,15 @@ where extract(month from cc.start_date) = extract(month from now())
 insert into courses_completion (employee, course, start_date)
 values (1, 1, '2023-01-01'),
        (1, 2, '2023-02-11'),
-       (1, 3, '2023-03-16'),
-       (1, 4, '2023-04-18'),
+       (3, 3, '2023-03-16'),
+       (3, 3, '2023-04-18'),
        (1, 5, '2023-05-25'),
        (1, 6, '2023-06-02'),
        (2, 1, '2023-07-09'),
        (2, 2, '2023-08-19'),
-       (2, 3, '2023-09-21'),
-       (2, 4, '2023-10-27'),
+       (3, 3, '2023-09-21'),
+       (4, 4, '2023-10-27'),
+       (4, 4, '2022-06-15'),
        (2, 5, '2023-06-23'),
        (2, 6, '2023-12-14'),
        (4, 6, '2024-12-13');
@@ -94,3 +95,11 @@ from employees e
          join courses_completion cc on e.id = cc.employee
          join courses c on cc.course = c.id
 where cc.start_date < now() - interval '1 year';
+
+--выдавать справки о сотрудниках отделов с курсами, которые они прослушали
+select e.name, e.surname, d.name, c.name, cc.start_date
+from employees e
+         join departments d on e.department = d.id
+         join courses c on d.id = c.department
+         join courses_completion cc on c.id = cc.course
+where e.department = c.department;
