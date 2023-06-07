@@ -159,7 +159,7 @@ class ViewModel {
     @Suppress("UNCHECKED_CAST")
     private fun <T> updateData(route: Routes, row: List<String>): T = when (route) {
         Routes.Courses -> Course {
-            id = row[0].toInt()
+            if (row[0].isNotBlank()) id = row[0].toInt()
             name = row[1]
             department = repository.Departments().getByName(row[2]) ?: run {
                 _errState.update { ErrorStates.ShowError("Отдел с именем ${row[2]} не найден!") }
@@ -170,7 +170,7 @@ class ViewModel {
         } as T
 
         Routes.CoursesCompletion -> CourseCompletion {
-            id = row[0].toInt()
+            if (row[0].isNotBlank()) id = row[0].toInt()
             course = repository.Courses().getByName(row[1]) ?: run {
                 _errState.update { ErrorStates.ShowError("Курс с именем ${row[1]} не найден!") }
                 return@CourseCompletion
@@ -193,12 +193,12 @@ class ViewModel {
         } as T
 
         Routes.Departments -> Department {
-            id = row[0].toInt()
+            if (row[0].isNotBlank()) id = row[0].toInt()
             name = row[1]
         } as T
 
         Routes.Employees -> Employee {
-            id = row[0].toInt()
+            if (row[0].isNotBlank()) id = row[0].toInt()
             name = row[1]
             surname = row[2]
             department = repository.Departments().getByName(row[3]) ?: run {
@@ -227,7 +227,7 @@ class ViewModel {
         } as T
 
         Routes.Positions -> Position {
-            id = row[0].toInt()
+            if (row[0].isNotBlank()) id = row[0].toInt()
             name = row[1]
         } as T
     }

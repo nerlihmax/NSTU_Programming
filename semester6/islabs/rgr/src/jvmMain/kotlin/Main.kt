@@ -24,7 +24,7 @@ fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
         state = rememberWindowState(width = 1200.dp, height = 1000.dp),
-        title = "RGR V3",
+        title = "Расчётно-графическая работа вариант 7",
     ) {
         App()
     }
