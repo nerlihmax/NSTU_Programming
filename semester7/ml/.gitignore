@@ -271,3 +271,4 @@ poetry.toml
 
 # LSP config files
 pyrightconfig.json
+/teaching_materials/Примеры pandas. Дополнительные/
