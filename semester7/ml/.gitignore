@@ -272,3 +272,5 @@ poetry.toml
 # LSP config files
 pyrightconfig.json
 /teaching_materials/
+/lab3/vitaly.ipynb
+/lab3/desolaye.ipynb
