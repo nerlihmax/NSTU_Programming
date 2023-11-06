@@ -2,6 +2,9 @@ package ru.kheynov.cinemabooking.di
 
 import org.koin.dsl.module
 import org.ktorm.database.Database
+import ru.kheynov.cinemabooking.data.repositories.PostgresUsersRepository
+import ru.kheynov.cinemabooking.domain.repositories.UsersRepository
+import ru.kheynov.cinemabooking.domain.useCases.UseCases
 import ru.kheynov.cinemabooking.jwt.hashing.BcryptHashingService
 import ru.kheynov.cinemabooking.jwt.hashing.HashingService
 import ru.kheynov.cinemabooking.jwt.token.JwtTokenService
@@ -32,4 +35,7 @@ val appModule = module {
 
     single<HashingService> { BcryptHashingService() }
 
+    single<UsersRepository> { PostgresUsersRepository(get()) }
+
+    single { UseCases() }
 }
