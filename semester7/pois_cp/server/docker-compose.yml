@@ -27,7 +27,7 @@ services:
   db:
     image: ${POSTGRES_IMAGE}
     ports:
-      - "127.0.0.1:${DB_PORT}:${DB_PORT}"
+      - "127.0.0.1:${DB_PORT}:5432"
     environment:
       POSTGRES_DB: "booking"
       POSTGRES_USER: "postgres"
