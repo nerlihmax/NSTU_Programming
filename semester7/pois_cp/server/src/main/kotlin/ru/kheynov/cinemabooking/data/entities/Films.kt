@@ -8,14 +8,14 @@ import org.ktorm.schema.text
 interface Film : Entity<Film> {
     companion object : Entity.Factory<Film>()
 
-    var id: String
+    var id: Int
     var name: String
     var duration: Int
     var image: String?
 }
 
 object Films : Table<Film>("films") {
-    var id = text("id").primaryKey().bindTo(Film::id)
+    var id = int("id").primaryKey().bindTo(Film::id)
     var name = text("name").bindTo(Film::name)
     var duration = int("duration").bindTo(Film::duration)
     var image = text("image").bindTo(Film::image)

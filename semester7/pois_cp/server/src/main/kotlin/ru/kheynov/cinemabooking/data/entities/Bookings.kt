@@ -2,6 +2,7 @@ package ru.kheynov.cinemabooking.data.entities
 
 import org.ktorm.entity.Entity
 import org.ktorm.schema.Table
+import org.ktorm.schema.int
 import org.ktorm.schema.text
 
 interface Booking : Entity<Booking> {
@@ -14,6 +15,6 @@ interface Booking : Entity<Booking> {
 
 object Bookings : Table<Booking>("bookings") {
     var id = text("id").primaryKey().bindTo(Booking::id)
-    var employee = text("employee").references(Employees) { it.employee }
-    var bookedFilm = text("booked_film").references(Timetables) { it.bookedFilm }
+    var employee = int("employee").references(Employees) { it.employee }
+    var bookedFilm = int("booked_film").references(Timetables) { it.bookedFilm }
 }
