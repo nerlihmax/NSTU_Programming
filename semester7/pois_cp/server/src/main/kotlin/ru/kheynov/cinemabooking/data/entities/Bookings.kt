@@ -9,12 +9,12 @@ interface Booking : Entity<Booking> {
     companion object : Entity.Factory<Booking>()
 
     var id: String
-    var employee: Employee
+    var user: User
     var bookedFilm: Timetable
 }
 
 object Bookings : Table<Booking>("bookings") {
     var id = text("id").primaryKey().bindTo(Booking::id)
-    var employee = int("employee").references(Employees) { it.employee }
+    var user = int("user_id").references(Users) { it.user }
     var bookedFilm = int("booked_film").references(Timetables) { it.bookedFilm }
 }

@@ -54,8 +54,8 @@ create table timetables
 create table bookings
 (
     id          text primary key default gen_random_uuid(),
-    employee_id int not null references employees (id) on delete cascade,
-    booked_film int not null references timetables (id)
+    user_id     text not null references users (user_id) on delete cascade,
+    booked_film int  not null references timetables (id)
 );
 
 INSERT INTO users (user_id, name, email, password_hash, auth_provider)
