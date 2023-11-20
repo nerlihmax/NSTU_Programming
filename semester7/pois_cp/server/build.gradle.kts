@@ -38,14 +38,14 @@ dependencies {
     testImplementation("io.ktor:ktor-server-tests-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
 
-    implementation("at.favre.lib:bcrypt:0.9.0")
+    implementation("at.favre.lib:bcrypt:0.10.2")
 
-    implementation("io.insert-koin:koin-ktor:3.3.0")
-    implementation("io.insert-koin:koin-logger-slf4j:3.3.0")
+    implementation("io.insert-koin:koin-ktor:3.3.1")
+    implementation("io.insert-koin:koin-logger-slf4j:3.3.1")
 
     // Database
-    implementation("org.ktorm:ktorm-core:3.5.0")
-    implementation("org.ktorm:ktorm-support-postgresql:3.5.0")
-    implementation("org.postgresql:postgresql:42.5.1")
+    implementation("org.ktorm:ktorm-core:3.6.0")
+    implementation("org.ktorm:ktorm-support-postgresql:3.6.0")
+    implementation("org.postgresql:postgresql:42.5.4")
     testImplementation("io.ktor:ktor-server-test-host-jvm:2.2.2")
 }

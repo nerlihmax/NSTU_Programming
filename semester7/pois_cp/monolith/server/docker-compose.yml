@@ -1,0 +1,44 @@
+version: "3"
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PORT: ${SERVER_PORT}
+    ports:
+      - "127.0.0.1:${SERVER_PORT}:${SERVER_PORT}"
+    depends_on:
+      - db
+    networks:
+      - db_network
+    environment:
+      - SERVER_PORT=$SERVER_PORT
+      - DATABASE_CONNECTION_STRING=$DATABASE_CONNECTION_STRING
+      - POSTGRES_NAME=$POSTGRES_NAME
+      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+      - JWT_SECRET=$JWT_SECRET
+      - JWT_AUDIENCE=$JWT_AUDIENCE
+      - JWT_ISSUER=$JWT_ISSUER
+      - JWT_ACCESS_LIFETIME=$JWT_ACCESS_LIFETIME
+      - JWT_REFRESH_LIFETIME=$JWT_REFRESH_LIFETIME
+    restart: always
+
+  db:
+    image: ${POSTGRES_IMAGE}
+    ports:
+      - "127.0.0.1:${DB_PORT}:5432"
+    environment:
+      POSTGRES_DB: "booking"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+    volumes:
+      - ./db-data:/var/lib/postgresql/data
+      - ./sql/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - db_network
+    restart: always
+
+networks:
+  db_network:
+    driver: bridge
