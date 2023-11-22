@@ -1,8 +1,8 @@
-package ru.kheynov.cinemabooking.domain.useCases
+package ru.kheynov.hotel.domain.useCases
 
-import ru.kheynov.cinemabooking.domain.useCases.auth.LoginViaEmailUseCase
-import ru.kheynov.cinemabooking.domain.useCases.auth.RefreshTokenUseCase
-import ru.kheynov.cinemabooking.domain.useCases.auth.SignUpViaEmailUseCase
+import ru.kheynov.hotel.domain.useCases.auth.LoginViaEmailUseCase
+import ru.kheynov.hotel.domain.useCases.auth.RefreshTokenUseCase
+import ru.kheynov.hotel.domain.useCases.auth.SignUpViaEmailUseCase
 
 class UseCases {
     val signUpViaEmailUseCase = SignUpViaEmailUseCase()

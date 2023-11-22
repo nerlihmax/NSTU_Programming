@@ -1,8 +1,5 @@
-package ru.kheynov.cinemabooking.domain.entities
+package ru.kheynov.hotel.domain.entities
 
-import kotlinx.serialization.Serializable
-
-@Serializable
 data class Booking(
     val userId: String,
     val timetableId: String,

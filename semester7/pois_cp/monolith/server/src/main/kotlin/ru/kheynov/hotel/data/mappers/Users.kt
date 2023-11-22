@@ -1,7 +1,7 @@
-package ru.kheynov.cinemabooking.data.mappers
+package ru.kheynov.hotel.data.mappers
 
-import ru.kheynov.cinemabooking.data.entities.User
-import ru.kheynov.cinemabooking.domain.entities.UserDTO
+import ru.kheynov.hotel.data.entities.User
+import ru.kheynov.hotel.domain.entities.UserDTO
 
 fun User.mapToUser(): UserDTO.User = UserDTO.User(
     userId = this.userId,

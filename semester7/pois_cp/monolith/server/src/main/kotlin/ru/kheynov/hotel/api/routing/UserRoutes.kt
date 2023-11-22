@@ -1,24 +1,31 @@
-package ru.kheynov.cinemabooking.api.routing
+package ru.kheynov.hotel.api.routing
 
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.call
+import io.ktor.server.auth.authenticate
+import io.ktor.server.auth.jwt.JWTPrincipal
+import io.ktor.server.auth.principal
+import io.ktor.server.request.receiveNullable
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.delete
+import io.ktor.server.routing.get
+import io.ktor.server.routing.patch
+import io.ktor.server.routing.post
+import io.ktor.server.routing.route
 import ru.kheynov.hotel.api.requests.users.UpdateUserRequest
-import ru.kheynov.cinemabooking.api.requests.users.auth.LoginViaEmailRequest
-import ru.kheynov.cinemabooking.api.requests.users.auth.RefreshTokenRequest
-import ru.kheynov.cinemabooking.api.requests.users.auth.SignUpViaEmailRequest
-import ru.kheynov.cinemabooking.domain.entities.UserDTO
-import ru.kheynov.cinemabooking.domain.useCases.DeleteUserUseCase
-import ru.kheynov.cinemabooking.domain.useCases.GetUserDetailsUseCase
-import ru.kheynov.cinemabooking.domain.useCases.UpdateUserUseCase
-import ru.kheynov.cinemabooking.domain.useCases.UseCases
-import ru.kheynov.cinemabooking.domain.useCases.auth.LoginViaEmailUseCase
-import ru.kheynov.cinemabooking.domain.useCases.auth.RefreshTokenUseCase
-import ru.kheynov.cinemabooking.domain.useCases.auth.SignUpViaEmailUseCase
+import ru.kheynov.hotel.data.models.users.auth.LoginViaEmailRequest
+import ru.kheynov.hotel.data.models.users.auth.RefreshTokenRequest
+import ru.kheynov.hotel.data.models.users.auth.SignUpViaEmailRequest
+import ru.kheynov.hotel.domain.entities.UserDTO
+import ru.kheynov.hotel.domain.useCases.DeleteUserUseCase
+import ru.kheynov.hotel.domain.useCases.GetUserDetailsUseCase
+import ru.kheynov.hotel.domain.useCases.UpdateUserUseCase
+import ru.kheynov.hotel.domain.useCases.UseCases
+import ru.kheynov.hotel.domain.useCases.auth.LoginViaEmailUseCase
+import ru.kheynov.hotel.domain.useCases.auth.RefreshTokenUseCase
+import ru.kheynov.hotel.domain.useCases.auth.SignUpViaEmailUseCase
+
 
 fun Route.configureUserRoutes(
     useCases: UseCases,
@@ -29,10 +36,11 @@ fun Route.configureUserRoutes(
 
         authenticate {
             get {
-                val userId = call.principal<JWTPrincipal>()?.payload?.getClaim("userId")?.asString() ?: run {
-                    call.respond(HttpStatusCode.Unauthorized, "No access token provided")
-                    return@get
-                }
+                val userId =
+                    call.principal<JWTPrincipal>()?.payload?.getClaim("userId")?.asString() ?: run {
+                        call.respond(HttpStatusCode.Unauthorized, "No access token provided")
+                        return@get
+                    }
                 when (val res = useCases.getUserDetailsUseCase(userId)) {
                     GetUserDetailsUseCase.Result.Failed -> {
                         call.respond(HttpStatusCode.InternalServerError, "Something went wrong")
@@ -53,10 +61,11 @@ fun Route.configureUserRoutes(
         }
         authenticate {
             delete {
-                val userId = call.principal<JWTPrincipal>()?.payload?.getClaim("userId")?.asString() ?: run {
-                    call.respond(HttpStatusCode.Unauthorized, "No access token provided")
-                    return@delete
-                }
+                val userId =
+                    call.principal<JWTPrincipal>()?.payload?.getClaim("userId")?.asString() ?: run {
+                        call.respond(HttpStatusCode.Unauthorized, "No access token provided")
+                        return@delete
+                    }
 
                 when (useCases.deleteUserUseCase(userId)) {
                     DeleteUserUseCase.Result.Failed -> {
@@ -79,10 +88,11 @@ fun Route.configureUserRoutes(
 
         authenticate {
             patch {
-                val userId = call.principal<JWTPrincipal>()?.payload?.getClaim("userId")?.asString() ?: run {
-                    call.respond(HttpStatusCode.Unauthorized, "No access token provided")
-                    return@patch
-                }
+                val userId =
+                    call.principal<JWTPrincipal>()?.payload?.getClaim("userId")?.asString() ?: run {
+                        call.respond(HttpStatusCode.Unauthorized, "No access token provided")
+                        return@patch
+                    }
 
                 val userUpdate = call.receiveNullable<UpdateUserRequest>()?.let {
                     UserDTO.UpdateUser(
@@ -196,10 +206,11 @@ private fun Route.configureAuthRoutes(useCases: UseCases) {
         }
 
         post("/refresh") {
-            val oldRefreshToken = call.receiveNullable<RefreshTokenRequest>()?.oldRefreshToken ?: run {
-                call.respond(HttpStatusCode.BadRequest, "No refresh token provided")
-                return@post
-            }
+            val oldRefreshToken =
+                call.receiveNullable<RefreshTokenRequest>()?.oldRefreshToken ?: run {
+                    call.respond(HttpStatusCode.BadRequest, "No refresh token provided")
+                    return@post
+                }
 
             when (
                 val res = useCases.refreshTokenUseCase(

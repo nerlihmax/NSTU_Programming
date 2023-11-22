@@ -1,7 +1,7 @@
-package ru.kheynov.cinemabooking.data.mappers
+package ru.kheynov.hotel.data.mappers
 
-import ru.kheynov.cinemabooking.data.entities.RefreshToken
-import ru.kheynov.cinemabooking.domain.entities.UserDTO
+import ru.kheynov.hotel.data.entities.RefreshToken
+import ru.kheynov.hotel.domain.entities.UserDTO
 
 fun RefreshToken.toRefreshTokenInfo(): UserDTO.RefreshTokenInfo {
     return UserDTO.RefreshTokenInfo(
@@ -12,7 +12,7 @@ fun RefreshToken.toRefreshTokenInfo(): UserDTO.RefreshTokenInfo {
     )
 }
 
-fun ru.kheynov.cinemabooking.jwt.token.RefreshToken.toDataRefreshToken(
+fun ru.kheynov.hotel.jwt.token.RefreshToken.toDataRefreshToken(
     userId: String,
     clientId: String,
 ): RefreshToken {

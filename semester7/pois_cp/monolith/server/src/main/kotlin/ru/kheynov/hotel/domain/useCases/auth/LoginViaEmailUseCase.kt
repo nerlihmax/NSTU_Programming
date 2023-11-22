@@ -1,10 +1,14 @@
-package ru.kheynov.cinemabooking.domain.useCases.auth
+package ru.kheynov.hotel.domain.useCases.auth
 
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import ru.kheynov.cinemabooking.domain.repositories.UsersRepository
-import ru.kheynov.cinemabooking.jwt.hashing.HashingService
-import ru.kheynov.cinemabooking.jwt.token.*
+import ru.kheynov.hotel.domain.repositories.UsersRepository
+import ru.kheynov.hotel.jwt.hashing.HashingService
+import ru.kheynov.hotel.jwt.token.RefreshToken
+import ru.kheynov.hotel.jwt.token.TokenClaim
+import ru.kheynov.hotel.jwt.token.TokenConfig
+import ru.kheynov.hotel.jwt.token.TokenPair
+import ru.kheynov.hotel.jwt.token.TokenService
 
 class LoginViaEmailUseCase : KoinComponent {
     private val usersRepository: UsersRepository by inject()
@@ -20,9 +24,11 @@ class LoginViaEmailUseCase : KoinComponent {
 
     suspend operator fun invoke(email: String, password: String, clientId: String): Result {
         val user = usersRepository.getUserByEmail(email) ?: return Result.Forbidden
-        val passwordVerificationResult = hashingService.verify(password, user.passwordHash ?: return Result.Forbidden)
+        val passwordVerificationResult =
+            hashingService.verify(password, user.passwordHash ?: return Result.Forbidden)
         if (!passwordVerificationResult.verified) return Result.Forbidden
-        val tokenPair = tokenService.generateTokenPair(tokenConfig, TokenClaim("userId", user.userId))
+        val tokenPair =
+            tokenService.generateTokenPair(tokenConfig, TokenClaim("userId", user.userId))
 
         val isTokenExists = usersRepository.getRefreshToken(user.userId, clientId) != null
 

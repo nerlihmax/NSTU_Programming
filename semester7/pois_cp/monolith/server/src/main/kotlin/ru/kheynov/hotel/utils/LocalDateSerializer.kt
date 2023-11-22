@@ -1,4 +1,4 @@
-package ru.kheynov.cinemabooking.utils
+package ru.kheynov.hotel.utils
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -9,7 +9,8 @@ import kotlinx.serialization.encoding.Encoder
 import java.time.LocalDate
 
 object LocalDateSerializer : KSerializer<LocalDate> {
-    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("LocalDate", PrimitiveKind.STRING)
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("LocalDate", PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: LocalDate) {
         val string = value.toString()

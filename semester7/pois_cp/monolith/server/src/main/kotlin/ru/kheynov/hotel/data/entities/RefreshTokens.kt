@@ -1,4 +1,4 @@
-package ru.kheynov.cinemabooking.data.entities
+package ru.kheynov.hotel.data.entities
 
 import org.ktorm.entity.Entity
 import org.ktorm.schema.Table

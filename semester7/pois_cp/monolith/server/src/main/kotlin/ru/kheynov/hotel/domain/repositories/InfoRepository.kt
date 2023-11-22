@@ -1,8 +1,8 @@
-package ru.kheynov.cinemabooking.domain.repositories
+package ru.kheynov.hotel.domain.repositories
 
-import ru.kheynov.cinemabooking.domain.entities.Cinema
-import ru.kheynov.cinemabooking.domain.entities.Film
-import ru.kheynov.cinemabooking.domain.entities.Timetable
+import ru.kheynov.hotel.domain.entities.Cinema
+import ru.kheynov.hotel.domain.entities.Film
+import ru.kheynov.hotel.domain.entities.Timetable
 import java.time.LocalDate
 
 interface InfoRepository {

@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.kotlinJvm)
-    alias(libs.plugins.ktor)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ktor)
     alias(libs.plugins.shadow.jar)
     alias(libs.plugins.detekt)
     application
@@ -22,6 +22,9 @@ dependencies {
     testImplementation(libs.ktor.server.tests)
     testImplementation(libs.kotlin.test.junit)
 
+    implementation(libs.serialization.core)
+    implementation(libs.serialization.json)
+
     implementation(libs.ktor.server.auth)
     implementation(libs.ktor.server.auth.jwt)
     implementation(libs.ktor.default.headers)
@@ -34,4 +37,7 @@ dependencies {
     implementation(libs.ktorm.core)
     implementation(libs.ktorm.pg)
     implementation(libs.postgres)
+
+    implementation(libs.koin.ktor)
+    implementation(libs.koin.logger)
 }

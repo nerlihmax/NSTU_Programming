@@ -1,4 +1,4 @@
-package ru.kheynov.cinemabooking.jwt.hashing
+package ru.kheynov.hotel.jwt.hashing
 
 import at.favre.lib.crypto.bcrypt.BCrypt
 

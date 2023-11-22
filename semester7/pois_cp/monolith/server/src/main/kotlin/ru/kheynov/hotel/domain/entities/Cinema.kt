@@ -1,4 +1,4 @@
-package ru.kheynov.cinemabooking.domain.entities
+package ru.kheynov.hotel.domain.entities
 
 data class Cinema(
     val name: String,

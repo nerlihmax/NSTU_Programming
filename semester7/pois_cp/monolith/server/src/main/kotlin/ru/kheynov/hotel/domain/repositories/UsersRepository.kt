@@ -1,7 +1,7 @@
-package ru.kheynov.cinemabooking.domain.repositories
+package ru.kheynov.hotel.domain.repositories
 
-import ru.kheynov.cinemabooking.domain.entities.UserDTO
-import ru.kheynov.cinemabooking.jwt.token.RefreshToken
+import ru.kheynov.hotel.domain.entities.UserDTO
+import ru.kheynov.hotel.jwt.token.RefreshToken
 
 interface UsersRepository {
     suspend fun registerUser(user: UserDTO.User): Boolean

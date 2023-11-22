@@ -1,8 +1,9 @@
-package ru.kheynov.cinemabooking.plugins
+package ru.kheynov.hotel.plugins
 
-import io.ktor.server.application.*
-import io.ktor.server.plugins.conditionalheaders.*
-import io.ktor.server.plugins.defaultheaders.*
+import io.ktor.server.application.Application
+import io.ktor.server.application.install
+import io.ktor.server.plugins.conditionalheaders.ConditionalHeaders
+import io.ktor.server.plugins.defaultheaders.DefaultHeaders
 
 fun Application.configureHTTP() {
     install(ConditionalHeaders)

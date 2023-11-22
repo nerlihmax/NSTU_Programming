@@ -1,4 +1,4 @@
-package ru.kheynov.cinemabooking.api.requests.users.auth
+package ru.kheynov.hotel.data.models.users.auth
 
 import kotlinx.serialization.Serializable
 

@@ -1,8 +1,9 @@
-package ru.kheynov.cinemabooking.jwt.token
+package ru.kheynov.hotel.jwt.token
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import java.util.*
+import java.util.Date
+import java.util.UUID
 
 class JwtTokenService : TokenService {
     override fun generateTokenPair(config: TokenConfig, vararg claims: TokenClaim): TokenPair {

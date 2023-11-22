@@ -1,12 +1,15 @@
-package ru.kheynov.cinemabooking.plugins
+package ru.kheynov.hotel.plugins
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
+import io.ktor.server.application.Application
+import io.ktor.server.application.install
+import io.ktor.server.auth.Authentication
+import io.ktor.server.auth.authentication
+import io.ktor.server.auth.jwt.JWTPrincipal
+import io.ktor.server.auth.jwt.jwt
 import org.koin.ktor.ext.inject
-import ru.kheynov.cinemabooking.jwt.token.TokenConfig
+import ru.kheynov.hotel.jwt.token.TokenConfig
 
 fun Application.configureSecurity() {
     val config: TokenConfig by inject()
@@ -14,7 +17,8 @@ fun Application.configureSecurity() {
     authentication {
         jwt {
             verifier(
-                JWT.require(Algorithm.HMAC256(config.secret)).withAudience(config.audience).withIssuer(config.issuer)
+                JWT.require(Algorithm.HMAC256(config.secret)).withAudience(config.audience)
+                    .withIssuer(config.issuer)
                     .build(),
             )
             validate { token ->

@@ -1,19 +1,26 @@
-package ru.kheynov.cinemabooking.data.repositories
+package ru.kheynov.hotel.data.repositories
 
 import org.ktorm.database.Database
-import org.ktorm.dsl.*
+import org.ktorm.dsl.and
+import org.ktorm.dsl.eq
+import org.ktorm.dsl.from
+import org.ktorm.dsl.limit
+import org.ktorm.dsl.map
+import org.ktorm.dsl.select
+import org.ktorm.dsl.selectDistinct
+import org.ktorm.dsl.where
 import org.ktorm.entity.add
 import org.ktorm.entity.find
 import org.ktorm.entity.sequenceOf
-import ru.kheynov.cinemabooking.data.entities.RefreshTokens
-import ru.kheynov.cinemabooking.data.entities.User
-import ru.kheynov.cinemabooking.data.entities.Users
-import ru.kheynov.cinemabooking.data.mappers.mapToUser
-import ru.kheynov.cinemabooking.data.mappers.toDataRefreshToken
-import ru.kheynov.cinemabooking.data.mappers.toRefreshTokenInfo
-import ru.kheynov.cinemabooking.domain.entities.UserDTO
-import ru.kheynov.cinemabooking.domain.repositories.UsersRepository
-import ru.kheynov.cinemabooking.jwt.token.RefreshToken
+import ru.kheynov.hotel.data.entities.RefreshTokens
+import ru.kheynov.hotel.data.entities.User
+import ru.kheynov.hotel.data.entities.Users
+import ru.kheynov.hotel.data.mappers.mapToUser
+import ru.kheynov.hotel.data.mappers.toDataRefreshToken
+import ru.kheynov.hotel.data.mappers.toRefreshTokenInfo
+import ru.kheynov.hotel.domain.entities.UserDTO
+import ru.kheynov.hotel.domain.repositories.UsersRepository
+import ru.kheynov.hotel.jwt.token.RefreshToken
 
 class PostgresUsersRepository(
     private val database: Database,
@@ -33,26 +40,28 @@ class PostgresUsersRepository(
 
     override suspend fun getUserByID(userId: String): UserDTO.UserInfo? {
         val clientIds =
-            database.from(RefreshTokens).selectDistinct(RefreshTokens.clientId).where { RefreshTokens.userId eq userId }
+            database.from(RefreshTokens).selectDistinct(RefreshTokens.clientId)
+                .where { RefreshTokens.userId eq userId }
                 .map { row -> row[RefreshTokens.clientId]!! }
 
         return database.from(Users).select(
-                Users.userId,
-                Users.name,
-                Users.email,
-                Users.authProvider,
-            ).where(Users.userId eq userId).limit(1).map { row ->
-                UserDTO.UserInfo(
-                    userId = row[Users.userId]!!,
-                    username = row[Users.name]!!,
-                    email = row[Users.email]!!,
-                    clientIds = clientIds,
-                )
-            }.firstOrNull()
+            Users.userId,
+            Users.name,
+            Users.email,
+            Users.authProvider,
+        ).where(Users.userId eq userId).limit(1).map { row ->
+            UserDTO.UserInfo(
+                userId = row[Users.userId]!!,
+                username = row[Users.name]!!,
+                email = row[Users.email]!!,
+                clientIds = clientIds,
+            )
+        }.firstOrNull()
     }
 
     override suspend fun deleteUserByID(userId: String): Boolean {
-        val affectedRows = database.sequenceOf(Users).find { user -> user.userId eq userId }?.delete()
+        val affectedRows =
+            database.sequenceOf(Users).find { user -> user.userId eq userId }?.delete()
         return affectedRows == 1
     }
 
@@ -76,7 +85,8 @@ class PostgresUsersRepository(
         newRefreshToken: String,
         refreshTokenExpiration: Long,
     ): Boolean {
-        val foundUser = database.sequenceOf(RefreshTokens).find { (it.userId eq userId) and (it.clientId eq clientId) }
+        val foundUser = database.sequenceOf(RefreshTokens)
+            .find { (it.userId eq userId) and (it.clientId eq clientId) }
             ?: return false
         foundUser.refreshToken = newRefreshToken
         foundUser.expiresAt = refreshTokenExpiration
@@ -85,16 +95,26 @@ class PostgresUsersRepository(
     }
 
     override suspend fun getRefreshToken(oldRefreshToken: String): UserDTO.RefreshTokenInfo? {
-        return database.sequenceOf(RefreshTokens).find { oldRefreshToken eq it.refreshToken }?.toRefreshTokenInfo()
-    }
-
-    override suspend fun getRefreshToken(userId: String, clientId: String): UserDTO.RefreshTokenInfo? {
-        return database.sequenceOf(RefreshTokens).find { (userId eq it.userId) and (clientId eq it.clientId) }
+        return database.sequenceOf(RefreshTokens).find { oldRefreshToken eq it.refreshToken }
             ?.toRefreshTokenInfo()
     }
 
-    override suspend fun createRefreshToken(userId: String, clientId: String, refreshToken: RefreshToken): Boolean {
-        val affectedRows = database.sequenceOf(RefreshTokens).add(refreshToken.toDataRefreshToken(userId, clientId))
+    override suspend fun getRefreshToken(
+        userId: String,
+        clientId: String
+    ): UserDTO.RefreshTokenInfo? {
+        return database.sequenceOf(RefreshTokens)
+            .find { (userId eq it.userId) and (clientId eq it.clientId) }
+            ?.toRefreshTokenInfo()
+    }
+
+    override suspend fun createRefreshToken(
+        userId: String,
+        clientId: String,
+        refreshToken: RefreshToken
+    ): Boolean {
+        val affectedRows = database.sequenceOf(RefreshTokens)
+            .add(refreshToken.toDataRefreshToken(userId, clientId))
         return affectedRows == 1
     }
 }

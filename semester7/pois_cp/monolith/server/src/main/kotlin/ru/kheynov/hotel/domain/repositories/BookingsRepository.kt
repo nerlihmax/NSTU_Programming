@@ -1,7 +1,6 @@
-package ru.kheynov.cinemabooking.domain.repositories
+package ru.kheynov.hotel.domain.repositories
 
-import ru.kheynov.cinemabooking.domain.entities.Booking
-import java.time.LocalDate
+import ru.kheynov.hotel.domain.entities.Booking
 
 interface BookingsRepository {
     suspend fun getBookingsByUserId(userId: String): List<String>

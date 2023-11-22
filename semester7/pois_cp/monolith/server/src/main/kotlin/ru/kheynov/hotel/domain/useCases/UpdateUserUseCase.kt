@@ -1,9 +1,9 @@
-package ru.kheynov.cinemabooking.domain.useCases
+package ru.kheynov.hotel.domain.useCases
 
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import ru.kheynov.cinemabooking.domain.entities.UserDTO
-import ru.kheynov.cinemabooking.domain.repositories.UsersRepository
+import ru.kheynov.hotel.domain.entities.UserDTO
+import ru.kheynov.hotel.domain.repositories.UsersRepository
 
 class UpdateUserUseCase : KoinComponent {
     private val usersRepository: UsersRepository by inject()

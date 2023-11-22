@@ -1,4 +1,4 @@
-package ru.kheynov.cinemabooking.jwt.token
+package ru.kheynov.hotel.jwt.token
 
 data class TokenClaim(
     val name: String,

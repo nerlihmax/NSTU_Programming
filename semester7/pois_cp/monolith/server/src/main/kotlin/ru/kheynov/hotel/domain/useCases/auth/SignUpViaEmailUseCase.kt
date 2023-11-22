@@ -1,12 +1,16 @@
-package ru.kheynov.cinemabooking.domain.useCases.auth
+package ru.kheynov.hotel.domain.useCases.auth
 
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import ru.kheynov.cinemabooking.domain.entities.UserDTO
-import ru.kheynov.cinemabooking.domain.repositories.UsersRepository
-import ru.kheynov.cinemabooking.jwt.hashing.HashingService
-import ru.kheynov.cinemabooking.jwt.token.*
-import java.util.*
+import ru.kheynov.hotel.domain.entities.UserDTO
+import ru.kheynov.hotel.domain.repositories.UsersRepository
+import ru.kheynov.hotel.jwt.hashing.HashingService
+import ru.kheynov.hotel.jwt.token.RefreshToken
+import ru.kheynov.hotel.jwt.token.TokenClaim
+import ru.kheynov.hotel.jwt.token.TokenConfig
+import ru.kheynov.hotel.jwt.token.TokenPair
+import ru.kheynov.hotel.jwt.token.TokenService
+import java.util.UUID
 
 class SignUpViaEmailUseCase : KoinComponent {
 

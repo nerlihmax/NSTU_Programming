@@ -1,9 +1,10 @@
-package ru.kheynov.cinemabooking.plugins
+package ru.kheynov.hotel.plugins
 
-import io.ktor.server.application.*
-import io.ktor.server.routing.*
-import io.ktor.server.websocket.*
-import io.ktor.websocket.*
+import io.ktor.server.application.Application
+import io.ktor.server.application.install
+import io.ktor.server.websocket.WebSockets
+import io.ktor.server.websocket.pingPeriod
+import io.ktor.server.websocket.timeout
 import java.time.Duration
 
 fun Application.configureSockets() {
