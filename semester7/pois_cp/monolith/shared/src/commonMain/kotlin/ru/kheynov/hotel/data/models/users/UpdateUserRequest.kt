@@ -1,4 +1,4 @@
-package ru.kheynov.hotel.api.requests.users
+package ru.kheynov.hotel.data.models.users
 
 import kotlinx.serialization.Serializable
 

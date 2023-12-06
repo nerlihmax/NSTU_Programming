@@ -1,7 +1,7 @@
 package ru.kheynov.hotel.domain.entities
 
-data class Film(
+data class User(
+    val id: String,
     val name: String,
-    val duration: Int,
-    val image: String?,
+    val email: String,
 )

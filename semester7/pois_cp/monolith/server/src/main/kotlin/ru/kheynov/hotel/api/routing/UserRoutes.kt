@@ -13,7 +13,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.patch
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
-import ru.kheynov.hotel.api.requests.users.UpdateUserRequest
+import ru.kheynov.hotel.data.models.users.UpdateUserRequest
 import ru.kheynov.hotel.data.models.users.auth.LoginViaEmailRequest
 import ru.kheynov.hotel.data.models.users.auth.RefreshTokenRequest
 import ru.kheynov.hotel.data.models.users.auth.SignUpViaEmailRequest
