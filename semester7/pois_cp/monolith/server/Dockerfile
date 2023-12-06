@@ -1,4 +1,4 @@
-FROM openjdk:11
+FROM openjdk:17
 ARG PORT
 EXPOSE $PORT:$PORT
 RUN mkdir /app

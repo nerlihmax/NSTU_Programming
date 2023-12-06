@@ -2,14 +2,14 @@ package ru.kheynov.hotel.domain.useCases
 
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import ru.kheynov.hotel.domain.entities.UserDTO
-import ru.kheynov.hotel.domain.repositories.UsersRepository
+import ru.kheynov.hotel.domain.entities.User
+import ru.kheynov.hotel.domain.repository.UsersRepository
 
 class GetUserDetailsUseCase : KoinComponent {
     private val usersRepository: UsersRepository by inject()
 
     sealed interface Result {
-        data class Successful(val user: UserDTO.UserInfo) : Result
+        data class Successful(val user: User) : Result
         data object Failed : Result
         data object UserNotFound : Result
     }
@@ -18,6 +18,6 @@ class GetUserDetailsUseCase : KoinComponent {
         userId: String,
     ): Result {
         val user = usersRepository.getUserByID(userId) ?: return Result.UserNotFound
-        return Result.Successful(user)
+        return Result.Successful(User(user.id, user.name, user.email))
     }
 }

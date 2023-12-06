@@ -3,7 +3,7 @@ package ru.kheynov.hotel.di
 import org.koin.dsl.module
 import org.ktorm.database.Database
 import ru.kheynov.hotel.data.repositories.PostgresUsersRepository
-import ru.kheynov.hotel.domain.repositories.UsersRepository
+import ru.kheynov.hotel.domain.repository.UsersRepository
 import ru.kheynov.hotel.domain.useCases.UseCases
 import ru.kheynov.hotel.jwt.hashing.BcryptHashingService
 import ru.kheynov.hotel.jwt.hashing.HashingService

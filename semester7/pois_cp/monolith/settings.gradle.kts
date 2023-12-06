@@ -1,4 +1,4 @@
-rootProject.name = "KotlinProject"
+rootProject.name = "POIS_CW"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {

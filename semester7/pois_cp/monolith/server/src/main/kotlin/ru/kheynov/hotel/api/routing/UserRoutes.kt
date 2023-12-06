@@ -17,7 +17,8 @@ import ru.kheynov.hotel.data.models.users.UpdateUserRequest
 import ru.kheynov.hotel.data.models.users.auth.LoginViaEmailRequest
 import ru.kheynov.hotel.data.models.users.auth.RefreshTokenRequest
 import ru.kheynov.hotel.data.models.users.auth.SignUpViaEmailRequest
-import ru.kheynov.hotel.domain.entities.UserDTO
+import ru.kheynov.hotel.domain.entities.UserEmailSignUp
+import ru.kheynov.hotel.domain.entities.UserUpdate
 import ru.kheynov.hotel.domain.useCases.DeleteUserUseCase
 import ru.kheynov.hotel.domain.useCases.GetUserDetailsUseCase
 import ru.kheynov.hotel.domain.useCases.UpdateUserUseCase
@@ -95,14 +96,14 @@ fun Route.configureUserRoutes(
                     }
 
                 val userUpdate = call.receiveNullable<UpdateUserRequest>()?.let {
-                    UserDTO.UpdateUser(
-                        username = it.username,
+                    UserUpdate(
+                        name = it.username,
                     )
                 } ?: run {
                     call.respond(HttpStatusCode.BadRequest)
                     return@patch
                 }
-                if (userUpdate.username == null) {
+                if (userUpdate.name == null) {
                     call.respond(HttpStatusCode.BadRequest, "No data provided")
                     return@patch
                 }
@@ -142,8 +143,8 @@ private fun Route.configureAuthRoutes(useCases: UseCases) {
             }
 
             val registerRequest = call.receiveNullable<SignUpViaEmailRequest>()?.let {
-                UserDTO.UserEmailSignUp(
-                    username = it.username,
+                UserEmailSignUp(
+                    name = it.username,
                     password = it.password,
                     email = it.email,
                     clientId = clientId,

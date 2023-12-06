@@ -7,7 +7,6 @@ import org.ktorm.dsl.from
 import org.ktorm.dsl.limit
 import org.ktorm.dsl.map
 import org.ktorm.dsl.select
-import org.ktorm.dsl.selectDistinct
 import org.ktorm.dsl.where
 import org.ktorm.entity.add
 import org.ktorm.entity.find
@@ -15,68 +14,69 @@ import org.ktorm.entity.sequenceOf
 import ru.kheynov.hotel.data.entities.RefreshTokens
 import ru.kheynov.hotel.data.entities.User
 import ru.kheynov.hotel.data.entities.Users
-import ru.kheynov.hotel.data.mappers.mapToUser
+import ru.kheynov.hotel.data.mappers.mapToUserInfo
 import ru.kheynov.hotel.data.mappers.toDataRefreshToken
 import ru.kheynov.hotel.data.mappers.toRefreshTokenInfo
-import ru.kheynov.hotel.domain.entities.UserDTO
-import ru.kheynov.hotel.domain.repositories.UsersRepository
-import ru.kheynov.hotel.jwt.token.RefreshToken
+import ru.kheynov.hotel.domain.entities.RefreshTokenInfo
+import ru.kheynov.hotel.domain.entities.UserInfo
+import ru.kheynov.hotel.domain.entities.UserUpdate
+import ru.kheynov.hotel.domain.repository.UsersRepository
+import ru.kheynov.hotel.jwt.RefreshToken
+import ru.kheynov.hotel.domain.entities.User as UserDomain
 
 class PostgresUsersRepository(
     private val database: Database,
 ) : UsersRepository {
-    override suspend fun registerUser(user: UserDTO.User): Boolean {
+    override suspend fun registerUser(user: UserDomain, passwordHash: String): Boolean {
         val affectedRows = database.sequenceOf(Users).add(
             User {
-                userId = user.userId
-                name = user.username
+                userId = user.id
+                name = user.name
                 email = user.email
-                passwordHash = user.passwordHash
-                authProvider = user.authProvider
+                this.passwordHash = passwordHash
             },
         )
         return affectedRows == 1
     }
 
-    override suspend fun getUserByID(userId: String): UserDTO.UserInfo? {
-        val clientIds =
-            database.from(RefreshTokens).selectDistinct(RefreshTokens.clientId)
-                .where { RefreshTokens.userId eq userId }
-                .map { row -> row[RefreshTokens.clientId]!! }
+    override suspend fun getUserByID(id: String): UserInfo? {
+//        val clientIds =
+//            database.from(RefreshTokens).selectDistinct(RefreshTokens.clientId)
+//                .where { RefreshTokens.userId eq id }
+//                .map { row -> row[RefreshTokens.clientId]!! }
 
         return database.from(Users).select(
             Users.userId,
             Users.name,
             Users.email,
-            Users.authProvider,
-        ).where(Users.userId eq userId).limit(1).map { row ->
-            UserDTO.UserInfo(
-                userId = row[Users.userId]!!,
-                username = row[Users.name]!!,
+            Users.passwordHash
+        ).where(Users.userId eq id).limit(1).map { row ->
+            UserInfo(
+                id = row[Users.userId]!!,
+                name = row[Users.name]!!,
                 email = row[Users.email]!!,
-                clientIds = clientIds,
+                passwordHash = row[Users.passwordHash]!!
             )
         }.firstOrNull()
     }
 
-    override suspend fun deleteUserByID(userId: String): Boolean {
+    override suspend fun deleteUserByID(id: String): Boolean {
         val affectedRows =
-            database.sequenceOf(Users).find { user -> user.userId eq userId }?.delete()
+            database.sequenceOf(Users).find { user -> user.userId eq id }?.delete()
         return affectedRows == 1
     }
 
-    override suspend fun updateUserByID(userId: String, update: UserDTO.UpdateUser): Boolean {
-        val foundUser = database.sequenceOf(Users).find { it.userId eq userId } ?: return false
-
-        if (update.username != null) foundUser.name = update.username
+    override suspend fun updateUserByID(id: String, update: UserUpdate): Boolean {
+        val foundUser = database.sequenceOf(Users).find { it.userId eq id } ?: return false
+        if (update.name != null) foundUser.name = update.name!!
 
         val affectedRows = foundUser.flushChanges()
         return affectedRows == 1
     }
 
-    override suspend fun getUserByEmail(email: String): UserDTO.User? {
+    override suspend fun getUserByEmail(email: String): UserInfo? {
         val foundUser = database.sequenceOf(Users).find { it.email eq email } ?: return null
-        return foundUser.mapToUser()
+        return foundUser.mapToUserInfo()
     }
 
     override suspend fun updateUserRefreshToken(
@@ -94,7 +94,7 @@ class PostgresUsersRepository(
         return affectedRows == 1
     }
 
-    override suspend fun getRefreshToken(oldRefreshToken: String): UserDTO.RefreshTokenInfo? {
+    override suspend fun getRefreshToken(oldRefreshToken: String): RefreshTokenInfo? {
         return database.sequenceOf(RefreshTokens).find { oldRefreshToken eq it.refreshToken }
             ?.toRefreshTokenInfo()
     }
@@ -102,7 +102,7 @@ class PostgresUsersRepository(
     override suspend fun getRefreshToken(
         userId: String,
         clientId: String
-    ): UserDTO.RefreshTokenInfo? {
+    ): RefreshTokenInfo? {
         return database.sequenceOf(RefreshTokens)
             .find { (userId eq it.userId) and (clientId eq it.clientId) }
             ?.toRefreshTokenInfo()

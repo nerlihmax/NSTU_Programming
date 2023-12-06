@@ -10,14 +10,12 @@ interface User : Entity<User> {
     var userId: String
     var name: String
     var email: String
-    var passwordHash: String?
-    var authProvider: String
+    var passwordHash: String
 }
 
 object Users : Table<User>("users") {
-    var userId = text("user_id").primaryKey().bindTo(User::userId)
+    var userId = text("id").primaryKey().bindTo(User::userId)
     var name = text("name").bindTo(User::name)
     var email = text("email").bindTo(User::email)
     var passwordHash = text("password_hash").bindTo(User::passwordHash)
-    val authProvider = text("auth_provider").bindTo(User::authProvider)
 }

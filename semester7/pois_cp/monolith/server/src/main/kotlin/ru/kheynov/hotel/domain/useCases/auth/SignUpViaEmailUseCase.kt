@@ -2,13 +2,14 @@ package ru.kheynov.hotel.domain.useCases.auth
 
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import ru.kheynov.hotel.domain.entities.UserDTO
-import ru.kheynov.hotel.domain.repositories.UsersRepository
+import ru.kheynov.hotel.domain.entities.User
+import ru.kheynov.hotel.domain.entities.UserEmailSignUp
+import ru.kheynov.hotel.domain.repository.UsersRepository
+import ru.kheynov.hotel.jwt.RefreshToken
+import ru.kheynov.hotel.jwt.TokenPair
 import ru.kheynov.hotel.jwt.hashing.HashingService
-import ru.kheynov.hotel.jwt.token.RefreshToken
 import ru.kheynov.hotel.jwt.token.TokenClaim
 import ru.kheynov.hotel.jwt.token.TokenConfig
-import ru.kheynov.hotel.jwt.token.TokenPair
 import ru.kheynov.hotel.jwt.token.TokenService
 import java.util.UUID
 
@@ -25,19 +26,21 @@ class SignUpViaEmailUseCase : KoinComponent {
         data object UserAlreadyExists : Result
     }
 
-    suspend operator fun invoke(user: UserDTO.UserEmailSignUp): Result {
+    suspend operator fun invoke(user: UserEmailSignUp): Result {
         if (usersRepository.getUserByEmail(user.email) != null) return Result.UserAlreadyExists
         val userId = getRandomUserID()
         val tokenPair = tokenService.generateTokenPair(tokenConfig, TokenClaim("userId", userId))
 
-        val resUser = UserDTO.User(
-            userId = userId,
-            username = user.username.ifEmpty { "Guest-${getRandomUsername()}" },
+        val resUser = User(
+            id = userId,
+            name = user.name.ifEmpty { "Guest-${getRandomUsername()}" },
             email = user.email,
-            passwordHash = hashingService.generateHash(user.password),
-            authProvider = "local",
         )
-        val registerUserResult = usersRepository.registerUser(resUser)
+        val registerUserResult =
+            usersRepository.registerUser(
+                user = resUser,
+                passwordHash = hashingService.generateHash(user.password),
+            )
         val createUserRefreshTokenResult = usersRepository.createRefreshToken(
             userId = userId,
             clientId = user.clientId,

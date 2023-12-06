@@ -1,12 +1,11 @@
 package ru.kheynov.hotel.data.mappers
 
 import ru.kheynov.hotel.data.entities.User
-import ru.kheynov.hotel.domain.entities.UserDTO
+import ru.kheynov.hotel.domain.entities.UserInfo
 
-fun User.mapToUser(): UserDTO.User = UserDTO.User(
-    userId = this.userId,
-    username = this.name,
+fun User.mapToUserInfo(): UserInfo = UserInfo(
+    id = this.userId,
+    name = this.name,
     email = this.email,
     passwordHash = this.passwordHash,
-    authProvider = this.authProvider,
 )

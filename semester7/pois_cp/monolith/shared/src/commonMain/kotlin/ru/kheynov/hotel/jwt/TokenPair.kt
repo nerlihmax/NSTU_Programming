@@ -1,4 +1,4 @@
-package ru.kheynov.hotel.jwt.token
+package ru.kheynov.hotel.jwt
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

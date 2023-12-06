@@ -1,10 +1,10 @@
 package ru.kheynov.hotel.data.mappers
 
 import ru.kheynov.hotel.data.entities.RefreshToken
-import ru.kheynov.hotel.domain.entities.UserDTO
+import ru.kheynov.hotel.domain.entities.RefreshTokenInfo
 
-fun RefreshToken.toRefreshTokenInfo(): UserDTO.RefreshTokenInfo {
-    return UserDTO.RefreshTokenInfo(
+fun RefreshToken.toRefreshTokenInfo(): RefreshTokenInfo {
+    return RefreshTokenInfo(
         userId = this.userId,
         clientId = this.clientId,
         token = this.refreshToken,
@@ -12,7 +12,7 @@ fun RefreshToken.toRefreshTokenInfo(): UserDTO.RefreshTokenInfo {
     )
 }
 
-fun ru.kheynov.hotel.jwt.token.RefreshToken.toDataRefreshToken(
+fun ru.kheynov.hotel.jwt.RefreshToken.toDataRefreshToken(
     userId: String,
     clientId: String,
 ): RefreshToken {

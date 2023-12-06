@@ -22,7 +22,10 @@ fun Application.configureSecurity() {
                     .build(),
             )
             validate { token ->
-                if (token.payload.audience.contains(config.audience) && token.payload.expiresAt.time > System.currentTimeMillis()) {
+                if (
+                    token.payload.audience.contains(config.audience)
+                    && token.payload.expiresAt.time > System.currentTimeMillis()
+                ) {
                     JWTPrincipal(token.payload)
                 } else {
                     null
