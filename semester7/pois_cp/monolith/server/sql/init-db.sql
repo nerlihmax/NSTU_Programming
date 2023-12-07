@@ -21,7 +21,7 @@ create table refresh_tokens
 create table hotels
 (
     id         serial primary key,
-    hotel_name text not null,
+    name text not null,
     city       text not null,
     address    text not null,
     rating     int  not null
@@ -30,15 +30,15 @@ create table hotels
 create table rooms
 (
     id          serial primary key,
-    room_type   text not null,
+    type   text not null,
     price       int  not null,
-    room_number int  not null,
+    number int  not null,
     hotel_id    int references hotels (id)
 );
 
 create table reservations
 (
-    id             serial primary key,
+    id             text primary key default gen_random_uuid(),
     guest_id       text not null references users (id) on delete cascade,
     arrival_date   date not null,
     departure_date date not null,
@@ -68,10 +68,10 @@ values ('ebd376eb', 'Иванов Иван Иванович', 'ivanov@hotel.khey
        ('303bd871', 'Антонов Антон Антонович', 'antonov@hotel.kheynov.ru',
         '$2a$12$qyiduzaStn.wsWVTjMs3qe1fIBAe1rFMnEaaATv9vBjIMzK4QSkb2');
 
-insert into hotels (hotel_name, city, address, rating)
-values ('Гостиница "Украина"', 'Москва', 'ул. Ленина, д. 1', 5),
+insert into hotels (name, city, address, rating)
+values ('Гостиница "Netizen"', 'Москва', 'ул. Ленина, д. 1', 5),
        ('Гостиница "Москва"', 'Москва', 'ул. Ленина, д. 2', 5),
-       ('Гостиница "Сочи"', 'Новосибирск', 'ул. Ленина, д. 3', 4),
+       ('Гостиница "Mariott"', 'Новосибирск', 'ул. Ленина, д. 3', 4),
        ('Гостиница "Виктория"', 'Москва', 'ул. Ленина, д. 4', 3),
        ('Гостиница "Самара"', 'Москва', 'ул. Ленина, д. 5', 4),
        ('Дом-слон', 'Москва', 'ул. Ленина, д. 6', 3),
@@ -87,7 +87,7 @@ values ('ebd376eb', 1),
        ('f8d5d633', 6),
        ('303bd871', 7);
 
-insert into rooms (room_type, price, room_number, hotel_id)
+insert into rooms (type, price, number, hotel_id)
 values ('3-х местный', 11500, 1, 1),
        ('2-х местный', 9000, 2, 1),
        ('2-х местный', 8000, 3, 1),
