@@ -2,8 +2,8 @@ package ru.kheynov.hotel.jwt.token
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import ru.kheynov.hotel.jwt.RefreshToken
-import ru.kheynov.hotel.jwt.TokenPair
+import ru.kheynov.hotel.shared.jwt.RefreshToken
+import ru.kheynov.hotel.shared.jwt.TokenPair
 import java.util.Date
 import java.util.UUID
 

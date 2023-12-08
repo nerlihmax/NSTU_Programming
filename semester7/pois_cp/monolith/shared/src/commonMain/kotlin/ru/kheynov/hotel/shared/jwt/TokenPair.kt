@@ -1,4 +1,4 @@
-package ru.kheynov.hotel.jwt
+package ru.kheynov.hotel.shared.jwt
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

@@ -2,7 +2,7 @@ package ru.kheynov.hotel.domain.useCases
 
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import ru.kheynov.hotel.domain.repository.UsersRepository
+import ru.kheynov.hotel.shared.domain.repository.UsersRepository
 
 class DeleteUserUseCase : KoinComponent {
     private val usersRepository: UsersRepository by inject()
@@ -14,7 +14,7 @@ class DeleteUserUseCase : KoinComponent {
     }
 
     suspend operator fun invoke(userId: String): Result {
-        if (usersRepository.getUserByID(userId) == null) return Result.UserNotExists
+        if (usersRepository.getUserInfoByID(userId) == null) return Result.UserNotExists
         return if (usersRepository.deleteUserByID(userId)) Result.Successful else Result.Failed
     }
 }

@@ -1,4 +1,4 @@
-package ru.kheynov.hotel.domain.entities
+package ru.kheynov.hotel.shared.domain.entities
 
 data class Employee(
     val id: Int,

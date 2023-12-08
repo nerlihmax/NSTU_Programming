@@ -20,20 +20,20 @@ create table refresh_tokens
 
 create table hotels
 (
-    id         serial primary key,
-    name text not null,
-    city       text not null,
-    address    text not null,
-    rating     int  not null
+    id      serial primary key,
+    name    text not null,
+    city    text not null,
+    address text not null,
+    rating  int  not null
 );
 
 create table rooms
 (
-    id          serial primary key,
-    type   text not null,
-    price       int  not null,
-    number int  not null,
-    hotel_id    int references hotels (id)
+    id       text primary key default gen_random_uuid(),
+    type     text not null,
+    price    int  not null,
+    number   int  not null,
+    hotel_id int references hotels (id)
 );
 
 create table reservations
@@ -42,7 +42,7 @@ create table reservations
     guest_id       text not null references users (id) on delete cascade,
     arrival_date   date not null,
     departure_date date not null,
-    room_id        int references rooms (id)
+    room_id        text references rooms (id)
 );
 
 create table employees

@@ -2,8 +2,8 @@ package ru.kheynov.hotel.domain.useCases.auth
 
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import ru.kheynov.hotel.domain.repository.UsersRepository
-import ru.kheynov.hotel.jwt.TokenPair
+import ru.kheynov.hotel.shared.domain.repository.UsersRepository
+import ru.kheynov.hotel.shared.jwt.TokenPair
 import ru.kheynov.hotel.jwt.token.TokenClaim
 import ru.kheynov.hotel.jwt.token.TokenConfig
 import ru.kheynov.hotel.jwt.token.TokenService

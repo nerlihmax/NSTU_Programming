@@ -2,11 +2,11 @@ package ru.kheynov.hotel.domain.useCases.auth
 
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import ru.kheynov.hotel.domain.entities.User
-import ru.kheynov.hotel.domain.entities.UserEmailSignUp
-import ru.kheynov.hotel.domain.repository.UsersRepository
-import ru.kheynov.hotel.jwt.RefreshToken
-import ru.kheynov.hotel.jwt.TokenPair
+import ru.kheynov.hotel.shared.domain.entities.User
+import ru.kheynov.hotel.shared.domain.entities.UserEmailSignUp
+import ru.kheynov.hotel.shared.domain.repository.UsersRepository
+import ru.kheynov.hotel.shared.jwt.RefreshToken
+import ru.kheynov.hotel.shared.jwt.TokenPair
 import ru.kheynov.hotel.jwt.hashing.HashingService
 import ru.kheynov.hotel.jwt.token.TokenClaim
 import ru.kheynov.hotel.jwt.token.TokenConfig

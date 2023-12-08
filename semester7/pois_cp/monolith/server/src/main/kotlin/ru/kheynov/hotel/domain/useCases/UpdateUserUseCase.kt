@@ -2,8 +2,8 @@ package ru.kheynov.hotel.domain.useCases
 
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import ru.kheynov.hotel.domain.entities.UserUpdate
-import ru.kheynov.hotel.domain.repository.UsersRepository
+import ru.kheynov.hotel.shared.domain.entities.UserUpdate
+import ru.kheynov.hotel.shared.domain.repository.UsersRepository
 
 class UpdateUserUseCase : KoinComponent {
     private val usersRepository: UsersRepository by inject()
@@ -19,7 +19,7 @@ class UpdateUserUseCase : KoinComponent {
         userId: String,
         update: UserUpdate,
     ): Result {
-        if (usersRepository.getUserByID(userId) == null) return Result.UserNotExists
+        if (usersRepository.getUserInfoByID(userId) == null) return Result.UserNotExists
         return if (usersRepository.updateUserByID(
                 userId,
                 update,

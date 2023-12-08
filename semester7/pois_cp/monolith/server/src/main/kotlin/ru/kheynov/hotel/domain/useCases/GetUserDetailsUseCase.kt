@@ -2,8 +2,8 @@ package ru.kheynov.hotel.domain.useCases
 
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import ru.kheynov.hotel.domain.entities.User
-import ru.kheynov.hotel.domain.repository.UsersRepository
+import ru.kheynov.hotel.shared.domain.entities.User
+import ru.kheynov.hotel.shared.domain.repository.UsersRepository
 
 class GetUserDetailsUseCase : KoinComponent {
     private val usersRepository: UsersRepository by inject()
@@ -17,7 +17,7 @@ class GetUserDetailsUseCase : KoinComponent {
     suspend operator fun invoke(
         userId: String,
     ): Result {
-        val user = usersRepository.getUserByID(userId) ?: return Result.UserNotFound
+        val user = usersRepository.getUserInfoByID(userId) ?: return Result.UserNotFound
         return Result.Successful(User(user.id, user.name, user.email))
     }
 }

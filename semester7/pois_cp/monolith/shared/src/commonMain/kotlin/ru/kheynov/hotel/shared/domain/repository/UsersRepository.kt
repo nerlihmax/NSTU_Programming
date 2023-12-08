@@ -1,14 +1,15 @@
-package ru.kheynov.hotel.domain.repository
+package ru.kheynov.hotel.shared.domain.repository
 
-import ru.kheynov.hotel.domain.entities.RefreshTokenInfo
-import ru.kheynov.hotel.domain.entities.User
-import ru.kheynov.hotel.domain.entities.UserInfo
-import ru.kheynov.hotel.domain.entities.UserUpdate
-import ru.kheynov.hotel.jwt.RefreshToken
+import ru.kheynov.hotel.shared.domain.entities.RefreshTokenInfo
+import ru.kheynov.hotel.shared.domain.entities.User
+import ru.kheynov.hotel.shared.domain.entities.UserInfo
+import ru.kheynov.hotel.shared.domain.entities.UserUpdate
+import ru.kheynov.hotel.shared.jwt.RefreshToken
 
 interface UsersRepository {
     suspend fun registerUser(user: User, passwordHash: String): Boolean
-    suspend fun getUserByID(id: String): UserInfo?
+    suspend fun getUserInfoByID(id: String): UserInfo?
+    suspend fun getUserByID(id: String): User?
     suspend fun getUserByEmail(email: String): UserInfo?
     suspend fun deleteUserByID(id: String): Boolean
     suspend fun updateUserByID(id: String, update: UserUpdate): Boolean

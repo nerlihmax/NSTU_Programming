@@ -1,7 +1,7 @@
 package ru.kheynov.hotel.data.mappers
 
 import ru.kheynov.hotel.data.entities.RefreshToken
-import ru.kheynov.hotel.domain.entities.RefreshTokenInfo
+import ru.kheynov.hotel.shared.domain.entities.RefreshTokenInfo
 
 fun RefreshToken.toRefreshTokenInfo(): RefreshTokenInfo {
     return RefreshTokenInfo(
@@ -12,7 +12,7 @@ fun RefreshToken.toRefreshTokenInfo(): RefreshTokenInfo {
     )
 }
 
-fun ru.kheynov.hotel.jwt.RefreshToken.toDataRefreshToken(
+fun ru.kheynov.hotel.shared.jwt.RefreshToken.toDataRefreshToken(
     userId: String,
     clientId: String,
 ): RefreshToken {

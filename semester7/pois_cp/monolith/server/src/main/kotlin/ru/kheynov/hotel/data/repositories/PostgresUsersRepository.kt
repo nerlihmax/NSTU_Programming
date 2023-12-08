@@ -14,15 +14,16 @@ import org.ktorm.entity.sequenceOf
 import ru.kheynov.hotel.data.entities.RefreshTokens
 import ru.kheynov.hotel.data.entities.User
 import ru.kheynov.hotel.data.entities.Users
+import ru.kheynov.hotel.data.mappers.mapToUser
 import ru.kheynov.hotel.data.mappers.mapToUserInfo
 import ru.kheynov.hotel.data.mappers.toDataRefreshToken
 import ru.kheynov.hotel.data.mappers.toRefreshTokenInfo
-import ru.kheynov.hotel.domain.entities.RefreshTokenInfo
-import ru.kheynov.hotel.domain.entities.UserInfo
-import ru.kheynov.hotel.domain.entities.UserUpdate
-import ru.kheynov.hotel.domain.repository.UsersRepository
-import ru.kheynov.hotel.jwt.RefreshToken
-import ru.kheynov.hotel.domain.entities.User as UserDomain
+import ru.kheynov.hotel.shared.domain.entities.RefreshTokenInfo
+import ru.kheynov.hotel.shared.domain.entities.UserInfo
+import ru.kheynov.hotel.shared.domain.entities.UserUpdate
+import ru.kheynov.hotel.shared.domain.repository.UsersRepository
+import ru.kheynov.hotel.shared.jwt.RefreshToken
+import ru.kheynov.hotel.shared.domain.entities.User as UserDomain
 
 class PostgresUsersRepository(
     private val database: Database,
@@ -39,7 +40,7 @@ class PostgresUsersRepository(
         return affectedRows == 1
     }
 
-    override suspend fun getUserByID(id: String): UserInfo? {
+    override suspend fun getUserInfoByID(id: String): UserInfo? {
 //        val clientIds =
 //            database.from(RefreshTokens).selectDistinct(RefreshTokens.clientId)
 //                .where { RefreshTokens.userId eq id }
@@ -59,6 +60,12 @@ class PostgresUsersRepository(
             )
         }.firstOrNull()
     }
+
+    override suspend fun getUserByID(id: String): UserDomain? =
+        database
+            .sequenceOf(Users)
+            .find { it.userId eq id }
+            ?.mapToUser()
 
     override suspend fun deleteUserByID(id: String): Boolean {
         val affectedRows =

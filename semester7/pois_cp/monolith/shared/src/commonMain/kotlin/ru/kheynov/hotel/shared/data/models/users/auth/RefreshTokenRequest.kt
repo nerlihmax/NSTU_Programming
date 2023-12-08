@@ -1,4 +1,4 @@
-package ru.kheynov.hotel.data.models.users.auth
+package ru.kheynov.hotel.shared.data.models.users.auth
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
