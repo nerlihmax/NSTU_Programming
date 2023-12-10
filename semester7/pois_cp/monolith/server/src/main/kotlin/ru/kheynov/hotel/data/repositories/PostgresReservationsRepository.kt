@@ -15,6 +15,7 @@ import ru.kheynov.hotel.data.entities.Rooms
 import ru.kheynov.hotel.data.entities.Users
 import ru.kheynov.hotel.shared.domain.entities.Hotel
 import ru.kheynov.hotel.shared.domain.entities.Room
+import ru.kheynov.hotel.shared.domain.entities.RoomInfo
 import ru.kheynov.hotel.shared.domain.entities.RoomReservation
 import ru.kheynov.hotel.shared.domain.entities.RoomReservationInfo
 import ru.kheynov.hotel.shared.domain.entities.User
@@ -24,8 +25,21 @@ import java.time.LocalDate
 class PostgresReservationsRepository(
     private val database: Database
 ) : ReservationsRepository {
+    override suspend fun getRooms(hotel: Hotel): List<RoomInfo> {
+        return database
+            .from(Rooms)
+            .select()
+            .where { Rooms.hotel eq hotel.id }
+            .map { row ->
+                RoomInfo(
+                    id = row[Rooms.id]!!,
+                    type = row[Rooms.type]!!,
+                    price = row[Rooms.price]!!,
+                )
+            }
+    }
 
-    override suspend fun getAvailableRooms(hotel: Hotel): List<RoomReservationInfo> {
+    override suspend fun getOccupiedRooms(hotel: Hotel): List<RoomReservationInfo> {
         return database
             .from(Rooms)
             .innerJoin(Reservations, on = Rooms.id eq Reservations.room)
@@ -93,6 +107,7 @@ class PostgresReservationsRepository(
             set(it.room, room.room.id)
             set(it.arrivalDate, room.from)
             set(it.departureDate, room.to)
+            set(it.guest, room.user.id)
         } > 0
     }
 
@@ -116,6 +131,28 @@ class PostgresReservationsRepository(
                 )
             }
             .firstOrNull()
+    }
+
+    override suspend fun getUsersReservations(user: User): List<RoomReservationInfo> {
+        return database
+            .from(Reservations)
+            .innerJoin(Rooms, on = Reservations.room eq Rooms.id)
+            .select()
+            .where { Reservations.guest eq user.id }
+            .map { row ->
+                RoomReservationInfo(
+                    id = row[Reservations.id]!!,
+                    room = Room(
+                        id = row[Rooms.id]!!,
+                        type = row[Rooms.type]!!,
+                        price = row[Rooms.price]!!,
+                        hotel = getHotels().find { it.id == row[Rooms.hotel]!! }!!
+                    ),
+                    user = user,
+                    from = row[Reservations.arrivalDate]!!,
+                    to = row[Reservations.departureDate]!!,
+                )
+            }
     }
 
 

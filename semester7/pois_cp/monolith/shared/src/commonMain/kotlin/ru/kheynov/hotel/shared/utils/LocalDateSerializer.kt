@@ -1,4 +1,4 @@
-package ru.kheynov.hotel.utils
+package ru.kheynov.hotel.shared.utils
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind

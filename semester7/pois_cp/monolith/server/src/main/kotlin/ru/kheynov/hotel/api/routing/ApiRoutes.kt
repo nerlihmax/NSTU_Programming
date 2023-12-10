@@ -10,5 +10,6 @@ fun Route.apiRoutes() {
         val useCases by inject<UseCases>()
 
         configureUserRoutes(useCases)
+        configureReservationsRoutes(useCases)
     }
 }

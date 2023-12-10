@@ -13,19 +13,20 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.patch
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
+import ru.kheynov.hotel.api.routing.utils.getUserId
+import ru.kheynov.hotel.domain.useCases.users.DeleteUserUseCase
+import ru.kheynov.hotel.domain.useCases.users.GetUserDetailsUseCase
+import ru.kheynov.hotel.domain.useCases.users.UpdateUserUseCase
+import ru.kheynov.hotel.domain.useCases.UseCases
+import ru.kheynov.hotel.domain.useCases.auth.LoginViaEmailUseCase
+import ru.kheynov.hotel.domain.useCases.auth.RefreshTokenUseCase
+import ru.kheynov.hotel.domain.useCases.auth.SignUpViaEmailUseCase
 import ru.kheynov.hotel.shared.data.models.users.UpdateUserRequest
 import ru.kheynov.hotel.shared.data.models.users.auth.LoginViaEmailRequest
 import ru.kheynov.hotel.shared.data.models.users.auth.RefreshTokenRequest
 import ru.kheynov.hotel.shared.data.models.users.auth.SignUpViaEmailRequest
 import ru.kheynov.hotel.shared.domain.entities.UserEmailSignUp
 import ru.kheynov.hotel.shared.domain.entities.UserUpdate
-import ru.kheynov.hotel.domain.useCases.DeleteUserUseCase
-import ru.kheynov.hotel.domain.useCases.GetUserDetailsUseCase
-import ru.kheynov.hotel.domain.useCases.UpdateUserUseCase
-import ru.kheynov.hotel.domain.useCases.UseCases
-import ru.kheynov.hotel.domain.useCases.auth.LoginViaEmailUseCase
-import ru.kheynov.hotel.domain.useCases.auth.RefreshTokenUseCase
-import ru.kheynov.hotel.domain.useCases.auth.SignUpViaEmailUseCase
 
 
 fun Route.configureUserRoutes(
@@ -37,11 +38,10 @@ fun Route.configureUserRoutes(
 
         authenticate {
             get {
-                val userId =
-                    call.principal<JWTPrincipal>()?.payload?.getClaim("userId")?.asString() ?: run {
-                        call.respond(HttpStatusCode.Unauthorized, "No access token provided")
-                        return@get
-                    }
+                val userId = call.getUserId() ?: run {
+                    call.respond(HttpStatusCode.Unauthorized, "No access token provided")
+                    return@get
+                }
                 when (val res = useCases.getUserDetailsUseCase(userId)) {
                     GetUserDetailsUseCase.Result.Failed -> {
                         call.respond(HttpStatusCode.InternalServerError, "Something went wrong")

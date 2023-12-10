@@ -24,7 +24,7 @@ class DeleteReservationUseCase : KoinComponent {
         val user = usersRepository.getUserByID(userId) ?: return Result.UserNotExists
         val reservation = reservationsRepository.getReservationByID(reservationId)
             ?: return Result.ReservationNotExists
-        if (user != reservation.user) return Result.Forbidden
+        if (user != reservation.user || !usersRepository.isUserEmployee(userId)) return Result.Forbidden
         return if (reservationsRepository.cancelReservation(reservationId)) {
             Result.Successful(reservationId)
         } else Result.ReservationNotExists

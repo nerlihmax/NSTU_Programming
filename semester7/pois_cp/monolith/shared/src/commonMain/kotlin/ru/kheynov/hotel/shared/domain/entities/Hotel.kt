@@ -1,5 +1,8 @@
 package ru.kheynov.hotel.shared.domain.entities
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Hotel(
     val id: Int,
     val name: String,

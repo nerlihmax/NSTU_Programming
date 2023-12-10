@@ -1,4 +1,4 @@
-package ru.kheynov.hotel.domain.useCases
+package ru.kheynov.hotel.domain.useCases.users
 
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject

@@ -32,4 +32,5 @@ interface UsersRepository {
         refreshToken: RefreshToken
     ): Boolean
 
+    suspend fun isUserEmployee(userId: String): Boolean
 }

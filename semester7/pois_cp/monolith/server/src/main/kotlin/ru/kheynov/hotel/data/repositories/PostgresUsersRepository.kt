@@ -4,6 +4,7 @@ import org.ktorm.database.Database
 import org.ktorm.dsl.and
 import org.ktorm.dsl.eq
 import org.ktorm.dsl.from
+import org.ktorm.dsl.innerJoin
 import org.ktorm.dsl.limit
 import org.ktorm.dsl.map
 import org.ktorm.dsl.select
@@ -11,6 +12,7 @@ import org.ktorm.dsl.where
 import org.ktorm.entity.add
 import org.ktorm.entity.find
 import org.ktorm.entity.sequenceOf
+import ru.kheynov.hotel.data.entities.Employees
 import ru.kheynov.hotel.data.entities.RefreshTokens
 import ru.kheynov.hotel.data.entities.User
 import ru.kheynov.hotel.data.entities.Users
@@ -123,5 +125,14 @@ class PostgresUsersRepository(
         val affectedRows = database.sequenceOf(RefreshTokens)
             .add(refreshToken.toDataRefreshToken(userId, clientId))
         return affectedRows == 1
+    }
+
+    override suspend fun isUserEmployee(userId: String): Boolean {
+        return database
+            .from(Users)
+            .innerJoin(Employees, on = Users.userId eq Employees.user)
+            .select()
+            .map { it[Users.userId] }
+            .isNotEmpty()
     }
 }

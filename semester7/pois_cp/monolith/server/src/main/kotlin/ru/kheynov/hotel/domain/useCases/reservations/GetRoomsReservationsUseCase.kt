@@ -2,24 +2,25 @@ package ru.kheynov.hotel.domain.useCases.reservations
 
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import ru.kheynov.hotel.shared.domain.entities.RoomInfo
 import ru.kheynov.hotel.shared.domain.repository.ReservationsRepository
+import ru.kheynov.hotel.shared.domain.repository.UsersRepository
+import java.time.LocalDate
 
-class GetRoomsUseCase : KoinComponent {
+class GetRoomsReservationsUseCase : KoinComponent {
     private val reservationsRepository: ReservationsRepository by inject()
 
     sealed interface Result {
-        data class Successful(val data: List<RoomInfo>) : Result
-        data object UnknownHotel : Result
+        data class Successful(val data: List<ClosedRange<LocalDate>>) : Result
+        data object UnknownRoom : Result
         data object Failed : Result
         data object Empty : Result
     }
 
-    suspend operator fun invoke(hotelId: Int): Result {
-        val hotel = reservationsRepository.getHotels().find { it.id == hotelId }
-            ?: return Result.UnknownHotel
+    suspend operator fun invoke(roomId: String): Result {
+        reservationsRepository.getRoomByID(roomId)
+            ?: return Result.UnknownRoom
 
-        val rooms = reservationsRepository.getRooms(hotel)
+        val rooms = reservationsRepository.getRoomOccupancy(roomId)
         return try {
             if (rooms.isEmpty()) Result.Empty
             else Result.Successful(rooms)
