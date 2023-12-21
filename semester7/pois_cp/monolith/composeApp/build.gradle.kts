@@ -26,7 +26,6 @@ kotlin {
 
         androidMain.dependencies {
             implementation(libs.compose.ui)
-            implementation(libs.compose.ui.tooling.preview)
             implementation(libs.androidx.activity.compose)
         }
         desktopMain.dependencies {
@@ -36,6 +35,7 @@ kotlin {
             implementation(projects.shared)
             implementation(compose.runtime)
             implementation(compose.foundation)
+            implementation(libs.compose.ui.tooling.preview)
             implementation(compose.material)
             @OptIn(ExperimentalComposeLibrary::class)
             implementation(compose.components.resources)
