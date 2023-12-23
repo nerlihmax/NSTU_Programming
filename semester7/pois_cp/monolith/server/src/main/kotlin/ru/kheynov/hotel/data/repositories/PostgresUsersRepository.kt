@@ -20,10 +20,10 @@ import ru.kheynov.hotel.data.mappers.mapToUser
 import ru.kheynov.hotel.data.mappers.mapToUserInfo
 import ru.kheynov.hotel.data.mappers.toDataRefreshToken
 import ru.kheynov.hotel.data.mappers.toRefreshTokenInfo
+import ru.kheynov.hotel.domain.repository.UsersRepository
 import ru.kheynov.hotel.shared.domain.entities.RefreshTokenInfo
 import ru.kheynov.hotel.shared.domain.entities.UserInfo
 import ru.kheynov.hotel.shared.domain.entities.UserUpdate
-import ru.kheynov.hotel.shared.domain.repository.UsersRepository
 import ru.kheynov.hotel.shared.jwt.RefreshToken
 import ru.kheynov.hotel.shared.domain.entities.User as UserDomain
 

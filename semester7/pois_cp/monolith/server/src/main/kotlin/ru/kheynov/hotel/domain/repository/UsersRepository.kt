@@ -1,4 +1,4 @@
-package ru.kheynov.hotel.shared.domain.repository
+package ru.kheynov.hotel.domain.repository
 
 import ru.kheynov.hotel.shared.domain.entities.RefreshTokenInfo
 import ru.kheynov.hotel.shared.domain.entities.User

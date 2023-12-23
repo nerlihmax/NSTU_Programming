@@ -4,14 +4,14 @@ import org.koin.dsl.module
 import org.ktorm.database.Database
 import ru.kheynov.hotel.data.repositories.PostgresReservationsRepository
 import ru.kheynov.hotel.data.repositories.PostgresUsersRepository
-import ru.kheynov.hotel.shared.domain.repository.ReservationsRepository
-import ru.kheynov.hotel.shared.domain.repository.UsersRepository
+import ru.kheynov.hotel.domain.repository.UsersRepository
 import ru.kheynov.hotel.domain.useCases.UseCases
 import ru.kheynov.hotel.jwt.hashing.BcryptHashingService
 import ru.kheynov.hotel.jwt.hashing.HashingService
 import ru.kheynov.hotel.jwt.token.JwtTokenService
 import ru.kheynov.hotel.jwt.token.TokenConfig
 import ru.kheynov.hotel.jwt.token.TokenService
+import ru.kheynov.hotel.shared.domain.repository.ReservationsRepository
 
 val appModule = module {
     single {

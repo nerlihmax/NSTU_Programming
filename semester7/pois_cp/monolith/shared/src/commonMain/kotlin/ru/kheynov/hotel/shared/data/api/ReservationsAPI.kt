@@ -1,5 +1,6 @@
 package ru.kheynov.hotel.shared.data.api
 
+import kotlinx.serialization.Serializable
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -9,6 +10,7 @@ import ru.kheynov.hotel.shared.data.models.reservations.ReserveRoomRequest
 import ru.kheynov.hotel.shared.domain.entities.Hotel
 import ru.kheynov.hotel.shared.domain.entities.RoomInfo
 import ru.kheynov.hotel.shared.domain.entities.RoomReservationInfo
+import ru.kheynov.hotel.shared.utils.LocalDateSerializer
 import java.time.LocalDate
 
 interface ReservationsAPI {
@@ -38,5 +40,5 @@ interface ReservationsAPI {
     @GET("rooms/occupancy")
     suspend fun getRoomsOccupancy(
         @Query("room") roomId: String,
-    ): List<ClosedRange<LocalDate>>
+    ): @Serializable(with = LocalDateSerializer::class) List<ClosedRange<LocalDate>>
 }

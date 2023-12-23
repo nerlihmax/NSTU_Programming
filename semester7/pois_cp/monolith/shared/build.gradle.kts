@@ -20,12 +20,9 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.serialization.core)
             implementation(libs.serialization.json)
+            implementation(libs.coroutines.core)
             implementation(libs.retrofit)
             implementation(libs.retrofit.serializer)
-            implementation(libs.compose.ui)
-            implementation(libs.compose.foundation)
-            implementation(libs.compose.material)
-            implementation(project.dependencies.platform(libs.compose.bom))
             // put your Multiplatform dependencies here
         }
     }
@@ -36,5 +33,8 @@ android {
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
+    }
+    dependencies {
+        implementation(libs.coroutines.android)
     }
 }
