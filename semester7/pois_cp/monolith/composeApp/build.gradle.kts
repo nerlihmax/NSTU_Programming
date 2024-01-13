@@ -1,4 +1,3 @@
-import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.compose.ExperimentalComposeLibrary
 
@@ -27,15 +26,23 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.compose.ui)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.compose.ui.tooling.preview)
+            implementation(libs.koin.core)
+            implementation(libs.koin.android)
+            implementation(libs.koin.android.compose)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
+            implementation(libs.koin.core)
         }
         commonMain.dependencies {
+            implementation(libs.retrofit)
+            implementation(libs.okhttp)
+            implementation(libs.retrofit.serializer)
+            implementation(libs.koin.core)
             implementation(projects.shared)
             implementation(compose.runtime)
             implementation(compose.foundation)
-            implementation(libs.compose.ui.tooling.preview)
             implementation(compose.material)
             @OptIn(ExperimentalComposeLibrary::class)
             implementation(compose.components.resources)
@@ -81,7 +88,7 @@ android {
 
 compose.desktop {
     application {
-        mainClass = "MainKt"
+        mainClass = "ru.kheynov.hotel.MainKt"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)

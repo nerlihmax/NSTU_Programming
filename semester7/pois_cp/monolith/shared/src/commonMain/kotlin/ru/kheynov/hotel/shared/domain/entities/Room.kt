@@ -17,7 +17,7 @@ data class RoomInfo(
     val id: String,
     val type: String,
     val price: Int,
-)
+) : DisplayableData
 
 @Serializable
 data class RoomReservation(
@@ -35,4 +35,4 @@ data class RoomReservationInfo(
     val user: User? = null,
     @Serializable(with = LocalDateSerializer::class) val from: LocalDate,
     @Serializable(with = LocalDateSerializer::class) val to: LocalDate,
-)
+) : DisplayableData

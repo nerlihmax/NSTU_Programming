@@ -6,7 +6,7 @@ import ru.kheynov.hotel.shared.domain.entities.Hotel
 import ru.kheynov.hotel.shared.domain.entities.RoomInfo
 import java.time.LocalDate
 
-class ReservationsRepository(
+class ClientReservationsRepository(
     private val api: ReservationsAPI
 ) {
     suspend fun getReservations() = api.getReservations()

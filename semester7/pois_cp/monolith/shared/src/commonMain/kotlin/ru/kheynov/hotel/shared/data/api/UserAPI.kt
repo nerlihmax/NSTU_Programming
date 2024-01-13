@@ -11,6 +11,7 @@ import ru.kheynov.hotel.shared.data.models.users.auth.LoginViaEmailRequest
 import ru.kheynov.hotel.shared.data.models.users.auth.RefreshTokenRequest
 import ru.kheynov.hotel.shared.data.models.users.auth.SignUpViaEmailRequest
 import ru.kheynov.hotel.shared.domain.entities.User
+import ru.kheynov.hotel.shared.domain.entities.UserEmployment
 import ru.kheynov.hotel.shared.jwt.TokenPair
 
 interface UserAPI {
@@ -23,6 +24,10 @@ interface UserAPI {
     suspend fun updateUserInfo(
         @Body user: UpdateUserRequest,
     )
+
+    @GET("user/employee")
+    suspend fun getUserEmployment(): UserEmployment
+
 
     @POST("auth/email/register")
     suspend fun createUser(

@@ -2,7 +2,7 @@ package ru.kheynov.hotel.domain.useCases.users
 
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import ru.kheynov.hotel.shared.domain.repository.UsersRepository
+import ru.kheynov.hotel.domain.repository.UsersRepository
 
 class DeleteUserUseCase : KoinComponent {
     private val usersRepository: UsersRepository by inject()

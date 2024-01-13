@@ -9,6 +9,7 @@ import ru.kheynov.hotel.shared.data.models.users.auth.LoginViaEmailRequest
 import ru.kheynov.hotel.shared.data.models.users.auth.RefreshTokenRequest
 import ru.kheynov.hotel.shared.data.models.users.auth.SignUpViaEmailRequest
 import ru.kheynov.hotel.shared.domain.entities.User
+import ru.kheynov.hotel.shared.domain.entities.UserEmployment
 import ru.kheynov.hotel.shared.jwt.TokenPair
 import ru.kheynov.hotel.shared.utils.BadRequestException
 import ru.kheynov.hotel.shared.utils.ForbiddenException
@@ -84,6 +85,17 @@ class ClientUsersRepository(
             try {
                 val result =
                     usersAPI.refreshToken(RefreshTokenRequest(oldRefreshToken), clientId)
+                Result.success(result)
+            } catch (e: Exception) {
+                handleException(e)
+            }
+        }
+
+    suspend fun getUserEmployment(): Result<UserEmployment> =
+        withContext(Dispatchers.IO) {
+            try {
+                val result =
+                    usersAPI.getUserEmployment()
                 Result.success(result)
             } catch (e: Exception) {
                 handleException(e)

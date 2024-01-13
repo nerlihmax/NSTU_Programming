@@ -1,12 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="AutoImportSettings">
-    <option name="autoReloadType" value="SELECTIVE" />
+    <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3c986ad5-03d1-4d85-a314-ebbd9334ad70" name="Changes" comment="chore: add comments">
+      <change afterPath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/composeApp/src/desktopMain/kotlin/ru/kheynov/hotel/Main.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/composeApp/src/desktopMain/kotlin/ru/kheynov/hotel/desktop/di/AppModule.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/composeApp/src/desktopMain/kotlin/ru/kheynov/hotel/desktop/presentation/HomePage.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/composeApp/src/desktopMain/kotlin/ru/kheynov/hotel/desktop/presentation/MenuList.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/composeApp/src/desktopMain/kotlin/ru/kheynov/hotel/desktop/presentation/RoomInfoCard.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/composeApp/src/desktopMain/kotlin/ru/kheynov/hotel/desktop/presentation/ViewModel.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/composeApp/src/desktopMain/kotlin/ru/kheynov/hotel/desktop/presentation/stateHolders/ErrorStates.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/composeApp/src/desktopMain/kotlin/ru/kheynov/hotel/desktop/presentation/stateHolders/Routes.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/composeApp/src/desktopMain/kotlin/ru/kheynov/hotel/desktop/presentation/stateHolders/State.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/shared/src/androidMain/kotlin/ru/kheynov/hotel/shared/data/storage/TokenStorage.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/shared/src/commonMain/kotlin/ru/kheynov/hotel/shared/data/storage/TokenStorage.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/shared/src/commonMain/kotlin/ru/kheynov/hotel/shared/domain/entities/DisplayableData.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/shared/src/jvmMain/kotlin/ru/kheynov/hotel/shared/data/storage/TokenStorage.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../server/resources/backup.json" beforeDir="false" afterPath="$PROJECT_DIR$/../server/resources/backup.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/composeApp/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/composeApp/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/composeApp/src/androidMain/kotlin/ru/kheynov/hotel/MainActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/composeApp/src/androidMain/kotlin/ru/kheynov/hotel/MainActivity.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/composeApp/src/commonMain/kotlin/App.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/composeApp/src/desktopMain/kotlin/main.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/gradle.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/gradle/libs.versions.toml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/gradle/libs.versions.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/server/src/main/kotlin/ru/kheynov/hotel/domain/useCases/users/DeleteUserUseCase.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/server/src/main/kotlin/ru/kheynov/hotel/domain/useCases/users/DeleteUserUseCase.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/server/src/main/kotlin/ru/kheynov/hotel/domain/useCases/users/GetUserDetailsUseCase.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/server/src/main/kotlin/ru/kheynov/hotel/domain/useCases/users/GetUserDetailsUseCase.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/shared/src/androidMain/kotlin/Platform.android.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/shared/src/commonMain/kotlin/Greeting.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/shared/src/commonMain/kotlin/Platform.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/shared/src/commonMain/kotlin/ru/kheynov/hotel/shared/domain/entities/Room.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../semester7/pois_cp/monolith/shared/src/commonMain/kotlin/ru/kheynov/hotel/shared/domain/entities/Room.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -34,11 +58,6 @@
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="client" type="f1a62948:ProjectNode" />
               </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="client" type="f1a62948:ProjectNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-              </path>
             </expand>
             <select />
           </tree_state>
@@ -60,26 +79,29 @@
   <component name="ProjectViewState">
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
-    &quot;ignore.preview.features.used&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;build.tools&quot;,
-    &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "cidr.known.project.marker": "true",
+    "dart.analysis.tool.window.visible": "false",
+    "ignore.preview.features.used": "true",
+    "last_opened_file_path": "/Users/kheynov/code/NSTU_LABS/semester6/cslabs/lab4/client",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "build.tools",
+    "show.migrate.to.gradle.popup": "false",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RunManager" selected="Application.Main">
     <configuration name="ClientTest" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="ClientTest" />
