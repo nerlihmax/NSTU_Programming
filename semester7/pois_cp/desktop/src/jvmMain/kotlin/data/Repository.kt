@@ -31,7 +31,7 @@ class Repository(
 
     inner class HotelsRepository {
         fun getAll(): List<Hotel> =
-            database.sequenceOf(Hotels).toList().sortedBy { it.city }
+            database.sequenceOf(Hotels).toList().sortedBy { it.id }
 
         fun create(hotel: Hotel): Boolean =
             database.sequenceOf(Hotels).add(hotel) == 1
@@ -105,6 +105,9 @@ class Repository(
 
         fun getById(id: String): User? =
             database.sequenceOf(Users).find { it.userId eq id }
+
+        fun getByName(name: String): User? =
+            database.sequenceOf(Users).find { it.name eq name }
 
         fun update(user: User): Boolean =
             database.sequenceOf(Users).update(user) == 1

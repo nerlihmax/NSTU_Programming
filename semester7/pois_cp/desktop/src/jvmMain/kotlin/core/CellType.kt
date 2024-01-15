@@ -3,7 +3,7 @@ package core
 enum class CellType {
     DATA,
     EDIT,
-    INFO,
+    BOOK,
     DELETE,
     ACCEPT,
     CANCEL
